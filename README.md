@@ -1,2 +1,2 @@
 # BerryMath
-This is a lightweight language specification and implementation that is suitable for embedding some helper types, such as excle tables.
+这是一个简单的轻量级语言——数梅语言
