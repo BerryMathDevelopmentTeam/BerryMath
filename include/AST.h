@@ -56,6 +56,9 @@ namespace BerryMath {
             void push(ASTTypes t1, string s1) {
                 children.push_back(new ASTNode(t1, s1));
             }
+            void push(ASTNode* n) {
+                children.push_back(n);
+            }
             ASTNode* at(long index) {
                 if (index < 0) {
                     index = children.size() + index;
@@ -98,6 +101,42 @@ namespace BerryMath {
     private:
         ASTNode* root;
         string code;
+        enum type {
+            VALUE_EXPRESSION, OPERATOR_EXPRESSION, NONE_EXPRESSION
+        };
+        struct part {
+            type t = NONE_EXPRESSION;
+            string v;
+        };
+        short priority(string);
+        part splitPart(string code, int& i) {
+            part res;
+            res.v = "";
+            res.t = NONE_EXPRESSION;
+            for (; i < code.length() && code[i] != ';'; i++) {
+                if (code[i] == '.') {
+                    if (res.t != VALUE_EXPRESSION) {// 是.运算
+                        res.t = OPERATOR_EXPRESSION;
+                        return res;
+                    }
+                    res.v += code[i];
+                } else if (!(code[i] >= '0' && code[i] <= '9')) {
+                    if (res.t == VALUE_EXPRESSION) {
+                        i--;
+                        return res;
+                    }
+                    res.t = OPERATOR_EXPRESSION;
+                    res.v += code[i];
+                } else {
+                    if (res.t == OPERATOR_EXPRESSION) {
+                        i--;
+                        return res;
+                    }
+                    res.v += code[i];
+                }
+            }
+            return res;
+        }
     };
 }
 

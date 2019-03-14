@@ -10,6 +10,7 @@ std::cout << "Pending development in file: " << __FILE__ << ", at line: " << __L
 #define ITOA_SELF(n) std::stringstream ss; \
 ss << n; \
 return ss.str();
+
 std::string itoa_self(int i)
 {
     ITOA_SELF(i);

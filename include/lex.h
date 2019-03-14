@@ -59,6 +59,7 @@ namespace BerryMath {
     };
     class lex {
     public:
+        friend class AST;
         struct lexToken {
             Token token;
             std::string str;

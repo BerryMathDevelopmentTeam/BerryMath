@@ -6,7 +6,14 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
     str = "";
     token = BerryMath::INIT_TOKEN;
     while (true) {
-        if (parseIndex >= program.length()) break;
+        if (parseIndex >= program.length()) {
+            if (end) {
+                token = BerryMath::END_TOKEN;
+            } else {
+                end = true;
+            }
+            break;
+        }
         if (program[parseIndex] == ';') {
             if (end) {
                 token = BerryMath::END_TOKEN;
