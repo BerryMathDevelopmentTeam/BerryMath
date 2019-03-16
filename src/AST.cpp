@@ -16,8 +16,7 @@ void BerryMath::AST::parse() {
     now = root;
     bool first = true;
     int s = lexer.parseIndex;
-//    std::cout << code << std::endl;
-//    std::cout << code << std::endl;
+    std::cout << code << std::endl;
     while (true) {
         t = lexer.get();
         if (t.token == END_TOKEN) {
@@ -44,6 +43,7 @@ void BerryMath::AST::parse() {
             int base = 1;
             short minPri(15);
             int minOpIndex(-1);
+            long tokenLen(0);
             string minOp("");
             lex::lexToken op_t;
             op_t.token = INIT_TOKEN;
@@ -62,6 +62,7 @@ void BerryMath::AST::parse() {
                             minOpIndex = lexer.parseIndex;
                             minOp = op_t.str;
                             minPri = pri;
+                            tokenLen = op_t.str.length();
                         }
                     }
                 }
@@ -82,7 +83,7 @@ void BerryMath::AST::parse() {
             root->push(OPERATOR, minOp);
 
             int bracketsCount(0);
-            for (int i = s; i < minOpIndex; i++) {
+            for (int i = s; i < minOpIndex - tokenLen + 1; i++) {
                 if (code[i] == '(') bracketsCount++;
                 if (code[i] == ')') bracketsCount--;
                 left += code[i];
@@ -99,10 +100,19 @@ void BerryMath::AST::parse() {
             }
 //            std::cout << left << std::endl;
             bracketsCount = 0;
-            for (int i = minOpIndex + 1; i < code.length(); i++) {
-                if (code[i] == '(') bracketsCount++;
-                if (code[i] == ')') bracketsCount--;
-                right += code[i];
+            if (minOp == "<<") {
+                for (int i = minOpIndex + 1; i < code.length(); i++) {
+                    if (code[i] == '(') bracketsCount++;
+                    if (code[i] == ')') bracketsCount--;
+                    right += code[i];
+                }
+//                std::cout << minOpIndex + tokenLen << std::endl;
+            } else {
+                for (int i = minOpIndex + tokenLen; i < code.length(); i++) {
+                    if (code[i] == '(') bracketsCount++;
+                    if (code[i] == ')') bracketsCount--;
+                    right += code[i];
+                }
             }
 //            std::cout << "bracketsCountRight: " << bracketsCount << std::endl;
             if (bracketsCount > 0) {
@@ -140,7 +150,7 @@ void BerryMath::AST::parse() {
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-    if (code.length() == 14)
+    if (code.length() == 34)
         std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
