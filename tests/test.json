@@ -1,0 +1,9 @@
+{
+  "name": "BerryMath",
+  "version": "v0.0.1",
+  "language": "C++17",
+  "libraries": [
+    "jsoncpp"
+  ],
+  "license": "GNU"
+}
