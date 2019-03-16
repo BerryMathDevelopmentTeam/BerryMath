@@ -12,11 +12,11 @@ void BerryMath::AST::parse() {
     lex::lexToken tmp;// 存储中间token
     unknown.token = NONE_TOKEN;
     bool expression = false;
-    ASTNode *now;
-    now = root;
+//    ASTNode *now;
+//    now = root;
     bool first = true;
     int s = lexer.parseIndex;
-    std::cout << code << std::endl;
+//    std::cout << code << std::endl;
     while (true) {
         t = lexer.get();
         if (t.token == END_TOKEN) {
@@ -100,19 +100,10 @@ void BerryMath::AST::parse() {
             }
 //            std::cout << left << std::endl;
             bracketsCount = 0;
-            if (minOp == "<<") {
-                for (int i = minOpIndex + 1; i < code.length(); i++) {
-                    if (code[i] == '(') bracketsCount++;
-                    if (code[i] == ')') bracketsCount--;
-                    right += code[i];
-                }
-//                std::cout << minOpIndex + tokenLen << std::endl;
-            } else {
-                for (int i = minOpIndex + tokenLen; i < code.length(); i++) {
-                    if (code[i] == '(') bracketsCount++;
-                    if (code[i] == ')') bracketsCount--;
-                    right += code[i];
-                }
+            for (int i = minOpIndex + 1; i < code.length(); i++) {
+                if (code[i] == '(') bracketsCount++;
+                if (code[i] == ')') bracketsCount--;
+                right += code[i];
             }
 //            std::cout << "bracketsCountRight: " << bracketsCount << std::endl;
             if (bracketsCount > 0) {
@@ -150,8 +141,8 @@ void BerryMath::AST::parse() {
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-    if (code.length() == 34)
-        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
+//    if (code.length() == 34)
+//        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
 short BerryMath::AST::priority(string op) {
