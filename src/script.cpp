@@ -8,8 +8,8 @@ void BerryMath::script::run() {
     int i = 0;
     auto scope = new block();
     string c("");
-    std::regex replacer("\n");
-    code = std::regex_replace(code, replacer, "//\n");
+//    std::regex replacer_self_add("++");
+//    code = std::regex_replace(code, replacer_self_add, "+= 1");
     int bigBracketsCount = 0;
     bool haveEndToken = false;
 //    std::cout << code << std::endl;
@@ -21,6 +21,7 @@ void BerryMath::script::run() {
         if (code[i] == '}') bigBracketsCount--;
 //        std::cout << bigBracketsCount << std::endl;
         if (code[i] == ';' && bigBracketsCount == 0) {
+//            std::cout << "build AST." << std::endl;
             auto ast = new BerryMath::AST(c);
             ast->parse();
             auto root = ast->value();

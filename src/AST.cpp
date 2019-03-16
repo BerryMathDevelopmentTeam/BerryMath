@@ -2,6 +2,27 @@
 #include "lex.h"
 #include "color.h"
 #include "AST.h"
+#include <algorithm>
+
+const std::string WHITESPACE = " \n\r\t\f\v";
+
+std::string ltrim(const std::string& s)
+{
+    size_t start = s.find_first_not_of(WHITESPACE);
+    return (start == std::string::npos) ? "" : s.substr(start);
+}
+
+std::string rtrim(const std::string& s)
+{
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+
+std::string trim(const std::string& s)
+{
+    return rtrim(ltrim(s));
+}
+
 
 void BerryMath::AST::parse() {
     if (root) delete root;
@@ -16,7 +37,7 @@ void BerryMath::AST::parse() {
 //    now = root;
     bool first = true;
     int s = lexer.parseIndex;
-//    std::cout << code << std::endl;
+//    std::cout << "=====" << code << "=====" << std::endl;
     while (true) {
         t = lexer.get();
         if (t.token == END_TOKEN) {
@@ -55,7 +76,7 @@ void BerryMath::AST::parse() {
                         base *= pri;
                     } else if (op_t.str == ")") {
                         base /= pri;
-                    } else {
+                    } else if (pri != 13) {
                         pri *= base;
                         if (!isNumber(op_t.str) && pri < minPri && op_t.str != "(" && op_t.str != ")") {
 //                            std::cout << op_t.str << std::endl;
@@ -74,7 +95,34 @@ void BerryMath::AST::parse() {
                 while (n.str == "(" || n.str == ")") {
                     n = lexer.get();
                 }
-                root->push(VALUE, n.str);
+//                std::cout << n.str << std::endl;
+                n.str = trim(n.str);
+                if (priority(n.str) == 13) {// ++, --, !, ~
+                    root->push(OPERATOR, n.str);
+//                    n = lexer.get();
+                    int bracketsCount(0);
+                    string then("");
+                    for (int i = lexer.parseIndex; i < code.length(); i++) {
+                        if (code[i] == '(') bracketsCount++;
+                        if (code[i] == ')') bracketsCount--;
+                        then += code[i];
+                    }
+                    if (bracketsCount < 0) {
+                        for (int i = bracketsCount; i < 0; i++) {
+                            then = "(" + then;
+                        }
+                    } else {
+                        for (int i = 0; i < bracketsCount; i++) {
+                            then += ")";
+                        }
+                    }
+                    auto ast = new AST(then);
+                    ast->parse();
+                    root->at(-1)->push(ast->root->at(-1));
+//                    std::cout << "tmp" << std::endl;
+                } else {
+                    root->push(VALUE, n.str);
+                }
                 break;
             }
 //            std::cout << minOpIndex << ", " << minPri << ", " << minOp << std::endl;
@@ -141,7 +189,7 @@ void BerryMath::AST::parse() {
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-//    if (code.length() == 34)
+//    if (code == "test = 1;" || code == "\n++test;")
 //        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
