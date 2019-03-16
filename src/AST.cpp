@@ -16,7 +16,8 @@ void BerryMath::AST::parse() {
     now = root;
     bool first = true;
     int s = lexer.parseIndex;
-    std::cout << code << std::endl;
+//    std::cout << code << std::endl;
+//    std::cout << code << std::endl;
     while (true) {
         t = lexer.get();
         if (t.token == END_TOKEN) {
@@ -40,6 +41,7 @@ void BerryMath::AST::parse() {
 //            std::cout << "123" << std::endl;
             string left("");
             string right("");
+            int base = 1;
             short minPri(15);
             int minOpIndex(-1);
             string minOp("");
@@ -49,17 +51,28 @@ void BerryMath::AST::parse() {
                 op_t = lexer.get();
                 if (op_t.token > VARIABLE_TOKEN && op_t.token < MINUS_TOKEN) {// 是符号
                     short pri = priority(op_t.str);
-                    if (pri < minPri) {
-                        minOpIndex = lexer.parseIndex;
-                        minOp = op_t.str;
-                        minPri = pri;
+                    if (op_t.str == "(") {
+                        base *= pri;
+                    } else if (op_t.str == ")") {
+                        base /= pri;
+                    } else {
+                        pri *= base;
+                        if (!isNumber(op_t.str) && pri < minPri && op_t.str != "(" && op_t.str != ")") {
+//                            std::cout << op_t.str << std::endl;
+                            minOpIndex = lexer.parseIndex;
+                            minOp = op_t.str;
+                            minPri = pri;
+                        }
                     }
                 }
             }
-            std::cout << minOpIndex << " of '" << code << "'" << std::endl;
+//            std::cout << minOpIndex << std::endl;
             if (minOpIndex == -1) {// 说明没有符号
                 lexer.parseIndex = s;
                 auto n = lexer.get();
+                while (n.str == "(" || n.str == ")") {
+                    n = lexer.get();
+                }
                 root->push(VALUE, n.str);
                 break;
             }
@@ -67,20 +80,57 @@ void BerryMath::AST::parse() {
             minOpIndex--;
 //            std::cout << (minOp == "=") << std::endl;
             root->push(OPERATOR, minOp);
+
+            int bracketsCount(0);
             for (int i = s; i < minOpIndex; i++) {
+                if (code[i] == '(') bracketsCount++;
+                if (code[i] == ')') bracketsCount--;
                 left += code[i];
             }
+//            std::cout << "bracketsCountLeft: " << bracketsCount << std::endl;
+            if (bracketsCount > 0) {
+                for (int i = 0; i < bracketsCount; i++) {
+                    left += ")";
+                }
+            } else {
+                for (int i = bracketsCount; i < 0; i++) {
+                    left = "(" + left;
+                }
+            }
+//            std::cout << left << std::endl;
+            bracketsCount = 0;
             for (int i = minOpIndex + 1; i < code.length(); i++) {
+                if (code[i] == '(') bracketsCount++;
+                if (code[i] == ')') bracketsCount--;
                 right += code[i];
             }
+//            std::cout << "bracketsCountRight: " << bracketsCount << std::endl;
+            if (bracketsCount > 0) {
+                for (int i = 0; i < bracketsCount; i++) {
+                    right += ")";
+                }
+            } else {
+                for (int i = bracketsCount; i < 0; i++) {
+                    right = "(" + right;
+                }
+            }
+//            std::cout << right << std::endl;
+            bracketsCount = 0;
 //            std::cout << left << minOp << right << std::endl;
             auto leftAST = new AST(left);
             auto rightAST = new AST(right);
             leftAST->parse();
             rightAST->parse();
-            std::cout << code << std::endl;
-            std::cout << left << std::endl;
-            std::cout << right << std::endl;
+            if (
+                    leftAST->value()->value() == "bad-tree"
+                    || rightAST->value()->value() == "bad-tree"
+                    ) {
+                root->str = "bad-tree";
+                break;
+            }
+//            std::cout << code << std::endl;
+//            std::cout << left << std::endl;
+//            std::cout << right << std::endl;
             root->at(-1)->push(leftAST->root->at(-1));
             root->at(-1)->push(rightAST->root->at(-1));
 //            std::cout << "tmp: " << code << std::endl;
@@ -90,7 +140,8 @@ void BerryMath::AST::parse() {
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-    std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
+    if (code.length() == 14)
+        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
 short BerryMath::AST::priority(string op) {
@@ -144,4 +195,18 @@ short BerryMath::AST::priority(string op) {
         return 1;
     }
     return 15;
+}
+
+bool BerryMath::isNumber(string n) {
+    bool dot = false;
+    for (int i = 0; i < n.length(); i++) {
+        if (!(n[i] >= '0' && n[i] <= '9')) {
+            if (n[i] == '.')
+                if (dot) return false;
+                else dot = true;
+            else
+                return false;
+        }
+    }
+    return true;
 }

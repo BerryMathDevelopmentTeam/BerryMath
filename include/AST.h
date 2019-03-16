@@ -138,6 +138,7 @@ namespace BerryMath {
             return res;
         }
     };
+    bool isNumber(string);
 }
 
 
