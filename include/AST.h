@@ -72,6 +72,7 @@ namespace BerryMath {
                 return t;
             }
             ~ASTNode() {
+//                std::cout << str << ", " << t << std::endl;
                 for (long i = 0 ; i < children.size() ; i++) {
                     delete children[i];
                 }

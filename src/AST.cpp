@@ -2,27 +2,7 @@
 #include "lex.h"
 #include "color.h"
 #include "AST.h"
-#include <algorithm>
-
-const std::string WHITESPACE = " \n\r\t\f\v";
-
-std::string ltrim(const std::string& s)
-{
-    size_t start = s.find_first_not_of(WHITESPACE);
-    return (start == std::string::npos) ? "" : s.substr(start);
-}
-
-std::string rtrim(const std::string& s)
-{
-    size_t end = s.find_last_not_of(WHITESPACE);
-    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
-}
-
-std::string trim(const std::string& s)
-{
-    return rtrim(ltrim(s));
-}
-
+#include "stringpp.h"
 
 void BerryMath::AST::parse() {
     if (root) delete root;
@@ -55,6 +35,57 @@ void BerryMath::AST::parse() {
                 expression = true;
             }
             first = false;
+        }
+        if (t.token == IF_TOKEN) {
+            int bracketsCount(0);// 首先存储小括号次数
+            lex::lexToken op_t;
+            bool exitLoop(false);
+            string expression("");
+            do {
+                op_t = lexer.get();
+                if (op_t.str == "(") bracketsCount++;
+                if (op_t.str == ")") bracketsCount--;
+                expression += op_t.str;
+                if (op_t.token == END_TOKEN && bracketsCount != 0) {
+                    root->str = "bad-tree";
+                    exitLoop = true;
+                    break;
+                }
+            } while (bracketsCount != 0);
+            if (exitLoop) break;
+            string then("");// 存储接下来的语句
+            bracketsCount = 0;// 存储大括号次数
+            exitLoop = false;
+            bool noBrackets = true;
+            do {
+                if (code[lexer.parseIndex] == '{') {
+                    if (bracketsCount > 1) then += code[lexer.parseIndex];
+                    bracketsCount++;
+                    noBrackets = false;
+                } else if (code[lexer.parseIndex] == '}') {
+                    if (bracketsCount > 1) then += code[lexer.parseIndex];
+                    bracketsCount--;
+                    noBrackets = false;
+                } else {
+                    then += code[lexer.parseIndex];
+                }
+                lexer.parseIndex++;
+//                op_t = lexer.get();
+//                if (op_t.str == "{") bracketsCount++;
+//                if (op_t.str == "}") bracketsCount--;
+//                then += op_t.str;
+//                if (lexer.parseIndex >= code.length()) {
+//                    root->str = "bad-tree";
+//                    exitLoop = true;
+//                    break;
+//                }
+            } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
+//            if (exitLoop) break;
+            AST expressionAST(expression);
+            expressionAST.parse();
+            root->push(OPERATOR, "if");
+            root->at(-1)->push(expressionAST.value()->at(-1));
+            root->at(-1)->push(VALUE, then);
         }
 //        std::cout << t.token << ", " << t.str << std::endl;
         if (expression) {
@@ -92,10 +123,12 @@ void BerryMath::AST::parse() {
             if (minOpIndex == -1) {// 说明没有符号
                 lexer.parseIndex = s;
                 auto n = lexer.get();
+//                std::cout << n.str << std::endl;
+//                int countXX(0);
                 while (n.str == "(" || n.str == ")") {
                     n = lexer.get();
+//                    countXX++;
                 }
-//                std::cout << n.str << std::endl;
                 n.str = trim(n.str);
                 if (priority(n.str) == 13) {// ++, --, !, ~
                     root->push(OPERATOR, n.str);
@@ -122,6 +155,7 @@ void BerryMath::AST::parse() {
 //                    std::cout << "tmp" << std::endl;
                 } else {
                     root->push(VALUE, n.str);
+//                    root->at(-1)->push(ast->root->at(-1));
                 }
                 break;
             }
@@ -182,15 +216,14 @@ void BerryMath::AST::parse() {
 //            std::cout << right << std::endl;
             root->at(-1)->push(leftAST->root->at(-1));
             root->at(-1)->push(rightAST->root->at(-1));
-//            std::cout << "tmp: " << code << std::endl;
-        } else {
+            continue;
         }
     }
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-//    if (code == "test = 1;" || code == "\n++test;")
-//        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
+    if (code == "test = 1;")
+        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
 short BerryMath::AST::priority(string op) {

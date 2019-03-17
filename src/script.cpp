@@ -11,16 +11,22 @@ void BerryMath::script::run() {
 //    std::regex replacer_self_add("++");
 //    code = std::regex_replace(code, replacer_self_add, "+= 1");
     int bigBracketsCount = 0;
-    bool haveEndToken = false;
+    bool noBrackets = true;
 //    std::cout << code << std::endl;
     while (true) {
         if (i >= code.length()) break;
         c += code[i];
 //        std::cout << code[i];
-        if (code[i] == '{') bigBracketsCount++;
-        if (code[i] == '}') bigBracketsCount--;
+        if (code[i] == '{') {
+            bigBracketsCount++;
+            noBrackets = false;
+        }
+        if (code[i] == '}') {
+            bigBracketsCount--;
+            noBrackets = false;
+        }
 //        std::cout << bigBracketsCount << std::endl;
-        if (code[i] == ';' && bigBracketsCount == 0) {
+        if (code[i] == ';' && noBrackets) {
 //            std::cout << "build AST." << std::endl;
             auto ast = new BerryMath::AST(c);
             ast->parse();
@@ -36,6 +42,12 @@ void BerryMath::script::run() {
 //                }
 //            }
             delete ast;
+            c = "";
+        }
+        if (!noBrackets && bigBracketsCount == 0) {
+            auto ast = new BerryMath::AST(c);
+            ast->parse();
+//            delete ast;
             c = "";
         }
         i++;

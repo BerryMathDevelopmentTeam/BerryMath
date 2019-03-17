@@ -1,6 +1,7 @@
 #include <cctype>
 #include "btype.h"
 #include "lex.h"
+#include "stringpp.h"
 
 BerryMath::lex::lexToken BerryMath::lex::get() {
     str = "";
@@ -36,6 +37,7 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
             whileToEnd();
             break;
         }
+        str = trim(str);
         if (BerryMath::isSymbol(program[parseIndex])) {
             if (str == "if") {
                 token = BerryMath::IF_TOKEN;
