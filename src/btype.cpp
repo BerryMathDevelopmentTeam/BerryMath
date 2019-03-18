@@ -29,3 +29,22 @@ bool BerryMath::isSymbol(char c) {
             || c == '{' || c == '}' || c == '[' || c == ']' || c == '='
     );
 }
+bool BerryMath::isTrue(std::string s) {
+    auto t = type(s);
+    switch (t) {
+        case OBJECT:
+        case NATIVE_FUNCTION:
+        case FUNCTION:
+            return true;
+        case UNDEFINED:
+            return false;
+        case STRING:
+            if (s == "''" || s == "\"\"") return false;
+            return true;
+        case NUMBER:
+            if (s == "0") return false;
+            return true;
+        default:
+            return false;
+    }
+}

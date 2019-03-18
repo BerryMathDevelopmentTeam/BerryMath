@@ -42,6 +42,7 @@ namespace BerryMath {
     };
     TYPE type(std::string);
     bool isSymbol(char);
+    bool isTrue(std::string);
 }
 
 #endif //BERRYMATH_BTYPE_H

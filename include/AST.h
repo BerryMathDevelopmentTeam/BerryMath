@@ -84,6 +84,7 @@ namespace BerryMath {
                 }
             }
             friend class AST;
+            friend class script;
         private:
             vector<ASTNode*> children;
             string str;
@@ -92,6 +93,7 @@ namespace BerryMath {
     public:
         AST() : root(nullptr), code("") { }
         AST(string c) : root(nullptr), code(c) { }
+        AST(ASTNode* n) : root(n), code("") {}
         void parse();
         ASTNode* value() {
             return root;
@@ -138,6 +140,7 @@ namespace BerryMath {
             }
             return res;
         }
+        friend class script;
     };
     bool isNumber(string);
 }

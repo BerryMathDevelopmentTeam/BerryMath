@@ -2,6 +2,7 @@
 #include "btype.h"
 #include "lex.h"
 #include "stringpp.h"
+#include "color.h"
 
 BerryMath::lex::lexToken BerryMath::lex::get() {
     str = "";
@@ -20,6 +21,24 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
                 token = BerryMath::END_TOKEN;
             } else {
                 end = true;
+            }
+            break;
+        }
+        if (program[parseIndex] == '"' || program[parseIndex] == '\'') {
+//            std::cout << program << std::endl;
+            if (token == INIT_TOKEN) {
+                token = STRING_TOKEN;
+                char e = program[parseIndex];
+                parseIndex++;
+                str = e;
+//                std::cout << RED << str << ", " << e << RESET << std::endl;
+                while (parseIndex < program.length() && (
+                        program[parseIndex] != e //
+                        || ((program[parseIndex - 1] == '\'')
+                            || (program[parseIndex - 2] == '\\' && program[parseIndex - 1] == '\\')))) {
+                    str += program[parseIndex++];
+                }
+                str += program[parseIndex++];
             }
             break;
         }

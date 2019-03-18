@@ -33,16 +33,27 @@
 #define BERRYMATH_SCRIPT_H
 
 #include <iostream>
+#include "memory.h"
 using std::string;
 
 namespace BerryMath {
     class script {
     public:
-        script() : code("") { }
-        script(string s) : code(s) { }
-        void run();
+        script(script* r_ = nullptr) : code(""), selfAst(false), r(r_) { }
+        script(string s, script* r_ = nullptr) : code(s), selfAst(false), r(r_) { }
+        script(AST* a, script* r_ = nullptr) : ast(a), selfAst(true), r(r_) { }
+        value* run(long line = 0);
+        ~script() {
+//            if (ast) delete ast;
+        }
+        void parse(value*&, AST::ASTNode*, long line);
+        void Throw(long, string, string, string);
     private:
         string code;
+        AST* ast;
+        bool selfAst;// 直接存ast
+        block* scope;
+        script* r;
     };
 }
 

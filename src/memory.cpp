@@ -53,8 +53,8 @@ BerryMath::parseStates BerryMath::jsonToPrototypes(const std::string& json, hash
     }
 }
 
-BerryMath::value::value() : type(BerryMath::UNDEFINED), data("undefined"), use(1) { }
-BerryMath::value::value(std::string d) : data(d), use(1) {
+BerryMath::value::value() : type(BerryMath::UNDEFINED), data("undefined"), use(0) { }
+BerryMath::value::value(std::string d) : data(d), use(0) {
     type = BerryMath::type(d);
     if (type == OBJECT) {
         auto flag = jsonToPrototypes(d, prototypes);
@@ -64,8 +64,8 @@ BerryMath::value::value(std::string d) : data(d), use(1) {
         }
     }
 }
-BerryMath::value::value(value& v) : type(v.type), data(v.data), use(1) { }
-BerryMath::value::value(BerryMath::TYPE t, std::string d) : type(t), data(d), use(1) { }
+BerryMath::value::value(value& v) : type(v.type), data(v.data), use(0) { }
+BerryMath::value::value(BerryMath::TYPE t, std::string d) : type(t), data(d), use(0) { }
 void BerryMath::value::insert(std::string name, value* data) {
     prototypes[name] = data;
     data->use++;

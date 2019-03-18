@@ -41,6 +41,9 @@ using std::string;
 namespace BerryMath {
     class value;
     typedef std::map<std::string, value*> hash;
+    enum flag {// 存储寻找、设置变量的方式
+        DEFAULT_FLAG, GLOBAL_FLAG
+    };
     /**
     * @brief BerryMath数值、字符串等值的c++存储实现
     */
@@ -87,6 +90,13 @@ namespace BerryMath {
         value& valueOf() {
             return *v;
         }
+        void valueOf(value* val) {
+            if ((--v->use) == 0) {
+                delete v;
+                v = val;
+                v->use++;
+            }
+        }
         string nameOf() {
             return name;
         }
@@ -102,16 +112,31 @@ namespace BerryMath {
     public:
         block() : parent(nullptr) {}
         block(block* p) : parent(nullptr) {}
-        variable* of(string n) {
-            auto iter = variables.find(n);
-            if (iter == variables.end()) {
-                if (parent) {
-                    return parent->of(n);
+        variable* of(string n, flag f = DEFAULT_FLAG) {
+            if (f == DEFAULT_FLAG) {// 普通模式
+                auto iter = variables.find(n);
+                if (iter == variables.end()) {
+                    if (parent) {
+                        return parent->of(n);
+                    } else {
+                        return nullptr;
+                    }
                 } else {
-                    return nullptr;
+                    return iter->second;
                 }
+            }
+            if (parent) {// global模式表示要至少在上一层找变量
+                return parent->of(n);
             } else {
-                return iter->second;
+                return nullptr;
+            }
+        }
+        void set(string n, value* v, flag f = DEFAULT_FLAG) {
+            auto var = of(n, f);
+            if (var) {
+                var->valueOf(v);
+            } else {
+                insert(new variable(n, v));
             }
         }
         void insert(variable* var) {

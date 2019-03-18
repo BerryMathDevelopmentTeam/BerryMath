@@ -20,22 +20,6 @@ void BerryMath::AST::parse() {
 //    std::cout << "=====" << code << "=====" << std::endl;
     while (true) {
         t = lexer.get();
-        if (t.token == END_TOKEN) {
-            if (unknown.token != NONE_TOKEN) {
-//                    std::cerr << BOLDRED << "SyntaxError: Unexpected token '" << unknown.str << "'." << RESET << std::endl;
-                root->str = "bad-tree";
-                break;
-            } else {
-                break;
-            }
-        }
-        if (first) {
-//            std::cout << t.str << ": " << (t.token == UNKNOWN_TOKEN) << std::endl;
-            if (!(t.token > SELF_SUB_TOKEN && t.token < INIT_TOKEN)) {// 是表达式
-                expression = true;
-            }
-            first = false;
-        }
         if (t.token == IF_TOKEN) {
             int bracketsCount(0);// 首先存储小括号次数
             lex::lexToken op_t;
@@ -70,15 +54,6 @@ void BerryMath::AST::parse() {
                     then += code[lexer.parseIndex];
                 }
                 lexer.parseIndex++;
-//                op_t = lexer.get();
-//                if (op_t.str == "{") bracketsCount++;
-//                if (op_t.str == "}") bracketsCount--;
-//                then += op_t.str;
-//                if (lexer.parseIndex >= code.length()) {
-//                    root->str = "bad-tree";
-//                    exitLoop = true;
-//                    break;
-//                }
             } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
 //            if (exitLoop) break;
             AST expressionAST(expression);
@@ -86,6 +61,25 @@ void BerryMath::AST::parse() {
             root->push(OPERATOR, "if");
             root->at(-1)->push(expressionAST.value()->at(-1));
             root->at(-1)->push(VALUE, then);
+        }
+        if (t.token == FOR_TOKEN) {
+            std::cout << "for token" << std::endl;
+        }
+        if (t.token == END_TOKEN) {
+            if (unknown.token != NONE_TOKEN) {
+//                    std::cerr << BOLDRED << "SyntaxError: Unexpected token '" << unknown.str << "'." << RESET << std::endl;
+                root->str = "bad-tree";
+                break;
+            } else {
+                break;
+            }
+        }
+        if (first) {
+//            std::cout << t.str << ": " << (t.token == UNKNOWN_TOKEN) << std::endl;
+            if (!(t.token > SELF_SUB_TOKEN && t.token < INIT_TOKEN)) {// 是表达式
+                expression = true;
+            }
+            first = false;
         }
 //        std::cout << t.token << ", " << t.str << std::endl;
         if (expression) {
@@ -222,8 +216,7 @@ void BerryMath::AST::parse() {
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-    if (code == "test = 1;")
-        std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
+//    std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
 short BerryMath::AST::priority(string op) {
