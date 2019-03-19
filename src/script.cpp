@@ -37,6 +37,7 @@ BerryMath::value* BerryMath::script::run(long line) {
             ast->parse();
             auto root = ast->value();
             parse(ret, root, line);
+            c = "";
         }
         if (!noBrackets && bigBracketsCount == 0) {// 包含大括号的诸如if语句等
             auto ast = new BerryMath::AST(c);
@@ -48,6 +49,7 @@ BerryMath::value* BerryMath::script::run(long line) {
     if (selfAst) {
         auto root = ast->value();
         parse(ret, root, line);
+        c = "";
     }
     if (code.length() >= 11) {
         std::cout << "[Program finish]" << std::endl;
@@ -183,7 +185,45 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         auto nameValue = scope->of(name);
         if (nameValue == nullptr) {
             Throw(line, "NameError: name '" + name + "' not defined");
+            return;;
         }
+        if (nameValue->valueOf().typeOf() != NUMBER || v->typeOf() != NUMBER) {
+            if (nameValue->valueOf().typeOf() == STRING && op == "+=" && v->typeOf() == STRING) {
+                string nameV = nameValue->valueOf().valueOf();
+                string addV = v->valueOf();
+                // 去除引号
+                nameV.erase(nameV.begin());
+                nameV.erase(nameV.end() - 1);
+                addV.erase(addV.begin());
+                addV.erase(addV.end() - 1);
+                string res = "\"" + nameV + addV + "\"";
+                delete ret;
+                ret = new value(STRING, res);
+                scope->set(name, ret);
+            } else {
+                Throw(line, "TypeError: Unable to run expression because name '" + name +
+                            "' must be number and right value be number");
+            }
+            return;
+        }
+        auto val = &nameValue->valueOf();
+        double l = atof(nameValue->valueOf().valueOf().c_str());
+        double r = atof(v->valueOf().c_str());
+        double res = 0;
+        if (op == "*=") res = l * r;
+        if (op == "/=") res = l / r;
+        if (op == "%=") res = ((int) l) % ((int) r);
+        if (op == "+=") res = l + r;
+        if (op == "-=") res = l - r;
+        if (op == "|=") res = ((int) l) | ((int) r);
+        if (op == "&=") res = ((int) l) & ((int) r);
+        if (op == "^=") res = ((int) l) ^ ((int) r);
+        if (op == "<<=") res = ((int) l) << ((int) r);
+        if (op == ">>=") res = ((int) l) >> ((int) r);
+        delete ret;
+//        std::cout << l << ", " << r << ", " << res << std::endl;
+        ret = new value(NUMBER, to_string(res));
+        scope->set(name, ret);
     }
 }
 void BerryMath::script::Throw(long line, string message) {

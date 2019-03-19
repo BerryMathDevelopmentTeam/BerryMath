@@ -146,6 +146,11 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
                 token = BerryMath::SHIFT_RIGHT_TOKEN;
                 parseIndex++;
                 str += '>';
+                if (parseIndex < program.length() && program[parseIndex] == '=') {
+                    token = BerryMath::SHIFT_RIGHT_TO_TOKEN;
+                    parseIndex++;
+                    str += '=';
+                }
             }
             break;
         } else if (str == "<") {
@@ -156,8 +161,14 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
                 parseIndex++;
                 str += '=';
             } else if (parseIndex < program.length() && program[parseIndex] == '<') {
+                token = BerryMath::SHIFT_LEFT_TOKEN;
                 parseIndex++;
                 str += '<';
+                if (parseIndex < program.length() && program[parseIndex] == '=') {
+                    token = BerryMath::SHIFT_LEFT_TO_TOKEN;
+                    parseIndex++;
+                    str += '=';
+                }
             }
             break;
         } else if (str == "!") {
@@ -177,6 +188,11 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
                 parseIndex++;
                 str += '&';
             }
+            if (parseIndex < program.length() && program[parseIndex] == '=') {
+                token = BerryMath::MATH_AND_TO_TOKEN;
+                parseIndex++;
+                str += '=';
+            }
             break;
         } else if (str == "|") {
             token = BerryMath::MATH_OR_TOKEN;
@@ -186,6 +202,11 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
                 parseIndex++;
                 str += '|';
             }
+            if (parseIndex < program.length() && program[parseIndex] == '=') {
+                token = BerryMath::MATH_OR_TO_TOKEN;
+                parseIndex++;
+                str += '=';
+            }
             break;
         } else if (str == "~") {
             token = BerryMath::MATH_NOT_TOKEN;
@@ -194,6 +215,11 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
         } else if (str == "^") {
             token = BerryMath::MATH_XOR_TOKEN;
             parseIndex++;
+            if (parseIndex < program.length() && program[parseIndex] == '=') {
+                token = BerryMath::MATH_XOR_TO_TOKEN;
+                parseIndex++;
+                str += '=';
+            }
             break;
         } else if (str == "+") {
             token = BerryMath::ADD_TOKEN;
