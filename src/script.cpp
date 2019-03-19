@@ -61,12 +61,10 @@ BerryMath::value* BerryMath::script::run(long line) {
 }
 
 void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
-    script* p = this;
-    if (r) p = r;
     auto now = root;
     if (root->value() == "bad-tree") {
         // 错误的树
-        Throw(line, "SyntaxError: Bad tree", "Wrong line", "");
+        Throw(line, "SyntaxError: Bad tree");
     }
     if (root->value() == "root") {
         now = root->at(-1);
@@ -78,16 +76,16 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
     }
     if (op == "=") {
         string name = now->at(0)->value();
-        auto s = new script(new AST(now->at(1)), p);
+        auto s = new script(new AST(now->at(1)));
         auto v = s->run(line);
         scope->set(name, v);
 //                std::cout << "set: " << name << std::endl;
     }
     if (op == "~") {
-        auto s = new script(new AST(now->at(0)), p);
+        auto s = new script(new AST(now->at(0)));
         auto r = s->run(line);
         if (r->typeOf() != NUMBER) {
-            Throw(line, "SyntaxError: Wrong expression", "\"~\" cannot be used on values that are not numeric", "~");
+            Throw(line, "SyntaxError: Wrong expression");
             return;
         }
         int n = (int) atof(r->valueOf().c_str());
@@ -96,7 +94,7 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
 //                std::cout << "set: " << name << std::endl;
     }
     if (op == "!") {
-        auto s = new script(new AST(now->at(0)), p);
+        auto s = new script(new AST(now->at(0)));
         auto r = s->run(line);
         bool n = isTrue(r->valueOf());
         delete ret;
@@ -115,8 +113,8 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             || op == ">" || op == ">="
             || op == "<" || op == "<="
             ) {// 四则运算
-        auto ls = new script(new AST(now->at(0)), p);
-        auto rs = new script(new AST(now->at(1)), p);
+        auto ls = new script(new AST(now->at(0)));
+        auto rs = new script(new AST(now->at(1)));
         auto l = ls->run(line);
         auto r = rs->run(line);
         if (l->typeOf() == STRING && r->typeOf() == STRING && op == "+") {// 字符串加法
@@ -132,7 +130,7 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             ret = new value(STRING, "\"" + res + "\"");
         } else {
             if (l->typeOf() != NUMBER || r->typeOf() != NUMBER) {
-                Throw(line, "TypeError: Unable to run expression because this expression must be (number operator number)", "\"" + op + "\" cannot use on values that are not two numerics", op);
+                Throw(line, "TypeError: Unable to run expression because this expression must be (number operator number)");
                 return;
             }
             double lv = atof(l->valueOf().c_str());
@@ -157,8 +155,8 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         }
     }
     if (op == "&&" || op == "||") {
-        auto ls = new script(new AST(now->at(0)), p);
-        auto rs = new script(new AST(now->at(1)), p);
+        auto ls = new script(new AST(now->at(0)));
+        auto rs = new script(new AST(now->at(1)));
         auto l = ls->run(line);
         auto r = rs->run(line);
         bool lv = isTrue(l->valueOf());
@@ -173,29 +171,21 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         delete ret;
         ret = new value(to_string(res));
     }
+    if (
+            op == "*=" || op == "/=" || op == "%="
+            || op == "+=" || op == "-="
+            || op == "&=" || op == "|=" || op == "^="
+            || op == "<<=" || op == ">>="
+            ) {
+        string name = now->at(0)->value();
+        auto s = new script(new AST(now->at(1)));
+        auto v = s->run(line);
+        auto nameValue = scope->of(name);
+        if (nameValue == nullptr) {
+            Throw(line, "NameError: name '" + name + "' not defined");
+        }
+    }
 }
-void BerryMath::script::Throw(long line, string message, string wrongTokenMessage, string token) {
-    string c = code;
-    if (r) {
-        c = r->code;
-    }
-//    std::cout << c << std::endl;
-    long l = 0;
-    string lc("");
-    for (int i = 0; i < c.length(); i++) {
-        if (c[i] == '\n') {
-            l++;
-        }
-        if (l == line) {
-            lc += c[i];
-        }
-    }
-    long t_index = c.find(token);
-    int indent = (to_string(line + 1) + " |").length();
-    if (t_index == -1) t_index = 0;
-    std::cout << BOLDWHITE << (line + 1) << " |" << GREEN << lc << RESET << std::endl;
-    for (int i = 0; i < t_index; i++) std::cout << " ";
-    for (int i = 0; i < indent; i++) std::cout << " ";
-    std::cout << BLACK << "^" << CYAN << " " << wrongTokenMessage << std::endl;
+void BerryMath::script::Throw(long line, string message) {
     std::cout << RED << message << " at line " << (line + 1) << ". " << RESET << std::endl;
 }
