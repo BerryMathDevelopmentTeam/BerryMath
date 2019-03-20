@@ -36,6 +36,7 @@ void BerryMath::AST::parse() {
                     break;
                 }
             } while (bracketsCount != 0);
+            std::cout << expression << std::endl;
             if (exitLoop) break;
             string then("");// 存储接下来的语句
             bracketsCount = 0;// 存储大括号次数
@@ -59,8 +60,10 @@ void BerryMath::AST::parse() {
             AST expressionAST(expression);
             expressionAST.parse();
             root->push(OPERATOR, "if");
-            root->at(-1)->push(expressionAST.value()->at(-1));
+            root->at(-1)->push(expressionAST.value()->at(0));
             root->at(-1)->push(VALUE, then);
+            std::cout << "abc" << std::endl;
+            return;
         }
         if (t.token == FOR_TOKEN) {
             std::cout << "for token" << std::endl;
@@ -213,6 +216,8 @@ void BerryMath::AST::parse() {
             continue;
         }
     }
+    if (code.length() >= 20)
+        std::cout << "abc" << std::endl;
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });

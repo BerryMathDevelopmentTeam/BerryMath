@@ -4,7 +4,7 @@
 
 int main() {
 //    BerryMath::script s("foo= 1 + 5 * 2;");
-    std::ifstream in("tests/expression.bm");
+    std::ifstream in("tests/if.bm");
     string script("");
     string tmp;
     if (!in.is_open()) {

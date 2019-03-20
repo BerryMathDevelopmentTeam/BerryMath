@@ -27,6 +27,7 @@ bool BerryMath::isSymbol(char c) {
             c == ' ' || c == '!' || c == '"' || c == '\''
             || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '^' || c == '(' || c == ')' || c == '&' || c == '|'
             || c == '{' || c == '}' || c == '[' || c == ']' || c == '='
+            || c == '<' || c == '>'
     );
 }
 bool BerryMath::isTrue(std::string s) {

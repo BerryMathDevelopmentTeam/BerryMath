@@ -40,8 +40,15 @@ BerryMath::value* BerryMath::script::run(long line) {
             c = "";
         }
         if (!noBrackets && bigBracketsCount == 0) {// 包含大括号的诸如if语句等
-            auto ast = new BerryMath::AST(c);
+            ast = new BerryMath::AST(c);
             ast->parse();
+            std::cout << "!@$" << std::endl;
+            if (ast->value()->at(0)->value() == "if") {
+//                std::cout << "123" << std::endl;
+                auto s = new script(new AST(ast->value()->at(0)->at(0)), scope);
+                auto r = s->run(line);
+                std::cout << r->valueOf() << std::endl;
+            }
             c = "";
         }
         i++;
@@ -78,13 +85,13 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
     }
     if (op == "=") {
         string name = now->at(0)->value();
-        auto s = new script(new AST(now->at(1)));
+        auto s = new script(new AST(now->at(1)), scope);
         auto v = s->run(line);
         scope->set(name, v);
 //                std::cout << "set: " << name << std::endl;
     }
     if (op == "~") {
-        auto s = new script(new AST(now->at(0)));
+        auto s = new script(new AST(now->at(0)), scope);
         auto r = s->run(line);
         if (r->typeOf() != NUMBER) {
             Throw(line, "SyntaxError: Wrong expression");
@@ -96,7 +103,7 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
 //                std::cout << "set: " << name << std::endl;
     }
     if (op == "!") {
-        auto s = new script(new AST(now->at(0)));
+        auto s = new script(new AST(now->at(0)), scope);
         auto r = s->run(line);
         bool n = isTrue(r->valueOf());
         delete ret;
@@ -115,8 +122,8 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             || op == ">" || op == ">="
             || op == "<" || op == "<="
             ) {// 四则运算
-        auto ls = new script(new AST(now->at(0)));
-        auto rs = new script(new AST(now->at(1)));
+        auto ls = new script(new AST(now->at(0)), scope);
+        auto rs = new script(new AST(now->at(1)), scope);
         auto l = ls->run(line);
         auto r = rs->run(line);
         if (l->typeOf() == STRING && r->typeOf() == STRING && op == "+") {// 字符串加法
@@ -157,8 +164,8 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         }
     }
     if (op == "&&" || op == "||") {
-        auto ls = new script(new AST(now->at(0)));
-        auto rs = new script(new AST(now->at(1)));
+        auto ls = new script(new AST(now->at(0)), scope);
+        auto rs = new script(new AST(now->at(1)), scope);
         auto l = ls->run(line);
         auto r = rs->run(line);
         bool lv = isTrue(l->valueOf());
@@ -180,7 +187,7 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             || op == "<<=" || op == ">>="
             ) {
         string name = now->at(0)->value();
-        auto s = new script(new AST(now->at(1)));
+        auto s = new script(new AST(now->at(1)), scope);
         auto v = s->run(line);
         auto nameValue = scope->of(name);
         if (nameValue == nullptr) {
@@ -206,7 +213,6 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             }
             return;
         }
-        auto val = &nameValue->valueOf();
         double l = atof(nameValue->valueOf().valueOf().c_str());
         double r = atof(v->valueOf().c_str());
         double res = 0;

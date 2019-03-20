@@ -99,6 +99,7 @@ namespace BerryMath {
             return root;
         }
         ~AST() {
+            std::cout << "delete AST" << std::endl;
             if (root) delete root;
         }
     private:
