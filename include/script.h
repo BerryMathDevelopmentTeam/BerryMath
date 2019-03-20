@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include "memory.h"
+#include "json.h"
 using std::string;
 
 namespace BerryMath {
@@ -48,7 +49,9 @@ namespace BerryMath {
         }
         void parse(value*&, AST::ASTNode*, long line);
         void Throw(long, string);
+        void init();
     private:
+        Json::Value systemJson;
         string code;
         AST* ast;
         bool selfAst;// 直接存ast

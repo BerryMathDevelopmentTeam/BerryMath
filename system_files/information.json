@@ -1,0 +1,25 @@
+{
+    "lang":"BM0",
+    "wiki":"https://github.com/BerryMathDevelopmentTeam/BerryMath/wiki",
+    "version":"v-0.0.1",
+    "name":"BerryMath",
+    "power":[
+        {
+            "url":"https://www.qt.io/",
+            "name":"QT5"
+        },
+        {
+            "url":"https://github.com/open-source-parsers/jsoncpp",
+            "name":"jsoncpp"
+        },
+        {
+            "url":"https://github.com/liqb/anyarg",
+            "name":"anyarg"
+        }
+    ],
+    "author":"BerryMath Development Team(BDT)",
+    "license":"MIT",
+    "homepage":"https://berrymath.github.io",
+    "type":"beta",
+    "github":"https://github.com/BerryMathDevelopmentTeam/BerryMath"
+}

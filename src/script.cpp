@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "AST.h"
 #include "script.h"
+#include <fstream>
 using std::to_string;
 
 BerryMath::value* BerryMath::script::run(long line) {
@@ -11,6 +12,20 @@ BerryMath::value* BerryMath::script::run(long line) {
     scope = new block(parent);
     auto ret = new value();
     string c("");
+
+    if (!parent) {// 这说明这是一个根script
+        // 要载入预定义值
+        // 预定义值存放在system.json->defines->values中
+        // system.json存放在系统目录中, 类unix系统为/usr/local/BerryMath/, windows为C:\Program Files\BerryMath\.
+//        std::cout << "a" << std::endl;
+        auto values = systemJson["defines"]["values"];
+        auto valueKeys = values.getMemberNames();
+        for (auto iter = valueKeys.begin(); iter != valueKeys.end(); iter++) {
+            auto v = values[*iter].asString();
+//            std::cout << *iter << ": " << v << std::endl;
+            scope->insert(new variable(*iter, new value(v)));
+        }
+    }
 //    std::regex replacer_self_add("++");
 //    code = std::regex_replace(code, replacer_self_add, "+= 1");
     int bigBracketsCount = 0;
@@ -47,7 +62,7 @@ BerryMath::value* BerryMath::script::run(long line) {
 //                std::cout << "123" << std::endl;
                 auto s = new script(new AST(ast->value()->at(0)->at(0)), filename, scope);
                 auto r = s->run(line);
-                std::cout << r->valueOf() << std::endl;
+//                std::cout << r->valueOf() << std::endl;
             }
             c = "";
         }
@@ -58,7 +73,7 @@ BerryMath::value* BerryMath::script::run(long line) {
         parse(ret, root, line);
         c = "";
     }
-    if (code.length() >= 11) {
+    if (!parent) {
         std::cout << "[Program finish]" << std::endl;
         std::cout << "=========Hash Table=========" << std::endl;
         scope->each([](variable* var) -> void {
@@ -83,9 +98,9 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         delete ret;
 //        std::cout << op << std::endl;
         ret = new value(op);
-        std::cout << op << ", " << ret->typeOf() << std::endl;
+//        std::cout << op << ", " << ret->typeOf() << std::endl;
         if (ret->typeOf() == TOKEN_NAME) {// 可能是变量
-            std::cout << "123" << std::endl;
+//            std::cout << "123" << std::endl;
             auto var = scope->of(op);
             if (var) {// 是变量(即能在作用域中找到该变量)
                 delete ret;
@@ -133,7 +148,6 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             || op == ">" || op == ">="
             || op == "<" || op == "<="
             ) {// 四则运算
-        std::cout << "four" << std::endl;
         auto ls = new script(new AST(now->at(0)), filename, scope);
         auto rs = new script(new AST(now->at(1)), filename, scope);
         auto l = ls->run(line);
@@ -248,4 +262,18 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
 void BerryMath::script::Throw(long line, string message) {
     if (filename.empty()) std::cout << RED << message << " at line " << (line + 1) << ". " << RESET << std::endl;
     else std::cout << RED << message << " at line " << (line + 1) << " in file '" << filename << "'. " << RESET << std::endl;
+}
+
+void BerryMath::script::init() {
+    std::ifstream input("/usr/local/BerryMath/system.json");
+    string json(""), t;
+    while (getline(input, t)) {
+        json += t + "\n";
+    }
+
+    Json::Reader reader;
+    if (!reader.parse(json, systemJson, false)) {// 解析Json
+        Throw(0, "SystemError: Parse system.json failed.");
+    } else {
+    }
 }

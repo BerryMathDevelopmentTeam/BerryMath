@@ -1,0 +1,10 @@
+{
+	"version": "0.0.1",
+	"defines": {
+		"values": {
+			"true": "1",
+			"false": "0",
+			"null": "0"
+		}
+	}
+}

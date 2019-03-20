@@ -32,17 +32,17 @@
 *.app
 
 # 忽略mac中的系统文件
-.idea/
+/.idea/
 
 # 忽略CMake产生的文件
 CMakeFiles/
 cmake_install.cmake
 CMakeCache.txt
 *.cbp
-Makefile
+/Makefile
 
 # 忽略release文件
-BerryMath
+/BerryMath
 
 # 忽略jsoncpp的文件
-jsoncpp-src-0.5.0
+/jsoncpp-src-0.5.0/
