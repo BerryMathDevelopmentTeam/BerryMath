@@ -49,7 +49,7 @@ namespace BerryMath {
         }
         void parse(value*&, AST::ASTNode*, long line);
         void Throw(long, string);
-        void init();
+        void init(string);
     private:
         Json::Value systemJson;
         string code;

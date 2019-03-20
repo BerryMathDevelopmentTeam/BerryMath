@@ -264,13 +264,7 @@ void BerryMath::script::Throw(long line, string message) {
     else std::cout << RED << message << " at line " << (line + 1) << " in file '" << filename << "'. " << RESET << std::endl;
 }
 
-void BerryMath::script::init() {
-    std::ifstream input("/usr/local/BerryMath/system.json");
-    string json(""), t;
-    while (getline(input, t)) {
-        json += t + "\n";
-    }
-
+void BerryMath::script::init(string json) {
     Json::Reader reader;
     if (!reader.parse(json, systemJson, false)) {// 解析Json
         Throw(0, "SystemError: Parse system.json failed.");
