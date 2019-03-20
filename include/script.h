@@ -39,9 +39,9 @@ using std::string;
 namespace BerryMath {
     class script {
     public:
-        script(block* p = nullptr) : code(""), selfAst(false), parent(p) { }
-        script(string s, block* p = nullptr) : code(s), selfAst(false), parent(p) { }
-        script(AST* a, block* p = nullptr) : ast(a), selfAst(true), parent(p) { }
+        script(string fn = "", block* p = nullptr) : code(""), selfAst(false), parent(p), filename(fn) { }
+        script(string s, string fn = "", block* p = nullptr) : code(s), selfAst(false), parent(p), filename(fn) { }
+        script(AST* a, string fn = "", block* p = nullptr) : ast(a), selfAst(true), parent(p), filename(fn) { }
         value* run(long line = 0);
         ~script() {
 //            if (ast) delete ast;
@@ -54,6 +54,7 @@ namespace BerryMath {
         bool selfAst;// 直接存ast
         block* scope;
         block* parent;
+        string filename;
     };
 }
 

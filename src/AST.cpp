@@ -62,7 +62,7 @@ void BerryMath::AST::parse() {
             root->push(OPERATOR, "if");
             root->at(-1)->push(expressionAST.value()->at(0));
             root->at(-1)->push(VALUE, then);
-            std::cout << "abc" << std::endl;
+//            std::cout << "abc" << std::endl;
             return;
         }
         if (t.token == FOR_TOKEN) {

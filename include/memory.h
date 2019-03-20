@@ -111,7 +111,7 @@ namespace BerryMath {
     class block {
     public:
         block() : parent(nullptr) {}
-        block(block* p) : parent(nullptr) {}
+        block(block* p) : parent(p) {}
         variable* of(string n, flag f = DEFAULT_FLAG) {
             if (f == DEFAULT_FLAG) {// 普通模式
                 auto iter = variables.find(n);
