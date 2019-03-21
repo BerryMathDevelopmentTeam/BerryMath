@@ -1,3 +1,4 @@
 test = 1024;
 test <<= 1;
 test = test >= 0;
+++test;

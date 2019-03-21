@@ -37,7 +37,6 @@ BerryMath::value* BerryMath::script::run(long line) {
 //    code = std::regex_replace(code, replacer_self_add, "+= 1");
     int bigBracketsCount = 0;
     bool noBrackets = true;
-//    std::cout << code << std::endl;
     while (true) {
         if (i >= code.length()) break;
         c += code[i];
@@ -134,6 +133,26 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         delete ret;
         ret = new value(to_string(~n));
 //                std::cout << "set: " << name << std::endl;
+    }
+    if (op == "++" || op == "--") {
+        string name = now->at(0)->value();
+        auto var = scope->of(name);
+        if (var) {
+            auto v = &var->valueOf();
+            if (v->typeOf() == NUMBER) {
+                double res = atof(v->valueOf().c_str());
+                if (op == "++") res += 1;
+                if (op == "--") res += 1;
+                delete v;
+                v = new value(to_string(res));
+            } else {
+                Throw(line, "TypeError: name '" + name + "' must be number");
+                return;
+            }
+            scope->set(name, v);
+        } else {
+            Throw(line, "NameError: name '" + name + "' not defined");
+        }
     }
     if (op == "!") {
         auto s = new script(new AST(now->at(0)), filename, scope);
@@ -276,8 +295,12 @@ void BerryMath::script::note(string message) {
 }
 
 void BerryMath::script::init(string json) {
+//    std::cout << "code: $" << code << "$ at line " << __LINE__ << std::endl;
     Json::Reader reader;
+    string c(code);
     if (!reader.parse(json, systemJson, false)) {// 解析Json
         Throw(-1, "SystemError: Parse system.json failed.");
     }
+    code = c;
+//    std::cout << "code: $" << code << "$ at line " << __LINE__ << std::endl;
 }

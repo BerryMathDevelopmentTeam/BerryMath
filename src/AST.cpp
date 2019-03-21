@@ -96,15 +96,21 @@ void BerryMath::AST::parse() {
             string minOp("");
             lex::lexToken op_t;
             op_t.token = INIT_TOKEN;
+            lex::lexToken unknow;
+            unknow.token = INIT_TOKEN;
             while (op_t.token != END_TOKEN) {
                 op_t = lexer.get();
                 if (op_t.token > VARIABLE_TOKEN && op_t.token < MINUS_TOKEN) {// 是符号
                     short pri = priority(op_t.str);
                     if (op_t.str == "(") {
                         base *= pri;
+                        if (unknow.token != INIT_TOKEN) {// 代表是一个function
+
+                            unknow.token = INIT_TOKEN;
+                        }
                     } else if (op_t.str == ")") {
                         base /= pri;
-                    } else if (pri != 13) {
+                    } else {
                         pri *= base;
                         if (!isNumber(op_t.str) && pri < minPri && op_t.str != "(" && op_t.str != ")") {
 //                            std::cout << op_t.str << std::endl;
@@ -112,6 +118,16 @@ void BerryMath::AST::parse() {
                             minOp = op_t.str;
                             minPri = pri;
                             tokenLen = op_t.str.length();
+                        }
+                    }
+                } else {
+//                    std::cout << op_t.str << std::endl;
+                    if (op_t.token == UNKNOWN_TOKEN) {
+                        if (unknow.token == INIT_TOKEN) {
+                            unknow = op_t;
+                        } else {
+                            root->str = "bad-tree";
+                            break;
                         }
                     }
                 }
