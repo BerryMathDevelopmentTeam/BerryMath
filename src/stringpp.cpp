@@ -1,3 +1,4 @@
+#include <vector>
 #include "stringpp.h"
 
 std::string BerryMath::ltrim(const std::string& s)
@@ -17,4 +18,21 @@ std::string BerryMath::rtrim(const std::string& s)
 std::string BerryMath::trim(const std::string& s)
 {
     return rtrim(ltrim(s));
+}
+
+std::vector<string> BerryMath::spilt(const string &str, const string &delim)
+{
+    std::vector<string> spiltCollection;
+    if(str.size()==0)
+        return spiltCollection;
+    int start = 0;
+    int idx = str.find(delim, start);
+    while( idx != string::npos )
+    {
+        spiltCollection.push_back(str.substr(start, idx-start));
+        start = idx+delim.size();
+        idx = str.find(delim, start);
+    }
+    spiltCollection.push_back(str.substr(start));
+    return spiltCollection;
 }

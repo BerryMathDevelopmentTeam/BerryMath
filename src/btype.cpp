@@ -1,7 +1,8 @@
 #include <cctype>
 #include "btype.h"
+using std::string;
 
-BerryMath::TYPE BerryMath::type(std::string data) {
+BerryMath::TYPE BerryMath::type(string data) {
     bool digital = true;
     for (int i = 0 ; i < data.length() ; i++) {
         if (!isdigit(data[i]) && data[i] != '.') {
@@ -30,7 +31,7 @@ bool BerryMath::isSymbol(char c) {
             || c == '<' || c == '>'
     );
 }
-bool BerryMath::isTrue(std::string s) {
+bool BerryMath::isTrue(string s) {
     auto t = type(s);
     switch (t) {
         case OBJECT:

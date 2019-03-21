@@ -42,6 +42,7 @@
 #include <fstream>
 #include <json.h>
 #include "btype.h"
+#include "version.h"
 #include "AST.h"
 #include "lex.h"
 #include "color.h"

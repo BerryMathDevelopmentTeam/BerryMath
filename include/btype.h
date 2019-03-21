@@ -34,15 +34,16 @@
 
 #include <iostream>
 #include <json.h>
+using std::string;
 
 namespace BerryMath {
     enum TYPE {
         NUMBER, STRING, OBJECT, FUNCTION, NATIVE_FUNCTION, UNDEFINED, // BerryMath值
         TOKEN_NAME// BerryMath标记值(不提供给语言，仅仅是native接口值, 比如存储变量名、函数名等)
     };
-    TYPE type(std::string);
+    TYPE type(string);
     bool isSymbol(char);
-    bool isTrue(std::string);
+    bool isTrue(string);
 }
 
 #endif //BERRYMATH_BTYPE_H

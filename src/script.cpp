@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "AST.h"
 #include "script.h"
+#include "version.h"
 #include <fstream>
 using std::to_string;
 
@@ -18,6 +19,12 @@ BerryMath::value* BerryMath::script::run(long line) {
         // 预定义值存放在system.json->defines->values中
         // system.json存放在系统目录中, 类unix系统为/usr/local/BerryMath/, windows为C:\Program Files\BerryMath\.
 //        std::cout << "a" << std::endl;
+        auto version = systemJson["version"].asString();
+        if (!canRun(version)) {
+            Throw(-1, "ProgramError: The system and program versions are too different to run");
+            note("System version: " + string(BERRYMATH_VERSION) + ", program version: " + version);
+            return ret;
+        }
         auto values = systemJson["defines"]["values"];
         auto valueKeys = values.getMemberNames();
         for (auto iter = valueKeys.begin(); iter != valueKeys.end(); iter++) {
@@ -264,10 +271,13 @@ void BerryMath::script::Throw(long line, string message) {
     else std::cout << RED << message << " at line " << (line + 1) << " in file '" << filename << "'. " << RESET << std::endl;
 }
 
+void BerryMath::script::note(string message) {
+    std::cout << BLACK << "\033[47mnote:" << RESET << " " << message << ". " << std::endl;
+}
+
 void BerryMath::script::init(string json) {
     Json::Reader reader;
     if (!reader.parse(json, systemJson, false)) {// 解析Json
-        Throw(0, "SystemError: Parse system.json failed.");
-    } else {
+        Throw(-1, "SystemError: Parse system.json failed.");
     }
 }

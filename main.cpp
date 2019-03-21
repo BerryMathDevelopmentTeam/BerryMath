@@ -19,7 +19,11 @@ int main() {
     }
 
     // 载入system.json文件
+#if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || defined(__linux) || defined(__unix)// mac, linux, unix
     std::ifstream input("/usr/local/BerryMath/system.json");
+#else // windows
+    std::ifstream input("C:\\Program Files\\BerryMath\\system.json");
+#endif
     string json("");
     while (getline(input, tmp)) {
         json += tmp + "\n";

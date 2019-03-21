@@ -14,7 +14,7 @@ add_executable(
         BerryMath main.cpp
         include/BerryMath.h src/BerryMath.cpp
         include/memory.h src/memory.cpp
-        include/btype.h src/btype.cpp include/color.h src/lex.cpp include/lex.h src/AST.cpp include/AST.h src/script.cpp include/script.h include/stringpp.h src/stringpp.cpp src/color.cpp)
+        include/btype.h src/btype.cpp include/color.h src/lex.cpp include/lex.h src/AST.cpp include/AST.h src/script.cpp include/script.h include/stringpp.h src/stringpp.cpp src/color.cpp src/version.cpp include/version.h)
 
 # /usr/local/lib/libjsoncpp.dylib
 link_directories(/usr/local/lib)
