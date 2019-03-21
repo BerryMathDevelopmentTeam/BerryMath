@@ -44,6 +44,7 @@ namespace BerryMath {
     TYPE type(string);
     bool isSymbol(char);
     bool isTrue(string);
+    bool isTokenName(string);
 }
 
 #endif //BERRYMATH_BTYPE_H

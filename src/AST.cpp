@@ -1,7 +1,9 @@
 #include <iostream>
+#include "vector"
 #include "lex.h"
 #include "color.h"
 #include "AST.h"
+#include "btype.h"
 #include "stringpp.h"
 
 void BerryMath::AST::parse() {
@@ -93,6 +95,7 @@ void BerryMath::AST::parse() {
             short minPri(15);
             int minOpIndex(-1);
             long tokenLen(0);
+            bool callFunction(false);
             string minOp("");
             lex::lexToken op_t;
             op_t.token = INIT_TOKEN;
@@ -103,26 +106,43 @@ void BerryMath::AST::parse() {
                 if (op_t.token > VARIABLE_TOKEN && op_t.token < MINUS_TOKEN) {// 是符号
                     short pri = priority(op_t.str);
                     if (op_t.str == "(") {
-                        base *= pri;
                         if (unknow.token != INIT_TOKEN) {// 代表是一个function
-
+                            std::cout << code << std::endl;
+                            std::cout << "is function" << std::endl;
+                            if (FUNCTION_PRI < minPri) {
+//                            std::cout << op_t.str << std::endl;
+                                callFunction = true;
+                                minOpIndex = lexer.parseIndex;// 括号开始
+                                minOp = op_t.str;
+                                minPri = pri;
+                                tokenLen = 0;
+                                int functionBrackets(0);
+                                for (int i = minOpIndex - 1; i < code.length(); i++) {
+                                    tokenLen++;
+                                    if (code[i] == '(') functionBrackets++;
+                                    if (code[i] == ')') functionBrackets--;
+                                    if (functionBrackets == 0) break;
+                                }
+                            }
+                            // function 调用的级别
                             unknow.token = INIT_TOKEN;
                         }
+                        base *= pri;
                     } else if (op_t.str == ")") {
                         base /= pri;
-                    } else {
-                        pri *= base;
-                        if (!isNumber(op_t.str) && pri < minPri && op_t.str != "(" && op_t.str != ")") {
+                    }
+                    pri *= base;
+                    if (!isNumber(op_t.str) && pri < minPri && op_t.str != "(" && op_t.str != ")") {
 //                            std::cout << op_t.str << std::endl;
-                            minOpIndex = lexer.parseIndex;
-                            minOp = op_t.str;
-                            minPri = pri;
-                            tokenLen = op_t.str.length();
-                        }
+                        minOpIndex = lexer.parseIndex;
+                        minOp = op_t.str;
+                        minPri = pri;
+                        tokenLen = op_t.str.length();
                     }
                 } else {
 //                    std::cout << op_t.str << std::endl;
                     if (op_t.token == UNKNOWN_TOKEN) {
+//                        std::cout << op_t.str << ";" << std::endl;
                         if (unknow.token == INIT_TOKEN) {
                             unknow = op_t;
                         } else {
@@ -131,6 +151,10 @@ void BerryMath::AST::parse() {
                         }
                     }
                 }
+            }
+            if (code == " number(\"123\");") {
+                std::cout << minOpIndex << ", " << minOp << ", " << minPri << ", " << tokenLen << "; " << std::endl;
+                std::cout << "m" << std::endl;
             }
 //            std::cout << minOpIndex << std::endl;
             if (minOpIndex == -1) {// 说明没有符号
@@ -175,65 +199,83 @@ void BerryMath::AST::parse() {
 //            std::cout << minOpIndex << ", " << minPri << ", " << minOp << std::endl;
             minOpIndex--;
 //            std::cout << (minOp == "=") << std::endl;
-            root->push(OPERATOR, minOp);
 
-            int bracketsCount(0);
-            for (int i = s; i < minOpIndex - tokenLen + 1; i++) {
-                if (code[i] == '(') bracketsCount++;
-                if (code[i] == ')') bracketsCount--;
-                left += code[i];
+            if (code == " number(\"123\");") {
+                std::cout << "MinOp: " << minOpIndex << ", " << minOp << std::endl;
             }
+
+            if (callFunction) {
+                root->push(OPERATOR, "call");
+                root->at(-2)->push(OPERATOR, minOp);
+
+                string in("");
+                for (int i = minOpIndex; i < minOpIndex + tokenLen; i++) {
+                    in += code[i];
+                }
+                std::cout << in << std::endl;
+//                auto expressions = spilt();
+            } else {
+                root->push(OPERATOR, minOp);
+
+                int bracketsCount(0);
+                for (int i = s; i < minOpIndex - tokenLen + 1; i++) {
+                    if (code[i] == '(') bracketsCount++;
+                    if (code[i] == ')') bracketsCount--;
+                    left += code[i];
+                }
 //            std::cout << "bracketsCountLeft: " << bracketsCount << std::endl;
-            if (bracketsCount > 0) {
-                for (int i = 0; i < bracketsCount; i++) {
-                    left += ")";
+                if (bracketsCount > 0) {
+                    for (int i = 0; i < bracketsCount; i++) {
+                        left += ")";
+                    }
+                } else {
+                    for (int i = bracketsCount; i < 0; i++) {
+                        left = "(" + left;
+                    }
                 }
-            } else {
-                for (int i = bracketsCount; i < 0; i++) {
-                    left = "(" + left;
-                }
-            }
 //            std::cout << left << std::endl;
-            bracketsCount = 0;
-            for (int i = minOpIndex + 1; i < code.length(); i++) {
-                if (code[i] == '(') bracketsCount++;
-                if (code[i] == ')') bracketsCount--;
-                right += code[i];
-            }
+                bracketsCount = 0;
+                for (int i = minOpIndex + 1; i < code.length(); i++) {
+                    if (code[i] == '(') bracketsCount++;
+                    if (code[i] == ')') bracketsCount--;
+                    right += code[i];
+                }
 //            std::cout << "bracketsCountRight: " << bracketsCount << std::endl;
-            if (bracketsCount > 0) {
-                for (int i = 0; i < bracketsCount; i++) {
-                    right += ")";
+                if (bracketsCount > 0) {
+                    for (int i = 0; i < bracketsCount; i++) {
+                        right += ")";
+                    }
+                } else {
+                    for (int i = bracketsCount; i < 0; i++) {
+                        right = "(" + right;
+                    }
                 }
-            } else {
-                for (int i = bracketsCount; i < 0; i++) {
-                    right = "(" + right;
-                }
-            }
 //            std::cout << right << std::endl;
-            bracketsCount = 0;
+                bracketsCount = 0;
 //            std::cout << left << minOp << right << std::endl;
-            auto leftAST = new AST(left);
-            auto rightAST = new AST(right);
-            leftAST->parse();
-            rightAST->parse();
-            if (
-                    leftAST->value()->value() == "bad-tree"
-                    || rightAST->value()->value() == "bad-tree"
-                    ) {
-                root->str = "bad-tree";
-                break;
-            }
+                auto leftAST = new AST(left);
+                auto rightAST = new AST(right);
+                leftAST->parse();
+                rightAST->parse();
+                if (
+                        leftAST->value()->value() == "bad-tree"
+                        || rightAST->value()->value() == "bad-tree"
+                        ) {
+                    root->str = "bad-tree";
+                    break;
+                }
 //            std::cout << code << std::endl;
 //            std::cout << left << std::endl;
 //            std::cout << right << std::endl;
-            root->at(-1)->push(leftAST->root->at(-1));
-            root->at(-1)->push(rightAST->root->at(-1));
-            continue;
+                root->at(-1)->push(leftAST->root->at(-1));
+                root->at(-1)->push(rightAST->root->at(-1));
+                if (code == "\ntest += number(\"123\");") {
+y                    std::cout << "last" << std::endl;
+                }
+                continue;
+            }
         }
     }
-    if (code.length() >= 20)
-        std::cout << "abc" << std::endl;
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });

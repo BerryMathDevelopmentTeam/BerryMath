@@ -99,7 +99,7 @@ namespace BerryMath {
             return root;
         }
         ~AST() {
-            std::cout << "delete AST" << std::endl;
+//            std::cout << "delete AST" << std::endl;
             if (root) delete root;
         }
     private:
@@ -144,6 +144,7 @@ namespace BerryMath {
         friend class script;
     };
     bool isNumber(string);
+    const short FUNCTION_PRI = 14;
 }
 
 

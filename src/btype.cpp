@@ -50,3 +50,10 @@ bool BerryMath::isTrue(string s) {
             return false;
     }
 }
+bool BerryMath::isTokenName(string name) {
+    bool res = !(name[0] >= '0' && name[0] <= '9');// rule 1: 不以数字开头
+    for (int i = 0; i < name.length(); i++) {// rule 2: 其中没有运算符等符号
+        res = res && (!isSymbol(name[i]));
+    }
+    return res;
+}
