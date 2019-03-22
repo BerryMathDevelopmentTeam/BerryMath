@@ -270,7 +270,7 @@ void BerryMath::AST::parse() {
                 root->at(-1)->push(leftAST->root->at(-1));
                 root->at(-1)->push(rightAST->root->at(-1));
                 if (code == "\ntest += number(\"123\");") {
-y                    std::cout << "last" << std::endl;
+                    std::cout << "last" << std::endl;
                 }
                 continue;
             }
