@@ -22,6 +22,21 @@ void BerryMath::AST::parse() {
 //    std::cout << "=====" << code << "=====" << std::endl;
     while (true) {
         t = lexer.get();
+        if (first) {
+//            std::cout << t.str << ": " << (t.token == UNKNOWN_TOKEN) << std::endl;
+            if (!(t.token > SELF_SUB_TOKEN && t.token < INIT_TOKEN) || t.token == UNKNOWN_TOKEN) {// 是表达式
+                expression = true;
+            }
+            int nowIndex = lexer.parseIndex;
+            auto test = lexer.get();
+            if (t.token == UNKNOWN_TOKEN && test.token == BRACKETS_LEFT_TOKEN) {
+//                expression = true;
+                lexer.parseIndex = 0;
+            } else {
+                lexer.parseIndex = nowIndex;
+            }
+        }
+        first = false;
         if (t.token == IF_TOKEN) {
             int bracketsCount(0);// 首先存储小括号次数
             lex::lexToken op_t;
@@ -79,13 +94,6 @@ void BerryMath::AST::parse() {
                 break;
             }
         }
-        if (first) {
-//            std::cout << t.str << ": " << (t.token == UNKNOWN_TOKEN) << std::endl;
-            if (!(t.token > SELF_SUB_TOKEN && t.token < INIT_TOKEN)) {// 是表达式
-                expression = true;
-            }
-            first = false;
-        }
 //        std::cout << t.token << ", " << t.str << std::endl;
         if (expression) {
 //            std::cout << "123" << std::endl;
@@ -99,23 +107,32 @@ void BerryMath::AST::parse() {
             string minOp("");
             lex::lexToken op_t;
             op_t.token = INIT_TOKEN;
-            lex::lexToken unknow;
-            unknow.token = INIT_TOKEN;
+//            lex::lexToken unknow;
+//            unknow.token = INIT_TOKEN;
+//            lexer.parseIndex = 0;
             while (op_t.token != END_TOKEN) {
                 op_t = lexer.get();
+//                if (code == " number(\"123\");") {
+//                    std::cout << "point" << std::endl;
+//                }
                 if (op_t.token > VARIABLE_TOKEN && op_t.token < MINUS_TOKEN) {// 是符号
                     short pri = priority(op_t.str);
                     if (op_t.str == "(") {
-                        if (unknow.token != INIT_TOKEN) {// 代表是一个function
-                            std::cout << code << std::endl;
-                            std::cout << "is function" << std::endl;
+//                        std::cout << unknown.str << std::endl;
+                        if (unknown.token != INIT_TOKEN && unknown.token != NONE_TOKEN) {// 代表是一个function
+                            if (code == " number(\"123\");") {
+                                std::cout << code << std::endl;
+                                std::cout << unknown.str << std::endl;
+                                std::cout << "is function" << std::endl;
+                            }
                             if (FUNCTION_PRI < minPri) {
 //                            std::cout << op_t.str << std::endl;
                                 callFunction = true;
                                 minOpIndex = lexer.parseIndex;// 括号开始
-                                minOp = op_t.str;
+                                minOp = unknown.str;
                                 minPri = pri;
                                 tokenLen = 0;
+//                                std::cout << minOp << std::endl;
                                 int functionBrackets(0);
                                 for (int i = minOpIndex - 1; i < code.length(); i++) {
                                     tokenLen++;
@@ -125,7 +142,7 @@ void BerryMath::AST::parse() {
                                 }
                             }
                             // function 调用的级别
-                            unknow.token = INIT_TOKEN;
+                            unknown.token = INIT_TOKEN;
                         }
                         base *= pri;
                     } else if (op_t.str == ")") {
@@ -139,22 +156,25 @@ void BerryMath::AST::parse() {
                         minPri = pri;
                         tokenLen = op_t.str.length();
                     }
-                } else {
-//                    std::cout << op_t.str << std::endl;
-                    if (op_t.token == UNKNOWN_TOKEN) {
-//                        std::cout << op_t.str << ";" << std::endl;
-                        if (unknow.token == INIT_TOKEN) {
-                            unknow = op_t;
-                        } else {
-                            root->str = "bad-tree";
-                            break;
-                        }
+                }
+                if (op_t.token == UNKNOWN_TOKEN) {
+//                    if (op_t.str == "number") {
+//                        std::cout << op_t.str << " of '" << code << "';" << std::endl;
+//                    }
+                    if (unknown.token == INIT_TOKEN || unknown.token == NONE_TOKEN) {
+                        unknown = op_t;
+//                        unknow.token = op_t.token;
+//                        unknow.str = op_t.str;
+//                        std::cout << "a" << std::endl;
+                    } else {
+                        root->str = "bad-tree";
+                        break;
                     }
                 }
             }
             if (code == " number(\"123\");") {
-                std::cout << minOpIndex << ", " << minOp << ", " << minPri << ", " << tokenLen << "; " << std::endl;
-                std::cout << "m" << std::endl;
+//                std::cout << minOpIndex << ", " << minOp << ", " << minPri << ", " << tokenLen << ", " << callFunction << "; " << std::endl;
+//                std::cout << "m" << std::endl;
             }
 //            std::cout << minOpIndex << std::endl;
             if (minOpIndex == -1) {// 说明没有符号
@@ -206,14 +226,40 @@ void BerryMath::AST::parse() {
 
             if (callFunction) {
                 root->push(OPERATOR, "call");
-                root->at(-2)->push(OPERATOR, minOp);
+                root->at(-1)->push(VALUE, minOp);
 
                 string in("");
                 for (int i = minOpIndex; i < minOpIndex + tokenLen; i++) {
                     in += code[i];
                 }
                 std::cout << in << std::endl;
-//                auto expressions = spilt();
+                std::vector<string> arguments;
+                string expressionOne("");
+                int bCount(0);
+                for (int i = 0; i < in.length(); i++) {
+                    if (in[i] == '(') bCount++;
+                    if (in[i] == ')') bCount--;
+                    if (in[i] == ',' && bCount == 1) {// 是传参中的其中一个参数
+                        expressionOne += ")";
+                        arguments.push_back(expressionOne);
+                        expressionOne = "";
+                    } else {
+                        expressionOne += in[i];
+                    }
+                    if (bCount == 0) {// 函数调用语句结束
+                        if (arguments.size() > 0)// 如果是多个参数调用
+                            expressionOne = "(" + expressionOne;// 因为给定函数调用语句: func1(a1, a2, a3), 最后一个参数现在就是'a3)', 如果要符合语法, 就要在其前面加(, 但是如果是单个参数就不用, 因为给定函数调用语句: func2(a), 现在参数就是'(a)', 加上(反而就不符合语法了
+                        arguments.push_back(expressionOne);
+                        expressionOne = "";
+                        break;
+                    }
+                }
+                for (int i = 0; i < arguments.size(); i++) {// 遍历所有实参
+                    auto ast = new AST(arguments[i]);
+                    ast->parse();
+                    root->at(-1)->push(ast->value()->at(-1));
+                }
+//                std::cout << "";
             } else {
                 root->push(OPERATOR, minOp);
 
@@ -266,12 +312,12 @@ void BerryMath::AST::parse() {
                 }
 //            std::cout << code << std::endl;
 //            std::cout << left << std::endl;
-//            std::cout << right << std::endl;
+//            std::cout << "Right: '" << right << "'" << std::endl;
                 root->at(-1)->push(leftAST->root->at(-1));
                 root->at(-1)->push(rightAST->root->at(-1));
-                if (code == "\ntest += number(\"123\");") {
-                    std::cout << "last" << std::endl;
-                }
+//                if (code == "\ntest += number(\"123\");") {
+//                    std::cout << "last" << std::endl;
+//                }
                 continue;
             }
         }

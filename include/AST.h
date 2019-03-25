@@ -59,6 +59,9 @@ namespace BerryMath {
             void push(ASTNode* n) {
                 children.push_back(n);
             }
+            long size() {
+                return children.size();
+            }
             ASTNode* at(long index) {
                 if (index < 0) {
                     index = children.size() + index;
