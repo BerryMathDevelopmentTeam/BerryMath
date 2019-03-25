@@ -80,13 +80,13 @@ void BerryMath::AST::parse() {
             root->at(-1)->push(expressionAST.value()->at(0));
             root->at(-1)->push(VALUE, then);
 //            std::cout << "abc" << std::endl;
-            return;
+            break;
         }
         if (t.token == FOR_TOKEN) {
             std::cout << "for token" << std::endl;
         }
         if (t.token == END_TOKEN) {
-            if (unknown.token != NONE_TOKEN) {
+            if (unknown.token != NONE_TOKEN && unknown.token != INIT_TOKEN) {
 //                    std::cerr << BOLDRED << "SyntaxError: Unexpected token '" << unknown.str << "'." << RESET << std::endl;
                 root->str = "bad-tree";
                 break;
@@ -120,11 +120,11 @@ void BerryMath::AST::parse() {
                     if (op_t.str == "(") {
 //                        std::cout << unknown.str << std::endl;
                         if (unknown.token != INIT_TOKEN && unknown.token != NONE_TOKEN) {// 代表是一个function
-                            if (code == " number(\"123\");") {
-                                std::cout << code << std::endl;
-                                std::cout << unknown.str << std::endl;
-                                std::cout << "is function" << std::endl;
-                            }
+//                            if (code == " number(\"123\");") {
+//                                std::cout << code << std::endl;
+//                                std::cout << unknown.str << std::endl;
+//                                std::cout << "is function" << std::endl;
+//                            }
                             if (FUNCTION_PRI < minPri) {
 //                            std::cout << op_t.str << std::endl;
                                 callFunction = true;
@@ -172,10 +172,6 @@ void BerryMath::AST::parse() {
                     }
                 }
             }
-            if (code == " number(\"123\");") {
-//                std::cout << minOpIndex << ", " << minOp << ", " << minPri << ", " << tokenLen << ", " << callFunction << "; " << std::endl;
-//                std::cout << "m" << std::endl;
-            }
 //            std::cout << minOpIndex << std::endl;
             if (minOpIndex == -1) {// 说明没有符号
                 lexer.parseIndex = s;
@@ -220,10 +216,6 @@ void BerryMath::AST::parse() {
             minOpIndex--;
 //            std::cout << (minOp == "=") << std::endl;
 
-            if (code == " number(\"123\");") {
-                std::cout << "MinOp: " << minOpIndex << ", " << minOp << std::endl;
-            }
-
             if (callFunction) {
                 root->push(OPERATOR, "call");
                 root->at(-1)->push(VALUE, minOp);
@@ -232,7 +224,7 @@ void BerryMath::AST::parse() {
                 for (int i = minOpIndex; i < minOpIndex + tokenLen; i++) {
                     in += code[i];
                 }
-                std::cout << in << std::endl;
+//                std::cout << in << std::endl;
                 std::vector<string> arguments;
                 string expressionOne("");
                 int bCount(0);
@@ -259,6 +251,8 @@ void BerryMath::AST::parse() {
                     ast->parse();
                     root->at(-1)->push(ast->value()->at(-1));
                 }
+                unknown.token = INIT_TOKEN;
+                unknown.str = "";
 //                std::cout << "";
             } else {
                 root->push(OPERATOR, minOp);
@@ -325,7 +319,6 @@ void BerryMath::AST::parse() {
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
-//    std::cout << BOLDCYAN << "[SystemInfo] Build AST finish." << RESET << std::endl;
 }
 
 short BerryMath::AST::priority(string op) {
