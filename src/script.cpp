@@ -284,6 +284,9 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
         ret = new value(NUMBER, to_string(res));
         scope->set(name, ret);
     }
+    if (op == "call") {
+        std::cout << "call " << now->at(0)->value() << std::endl;
+    }
 }
 void BerryMath::script::Throw(long line, string message) {
     if (filename.empty()) std::cout << RED << message << " at line " << (line + 1) << ". " << RESET << std::endl;

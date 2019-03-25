@@ -35,6 +35,7 @@
 #include <iostream>
 #include <cstring>
 #include <map>
+#include <vector>
 #include "btype.h"
 using std::string;
 
@@ -157,6 +158,7 @@ namespace BerryMath {
         FAILED, SUCCESS
     };
     parseStates jsonToPrototypes(const std::string&, hash&);
+    typedef value* (*ExpandFunction) (std::vector<value*>, std::map<string, value*>);// 一个是所有的参数列表, 一个是参数名和值
 }
 
 #endif //BERRYMATH_MEMORY_H
