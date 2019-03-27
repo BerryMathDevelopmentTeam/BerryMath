@@ -32,7 +32,7 @@
 *.app
 
 # 忽略mac中的系统文件
-/.idea/
+.idea/
 
 # 忽略CMake产生的文件
 CMakeFiles/
