@@ -2,7 +2,7 @@
 *  BerryMath Interpreter                                                     *
 *  Copyright (C) 2019 BerryMathDevelopmentTeam  zhengyh2018@gmail.com        *
 *                                                                            *
-*  脚本运行.                                                                  *
+*  这个文件是整合所有文件的，制作拓展或者嵌入BerryMath都需要include该文件.           *
 *                                                                            *
 *  This program is free software; you can redistribute it and/or modify      *
 *  it under the terms of the GNU General Public License version 3 as         *
@@ -18,7 +18,7 @@
 *  limitations under the License.                                            *
 *                                                                            *
 *  @file     BerryMath.h                                                     *
-*  @brief    运行BerryMath脚本                                                *
+*  @brief    接口文件                                                         *
 *  Details.                                                                  *
 *                                                                            *
 *  @author   yhzheng                                                         *
@@ -29,67 +29,30 @@
 *                                                                            *
 *****************************************************************************/
 
-#ifndef BERRYMATH_SCRIPT_H
-#define BERRYMATH_SCRIPT_H
+#ifndef BERRYMATH_BERRYMATH_H
+#define BERRYMATH_BERRYMATH_H
+
+#ifndef __cplusplus
+#error ProgrammingError: The BerryMath language is written in C++. Please compile BerryMath using the C++ compiler (g++).
+#endif
+
+#define DEBUG
 
 #include <iostream>
-#include <map>
+#include <fstream>
+#include <json.h>
+#include "btype.h"
+#include "version.h"
 #include "AST.h"
+#include "lex.h"
+#include "color.h"
 #include "memory.h"
-#include "json.h"
-using std::string;
+#include "script.h"
 
+/**
+ * @brief 所有的BerryMath接口都在BerryMath内
+ */
 namespace BerryMath {
-    class script {
-    public:
-        script(string fn = "", script* sc = nullptr)
-                : code(""),
-                  selfAst(false), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-            }
-        }
-        script(string s, string fn = "", script* sc = nullptr)
-                : code(s),
-                  selfAst(false), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-            }
-        }
-        script(AST* a, string fn = "", script* sc = nullptr)
-                : ast(a), selfAst(true), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-//                std::cout << "point" << std::endl;
-            }
-        }
-        value* run(long line = 0);
-        ~script() {
-//            if (ast) delete ast;
-        }
-        void parse(value*&, AST::ASTNode*, long line);
-        void Throw(long, string);
-        void init(string);
-        void note(string);
-        void finish();
-        void* library(string);
-    private:
-        Json::Value systemJson;
-        string code;
-        AST* ast;
-        bool selfAst;// 直接存ast
-        block* scope;
-        block* parent;
-        string filename;
-        std::map<string, void*> libraries;
-        string systemJsonContent;
-    };
 }
 
-#endif //BERRYMATH_SCRIPT_H
+#endif //BERRYMATH_BERRYMATH_H

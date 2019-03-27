@@ -33,5 +33,6 @@ int main() {
 //    BerryMath::script s("foo = 1 + 5;bar = foo* 2;a=bar%10;b=a-10;c=b/4;");
     s.init(json);
     s.run();
+    s.finish();
     return 0;
 }

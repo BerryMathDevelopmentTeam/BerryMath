@@ -5,6 +5,12 @@
 			"true": "1",
 			"false": "0",
 			"null": "0"
+		},
+		"libs": {
+			"BerryMathGlobal": "/usr/local/BerryMath/global/libBerryMathGlobal.dylib"
+		},
+		"docs": {
+			"BerryMathGlobal": "/usr/local/BerryMath/global/libBerryMathGlobal.json"
 		}
 	}
 }

@@ -7,7 +7,6 @@
 #include "version.h"
 #include <fstream>
 #include <dlfcn.h>
-#include <fstream>
 using std::to_string;
 
 BerryMath::value* BerryMath::script::run(long line) {
@@ -308,13 +307,12 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
     }
     if (op == "call") {
         string name = now->at(0)->value();
-//        std::cout << "call " << name << std::endl;
+        std::cout << "call " << name << std::endl;
+        std::cout << "get doc " << (name + "Doc") << std::endl;
 //        std::cout << "libname: " << systemJson["defines"]["libs"]["BerryMathGlobal"].asString() << std::endl;
-//        string docPath = systemJson["defines"]["docs"]["BerryMathGlobal"].asString();
-//        std::cout << docPath << std::endl;
         auto fun = new function(name, systemJson["defines"]["libs"]["BerryMathGlobal"].asString(), true);
-//        DocFunction doc = (DocFunction) dlsym(library(systemJson["defines"]["libs"]["BerryMathGlobal"].asString()), (name + "Doc").c_str());
-//        std::cout << "fun: " << doc << std::endl;
+        DocFunction doc = (DocFunction) dlsym(library(systemJson["defines"]["libs"]["BerryMathGlobal"].asString()), ("_" + name + "Doc").c_str());
+        std::cout << "fun: " << doc << std::endl;
         std::vector<value*> values;
         for (int i = 1; i < now->size(); i++) {// 0项是函数名
             auto s = new script(new AST(now->at(i)), filename, this);
@@ -328,11 +326,11 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
 //        std::cout << "doc: " << doc << std::endl;
         for (int i = 0; i < values.size(); i++) {
             string argvName("a" + to_string(i));
-//            if (doc) {
+            if (doc) {
 //                if (docs.size() > i) {
 //                    argvName = docs[i];
 //                }
-//            }
+            }
 //            std::cout << values[i]->valueOf() << std::endl;
             valuesHash[argvName] = values[i];
 //            std::cout << argvName << std::endl;

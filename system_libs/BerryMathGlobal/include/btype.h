@@ -2,7 +2,7 @@
 *  BerryMath Interpreter                                                     *
 *  Copyright (C) 2019 BerryMathDevelopmentTeam  zhengyh2018@gmail.com        *
 *                                                                            *
-*  脚本运行.                                                                  *
+*  分析存储BerryMath数据类型标识符.                                             *
 *                                                                            *
 *  This program is free software; you can redistribute it and/or modify      *
 *  it under the terms of the GNU General Public License version 3 as         *
@@ -18,7 +18,7 @@
 *  limitations under the License.                                            *
 *                                                                            *
 *  @file     BerryMath.h                                                     *
-*  @brief    运行BerryMath脚本                                                *
+*  @brief    分析存储BerryMath数据类型标识符                                    *
 *  Details.                                                                  *
 *                                                                            *
 *  @author   yhzheng                                                         *
@@ -29,67 +29,22 @@
 *                                                                            *
 *****************************************************************************/
 
-#ifndef BERRYMATH_SCRIPT_H
-#define BERRYMATH_SCRIPT_H
+#ifndef BERRYMATH_BTYPE_H
+#define BERRYMATH_BTYPE_H
 
 #include <iostream>
-#include <map>
-#include "AST.h"
-#include "memory.h"
-#include "json.h"
+#include <json.h>
 using std::string;
 
 namespace BerryMath {
-    class script {
-    public:
-        script(string fn = "", script* sc = nullptr)
-                : code(""),
-                  selfAst(false), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-            }
-        }
-        script(string s, string fn = "", script* sc = nullptr)
-                : code(s),
-                  selfAst(false), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-            }
-        }
-        script(AST* a, string fn = "", script* sc = nullptr)
-                : ast(a), selfAst(true), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-//                std::cout << "point" << std::endl;
-            }
-        }
-        value* run(long line = 0);
-        ~script() {
-//            if (ast) delete ast;
-        }
-        void parse(value*&, AST::ASTNode*, long line);
-        void Throw(long, string);
-        void init(string);
-        void note(string);
-        void finish();
-        void* library(string);
-    private:
-        Json::Value systemJson;
-        string code;
-        AST* ast;
-        bool selfAst;// 直接存ast
-        block* scope;
-        block* parent;
-        string filename;
-        std::map<string, void*> libraries;
-        string systemJsonContent;
+    enum TYPE {
+        NUMBER, STRING, OBJECT, FUNCTION, NATIVE_FUNCTION, UNDEFINED, // BerryMath值
+        TOKEN_NAME// BerryMath标记值(不提供给语言，仅仅是native接口值, 比如存储变量名、函数名等)
     };
+    TYPE type(string);
+    bool isSymbol(char);
+    bool isTrue(string);
+    bool isTokenName(string);
 }
 
-#endif //BERRYMATH_SCRIPT_H
+#endif //BERRYMATH_BTYPE_H

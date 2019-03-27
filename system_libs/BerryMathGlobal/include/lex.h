@@ -2,7 +2,7 @@
 *  BerryMath Interpreter                                                     *
 *  Copyright (C) 2019 BerryMathDevelopmentTeam  zhengyh2018@gmail.com        *
 *                                                                            *
-*  脚本运行.                                                                  *
+*  词法分析器接口.                                                             *
 *                                                                            *
 *  This program is free software; you can redistribute it and/or modify      *
 *  it under the terms of the GNU General Public License version 3 as         *
@@ -18,7 +18,7 @@
 *  limitations under the License.                                            *
 *                                                                            *
 *  @file     BerryMath.h                                                     *
-*  @brief    运行BerryMath脚本                                                *
+*  @brief    词法分析器接口                                                    *
 *  Details.                                                                  *
 *                                                                            *
 *  @author   yhzheng                                                         *
@@ -29,67 +29,70 @@
 *                                                                            *
 *****************************************************************************/
 
-#ifndef BERRYMATH_SCRIPT_H
-#define BERRYMATH_SCRIPT_H
+#ifndef BERRYMATH_LEX_H
+#define BERRYMATH_LEX_H
 
 #include <iostream>
-#include <map>
-#include "AST.h"
-#include "memory.h"
-#include "json.h"
-using std::string;
 
 namespace BerryMath {
-    class script {
+    enum Token {
+        NONE_TOKEN = -1,
+        BAD_TOKEN,
+        UNKNOWN_TOKEN,
+        END_TOKEN,
+        VARIABLE_TOKEN, FUNCTION_TOKEN,
+        SET_TOKEN, BRACKETS_LEFT_TOKEN, BRACKETS_RIGHT_TOKEN,
+        MIDDLE_BRACKETS_LEFT_TOKEN, MIDDLE_BRACKETS_RIGHT_TOKEN,
+        BIG_BRACKETS_LEFT_TOKEN, BIG_BRACKETS_RIGHT_TOKEN,
+        DOT_TOKEN, NUMBER_TOKEN, STRING_TOKEN,
+        BIGGER_TOKEN, SMALLER_TOKEN, EQUAL_TOKEN, BIGGER_EQUAL_TOKEN, SMALLER_EQUAL_TOKEN, NOT_EQUAL_TOKEN,
+        LOGICAL_AND_TOKEN, LOGICAL_OR_TOKEN, LOGICAL_NOT_TOKEN,
+        MATH_AND_TOKEN, MATH_OR_TOKEN, MATH_XOR_TOKEN, MATH_NOT_TOKEN,
+        ADD_TOKEN, SUB_TOKEN, MUL_TOKEN, DIV_TOKEN, MOD_TOKEN,
+        SHIFT_LEFT_TOKEN, SHIFT_RIGHT_TOKEN,
+        ADD_TO_TOKEN, SUB_TO_TOKEN, MUL_TO_TOKEN, DIV_TO_TOKEN, MOD_TO_TOKEN,
+        MATH_OR_TO_TOKEN, MATH_AND_TO_TOKEN, MATH_XOR_TO_TOKEN,
+        SHIFT_LEFT_TO_TOKEN, SHIFT_RIGHT_TO_TOKEN,
+        MINUS_TOKEN,
+        SELF_ADD_TOKEN, SELF_SUB_TOKEN,
+        CREATE_VARIABLE_TOKEN, CREATE_FUNCTION_TOKEN,
+        IF_TOKEN, ELIF_TOKEN, ELSE_TOKEN,
+        WHILE_TOKEN, DO_TOKEN, FOR_TOKEN,
+        INIT_TOKEN, NOTE_TOKEN
+    };
+    class lex {
     public:
-        script(string fn = "", script* sc = nullptr)
-                : code(""),
-                  selfAst(false), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-            }
+        friend class AST;
+        struct lexToken {
+            Token token;
+            std::string str;
+        };
+        lex() : program(""), token(INIT_TOKEN), str(""), parseIndex(0) { }
+        lex(std::string p) : program(p), token(INIT_TOKEN), str(""), parseIndex(0) { }
+        void restart() {
+            token = INIT_TOKEN;
+            parseIndex = 0;
+            end = false;
         }
-        script(string s, string fn = "", script* sc = nullptr)
-                : code(s),
-                  selfAst(false), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-            }
+        lexToken get();
+        void finish() {
+            token = INIT_TOKEN;
+            end = false;
         }
-        script(AST* a, string fn = "", script* sc = nullptr)
-                : ast(a), selfAst(true), parent(sc ? sc->scope : nullptr),
-                  filename(fn) {
-            if (sc) {
-                libraries = sc->libraries;
-                systemJsonContent = sc->systemJsonContent;
-//                std::cout << "point" << std::endl;
-            }
+        void whileToEnd();
+        lexToken value() {
+            lexToken tmp;
+            tmp.token = token;
+            tmp.str = str;
+            return tmp;
         }
-        value* run(long line = 0);
-        ~script() {
-//            if (ast) delete ast;
-        }
-        void parse(value*&, AST::ASTNode*, long line);
-        void Throw(long, string);
-        void init(string);
-        void note(string);
-        void finish();
-        void* library(string);
     private:
-        Json::Value systemJson;
-        string code;
-        AST* ast;
-        bool selfAst;// 直接存ast
-        block* scope;
-        block* parent;
-        string filename;
-        std::map<string, void*> libraries;
-        string systemJsonContent;
+        std::string program;
+        Token token;
+        std::string str;
+        int parseIndex;
+        bool end = false;
     };
 }
 
-#endif //BERRYMATH_SCRIPT_H
+#endif //BERRYMATH_LEX_H
