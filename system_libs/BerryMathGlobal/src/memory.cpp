@@ -109,9 +109,8 @@ BerryMath::value * BerryMath::function::run(BerryMath::script * s, std::vector<v
             s->Throw(-1, "ModuleError: The dynamic link library was not loaded");
             return new value(UNDEFINED, "undefined");
         }
-        std::cout << handle << std::endl;
-//        ExpandFunction func = (ExpandFunction) dlsym(handle, (name).c_str());
-        ExpandFunction func = (ExpandFunction) dlsym(handle, "number");
+//        ExpandFunction func = (ExpandFunction) dlsym(handle, "number");
+        ExpandFunction func = (ExpandFunction) dlsym(handle, name.c_str());
         if (!func) {
             s->Throw(-1, "NameError: Function '" + name + "' not found in dynamic link library");
             s->note(dlerror());
@@ -119,6 +118,8 @@ BerryMath::value * BerryMath::function::run(BerryMath::script * s, std::vector<v
         }
         return func(arguments, argumentsHash);
     } else {
+#warning Pending development a branch. If you can already write, please complete the code here.
+        PENDING
         s->Throw(-1, "SystemError: BerryMath interpreter is not yet supported");
         return new value(UNDEFINED, "undefined");
     }
