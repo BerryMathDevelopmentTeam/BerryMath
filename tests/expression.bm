@@ -1,4 +1,1 @@
-test = 1;
-
-test += number("123");
-test += number("123");
+println(String("123") + "123");

@@ -52,7 +52,8 @@ BerryMath::value* BerryMath::script::run(long line) {
     bool noBrackets = true;
     while (true) {
         if (i >= code.length()) break;
-        c += code[i];
+        if (!(code[i] == '/' && code.length() < i + 1 && code[i + 1] == '/')) // 去除注释的干扰
+            c += code[i];
 //        std::cout << code[i];
         if (code[i] == '\n') {
             line++;
@@ -65,7 +66,10 @@ BerryMath::value* BerryMath::script::run(long line) {
             noBrackets = false;
             bigBracketsCount--;
         }
-        if (code[i] == ';' && noBrackets) {// 单行语句
+        if (
+                (code[i] == ';' && noBrackets)
+            || (code[i] == '/' && code.length() < i + 1 && code[i + 1] == '/')
+                ) {// 单行语句
 //            std::cout << "build AST." << std::endl;
             ast = new BerryMath::AST(c);
             ast->parse();
@@ -93,14 +97,14 @@ BerryMath::value* BerryMath::script::run(long line) {
         parse(ret, root, line);
         c = "";
     }
-    if (!parent) {
-        std::cout << "[Program finish]" << std::endl;
-        std::cout << "=========Hash Table=========" << std::endl;
-        scope->each([](variable* var) -> void {
-            std::cout << var->nameOf() << ": " << var->valueOf().valueOf() << std::endl;
-        });
-        std::cout << "=======Hash Table End=======" << std::endl;
-    }
+//    if (!parent) {
+//        std::cout << "[Program finish]" << std::endl;
+//        std::cout << "=========Hash Table=========" << std::endl;
+//        scope->each([](variable* var) -> void {
+//            std::cout << var->nameOf() << ": " << var->valueOf().valueOf() << std::endl;
+//        });
+//        std::cout << "=======Hash Table End=======" << std::endl;
+//    }
     return ret;
 }
 
@@ -338,6 +342,7 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
 //            std::cout << argvName << std::endl;
         }
         ret = fun->run(this, values, valuesHash);
+//        std::cout << "point" << std::endl;
     }
 }
 void BerryMath::script::Throw(long line, string message) {

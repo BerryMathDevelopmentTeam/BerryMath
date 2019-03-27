@@ -6,7 +6,9 @@
 #include <vector>
 using std::string;
 
-extern "C" BerryMath::value* number(std::vector<BerryMath::value*>, std::map<string, BerryMath::value*>);
-extern "C" std::vector<string> numberDoc();
+extern "C" BerryMath::value* Number(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
+extern "C" BerryMath::value* String(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
+extern "C" BerryMath::value* print(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
+extern "C" BerryMath::value* println(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
 
 #endif
