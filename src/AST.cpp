@@ -100,7 +100,7 @@ void BerryMath::AST::parse() {
             string left("");
             string right("");
             int base = 1;
-            short minPri(15);
+            int minPri(15);
             int minOpIndex(-1);
             long tokenLen(0);
             bool callFunction(false);
@@ -116,7 +116,7 @@ void BerryMath::AST::parse() {
 //                    std::cout << "point" << std::endl;
 //                }
                 if (op_t.token > VARIABLE_TOKEN && op_t.token < MINUS_TOKEN) {// 是符号
-                    short pri = priority(op_t.str);
+                    int pri = priority(op_t.str);
                     if (op_t.str == "(") {
 //                        std::cout << unknown.str << std::endl;
                         if (unknown.token != INIT_TOKEN && unknown.token != NONE_TOKEN) {// 代表是一个function
@@ -130,7 +130,7 @@ void BerryMath::AST::parse() {
                                 callFunction = true;
                                 minOpIndex = lexer.parseIndex;// 括号开始
                                 minOp = unknown.str;
-                                minPri = pri;
+                                minPri = 1;
                                 tokenLen = 0;
 //                                std::cout << minOp << std::endl;
                                 int functionBrackets(0);
@@ -315,6 +315,9 @@ void BerryMath::AST::parse() {
                 continue;
             }
         }
+    }
+    if (code == "println(1 + 1 + Number(Number(\"123\") + 1));") {
+        std::cout << "a" << std::endl;
     }
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;

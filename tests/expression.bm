@@ -1,1 +1,1 @@
-println(String("123") + "123");
+println(1 + 1 + Number(1 + 123 + Number(123) + 1));
