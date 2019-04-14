@@ -66,6 +66,7 @@ namespace BerryMath {
                 if (index < 0) {
                     index = children.size() + index;
                 }
+                if (index >= children.size()) return nullptr;
                 return children[index];
             }
             string value() {
