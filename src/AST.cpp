@@ -38,6 +38,7 @@ void BerryMath::AST::parse() {
         }
         first = false;
         if (t.token == IF_TOKEN) {
+//            std::cout << "if token" << std::endl;
             int bracketsCount(0);// 首先存储小括号次数
             lex::lexToken op_t;
             bool exitLoop(false);
@@ -53,7 +54,7 @@ void BerryMath::AST::parse() {
                     break;
                 }
             } while (bracketsCount != 0);
-            std::cout << expression << std::endl;
+//            std::cout << expression << std::endl;
             if (exitLoop) break;
             string then("");// 存储接下来的语句
             bracketsCount = 0;// 存储大括号次数
@@ -112,25 +113,17 @@ void BerryMath::AST::parse() {
 //            lexer.parseIndex = 0;
             while (op_t.token != END_TOKEN) {
                 op_t = lexer.get();
-//                if (code == " number(\"123\");") {
-//                    std::cout << "point" << std::endl;
-//                }
                 if (op_t.token > VARIABLE_TOKEN && op_t.token < MINUS_TOKEN) {// 是符号
                     int pri = priority(op_t.str);
                     if (op_t.str == "(") {
 //                        std::cout << unknown.str << std::endl;
                         if (unknown.token != INIT_TOKEN && unknown.token != NONE_TOKEN) {// 代表是一个function
-//                            if (code == " number(\"123\");") {
-//                                std::cout << code << std::endl;
-//                                std::cout << unknown.str << std::endl;
-//                                std::cout << "is function" << std::endl;
-//                            }
                             if (FUNCTION_PRI < minPri) {
 //                            std::cout << op_t.str << std::endl;
                                 callFunction = true;
                                 minOpIndex = lexer.parseIndex;// 括号开始
                                 minOp = unknown.str;
-                                minPri = 1;
+                                minPri = pri;
                                 tokenLen = 0;
 //                                std::cout << minOp << std::endl;
                                 int functionBrackets(0);
@@ -155,6 +148,7 @@ void BerryMath::AST::parse() {
                         minOp = op_t.str;
                         minPri = pri;
                         tokenLen = op_t.str.length();
+                        callFunction = false;
                     }
                 }
                 if (op_t.token == UNKNOWN_TOKEN) {
@@ -309,15 +303,9 @@ void BerryMath::AST::parse() {
 //            std::cout << "Right: '" << right << "'" << std::endl;
                 root->at(-1)->push(leftAST->root->at(-1));
                 root->at(-1)->push(rightAST->root->at(-1));
-//                if (code == "\ntest += number(\"123\");") {
-//                    std::cout << "last" << std::endl;
-//                }
                 continue;
             }
         }
-    }
-    if (code == "println(1 + 1 + Number(Number(\"123\") + 1));") {
-        std::cout << "a" << std::endl;
     }
 //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
