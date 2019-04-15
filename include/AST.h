@@ -149,6 +149,7 @@ namespace BerryMath {
     };
     bool isNumber(string);
     const short FUNCTION_PRI = 14;
+    const short ARRAY_VALUE_PRI = 15;
 }
 
 

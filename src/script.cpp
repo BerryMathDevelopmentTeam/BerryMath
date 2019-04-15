@@ -67,8 +67,8 @@ BerryMath::value* BerryMath::script::run(long line) {
             bigBracketsCount--;
         }
         if (
-                (code[i] == ';' && noBrackets)
-            || (code[i] == '/' && code.length() < i + 1 && code[i + 1] == '/')
+                (code[i] == ';' && noBrackets)// 分号
+            || (code[i] == '/' && code.length() < i + 1 && code[i + 1] == '/')// 或者注释
                 ) {// 单行语句
 //            std::cout << "build AST." << std::endl;
             ast = new BerryMath::AST(c);
@@ -133,12 +133,30 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             }
         }
     }
+    if (op == "array") {
+//        std::cout << now->size() << std::endl;
+        for (int i = 0; i < now->size(); i++) {
+            auto s = new script(new AST(now->at(i)), filename, this);
+            s->init(systemJsonContent);
+            delete ret;
+            ret = s->run(line);
+//            std::cout << ret->valueOf() << std::endl;
+            ret = new value("1");
+        }
+    }
     if (op == "=") {
         string name = now->at(0)->value();
-        auto s = new script(new AST(now->at(1)), filename, this);
-        s->init(systemJsonContent);
-        auto v = s->run(line);
-        scope->set(name, v);
+        if (now->at(1)->value() == "array") {// 是设置为数组
+            auto s = new script(new AST(now->at(1)), filename, this);
+            s->init(systemJsonContent);
+            auto v = s->run(line);
+            scope->set(name, v);
+        } else {
+            auto s = new script(new AST(now->at(1)), filename, this);
+            s->init(systemJsonContent);
+            auto v = s->run(line);
+            scope->set(name, v);
+        }
 //                std::cout << "set: " << name << std::endl;
     }
     if (op == "~") {
