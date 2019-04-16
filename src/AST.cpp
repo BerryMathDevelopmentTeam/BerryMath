@@ -38,7 +38,6 @@ void BerryMath::AST::parse() {
         }
         first = false;
         if (t.token == IF_TOKEN) {
-//            std::cout << "if token" << std::endl;
             int bracketsCount(0);// 首先存储小括号次数
             lex::lexToken op_t;
             bool exitLoop(false);
@@ -75,12 +74,13 @@ void BerryMath::AST::parse() {
                 lexer.parseIndex++;
             } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
 //            if (exitLoop) break;
-            AST expressionAST(expression);
-            expressionAST.parse();
+//            AST* expressionAST = new AST(expression);
+//            expressionAST->parse();
             root->push(OPERATOR, "if");
-            root->at(-1)->push(expressionAST.value()->at(0));
+//            root->at(-1)->push(expressionAST->value()->at(0));
+            root->at(-1)->push(VALUE, expression);
             root->at(-1)->push(VALUE, then);
-//            std::cout << "abc" << std::endl;
+//            std::cout << "if token" << std::endl;
             break;
         }
         if (t.token == FOR_TOKEN) {
@@ -105,11 +105,17 @@ void BerryMath::AST::parse() {
             int minOpIndex(-1);
             long tokenLen(0);
             bool callFunction(false);
+            bool array(false);
             string minOp("");
             lex::lexToken op_t;
             op_t.token = INIT_TOKEN;
 //            lex::lexToken unknow;
 //            unknow.token = INIT_TOKEN;
+//            lexer.parseIndex = 0;
+            if (t.token == MIDDLE_BRACKETS_LEFT_TOKEN) {
+                lexer.parseIndex = 0;
+//                std::cout << lexer.parseIndex << std::endl;
+            }
 //            lexer.parseIndex = 0;
             while (op_t.token != END_TOKEN) {
                 op_t = lexer.get();
@@ -139,42 +145,53 @@ void BerryMath::AST::parse() {
                         }
                         base *= pri;
                     } else if (op_t.str == ")") {
-                        base /= pri;
+//                        base /= pri;
+                        base /= priority("]");
                     }
+                    if (op_t.str == "[") {
+                        if (unknown.token != UNKNOWN_TOKEN && (base * ARRAY_VALUE_PRI) <= minPri && !array) {
+                            minOpIndex = lexer.parseIndex;
+                            minPri = 15;
+                            callFunction = false;
+                            array = true;
+                        }
+                        base *= pri;
+                    } else if (op_t.str == "]") {
+                        base /= priority("[");
+                    }
+
                     pri *= base;
-                    if (!isNumber(op_t.str) && pri < minPri && op_t.str != "(" && op_t.str != ")") {
-//                            std::cout << op_t.str << std::endl;
+                    if (!isNumber(op_t.str) && op_t.str != "(" && op_t.str != ")" && pri < minPri && op_t.str != "[" && op_t.str != "]") {
                         minOpIndex = lexer.parseIndex;
                         minOp = op_t.str;
                         minPri = pri;
                         tokenLen = op_t.str.length();
                         callFunction = false;
+                        array = false;
+                    }
+                    if (op_t.str == "[" && !array && pri < minPri) {
+                        minOpIndex = lexer.parseIndex;
+                        minOp = op_t.str;
+                        minPri = pri;
+                        tokenLen = op_t.str.length();
+                        callFunction = false;
+                        array = false;
                     }
                 }
                 if (op_t.token == UNKNOWN_TOKEN) {
-//                    if (op_t.str == "number") {
-//                        std::cout << op_t.str << " of '" << code << "';" << std::endl;
-//                    }
                     if (unknown.token == INIT_TOKEN || unknown.token == NONE_TOKEN) {
                         unknown = op_t;
-//                        unknow.token = op_t.token;
-//                        unknow.str = op_t.str;
-//                        std::cout << "a" << std::endl;
                     } else {
                         root->str = "bad-tree";
                         break;
                     }
                 }
             }
-//            std::cout << minOpIndex << std::endl;
-            if (minOpIndex == -1) {// 说明没有符号
+            if (minOpIndex == -1 && !array) {// 说明没有符号并且不是数组
                 lexer.parseIndex = s;
                 auto n = lexer.get();
-//                std::cout << n.str << std::endl;
-//                int countXX(0);
                 while (n.str == "(" || n.str == ")") {
                     n = lexer.get();
-//                    countXX++;
                 }
                 n.str = trim(n.str);
                 if (priority(n.str) == 13) {// ++, --, !, ~
@@ -199,16 +216,13 @@ void BerryMath::AST::parse() {
                     auto ast = new AST(then);
                     ast->parse();
                     root->at(-1)->push(ast->root->at(-1));
-//                    std::cout << "tmp" << std::endl;
                 } else {
                     root->push(VALUE, n.str);
 //                    root->at(-1)->push(ast->root->at(-1));
                 }
                 break;
             }
-//            std::cout << minOpIndex << ", " << minPri << ", " << minOp << std::endl;
             minOpIndex--;
-//            std::cout << (minOp == "=") << std::endl;
 
             if (callFunction) {
                 root->push(OPERATOR, "call");
@@ -218,7 +232,6 @@ void BerryMath::AST::parse() {
                 for (int i = minOpIndex; i < minOpIndex + tokenLen; i++) {
                     in += code[i];
                 }
-//                std::cout << in << std::endl;
                 std::vector<string> arguments;
                 string expressionOne("");
                 int bCount(0);
@@ -247,7 +260,40 @@ void BerryMath::AST::parse() {
                 }
                 unknown.token = INIT_TOKEN;
                 unknown.str = "";
-//                std::cout << "";
+            } else if (array) {
+//                std::cout << minOp << std::endl;
+                root->push(OPERATOR, "array");
+
+                int bracketsCount(1);
+                string arr("");
+                vector<string> elesStr;
+                for (int i = minOpIndex + 1; i < code.length(); i++) {
+                    if (code[i] == '[') bracketsCount++;
+                    if (code[i] == ']') {
+                        bracketsCount--;
+                        if (bracketsCount == 0) {
+                            elesStr.push_back(arr);
+                            break;
+                        }
+                    }
+                    if (code[i] == ',' && bracketsCount <= 1) {
+                        elesStr.push_back(arr);
+                        arr = "";
+                    } else {
+                        arr += code[i];
+                    }
+//                    std::cout << code[i];
+                }
+                for (int i = 0; i < elesStr.size(); i++) {
+//                    root->at(-1)->push(VALUE, elesStr[i]);
+                    auto ast = new AST(elesStr[i]);
+                    ast->parse();
+                    root->at(-1)->push(ast->value()->at(0));
+                }
+//                std::cout << "Array";
+//                std::cout << std::endl;
+                unknown.token = INIT_TOKEN;
+                unknown.str = "";
             } else {
                 root->push(OPERATOR, minOp);
 
@@ -257,7 +303,6 @@ void BerryMath::AST::parse() {
                     if (code[i] == ')') bracketsCount--;
                     left += code[i];
                 }
-//            std::cout << "bracketsCountLeft: " << bracketsCount << std::endl;
                 if (bracketsCount > 0) {
                     for (int i = 0; i < bracketsCount; i++) {
                         left += ")";
@@ -267,14 +312,12 @@ void BerryMath::AST::parse() {
                         left = "(" + left;
                     }
                 }
-//            std::cout << left << std::endl;
                 bracketsCount = 0;
                 for (int i = minOpIndex + 1; i < code.length(); i++) {
                     if (code[i] == '(') bracketsCount++;
                     if (code[i] == ')') bracketsCount--;
                     right += code[i];
                 }
-//            std::cout << "bracketsCountRight: " << bracketsCount << std::endl;
                 if (bracketsCount > 0) {
                     for (int i = 0; i < bracketsCount; i++) {
                         right += ")";
@@ -284,9 +327,7 @@ void BerryMath::AST::parse() {
                         right = "(" + right;
                     }
                 }
-//            std::cout << right << std::endl;
                 bracketsCount = 0;
-//            std::cout << left << minOp << right << std::endl;
                 auto leftAST = new AST(left);
                 auto rightAST = new AST(right);
                 leftAST->parse();
@@ -298,16 +339,17 @@ void BerryMath::AST::parse() {
                     root->str = "bad-tree";
                     break;
                 }
-//            std::cout << code << std::endl;
-//            std::cout << left << std::endl;
-//            std::cout << "Right: '" << right << "'" << std::endl;
                 root->at(-1)->push(leftAST->root->at(-1));
                 root->at(-1)->push(rightAST->root->at(-1));
+                unknown.token = INIT_TOKEN;
+                unknown.str = "";
                 continue;
             }
         }
     }
-//    root->each([](ASTNode* n) {
+
+//    std::cout << "Built AST." << std::endl;
+    //    root->each([](ASTNode* n) {
 //        std::cout << BOLDMAGENTA << n->str << ", " << n->t << RESET << std::endl;
 //    });
 }
