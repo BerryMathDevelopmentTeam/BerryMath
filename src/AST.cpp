@@ -38,7 +38,6 @@ void BerryMath::AST::parse() {
         }
         first = false;
         if (t.token == IF_TOKEN) {
-//            std::cout << "if token" << std::endl;
             int bracketsCount(0);// 首先存储小括号次数
             lex::lexToken op_t;
             bool exitLoop(false);
@@ -75,12 +74,13 @@ void BerryMath::AST::parse() {
                 lexer.parseIndex++;
             } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
 //            if (exitLoop) break;
-            AST expressionAST(expression);
-            expressionAST.parse();
+//            AST* expressionAST = new AST(expression);
+//            expressionAST->parse();
             root->push(OPERATOR, "if");
-            root->at(-1)->push(expressionAST.value()->at(0));
+//            root->at(-1)->push(expressionAST->value()->at(0));
+            root->at(-1)->push(VALUE, expression);
             root->at(-1)->push(VALUE, then);
-//            std::cout << "abc" << std::endl;
+//            std::cout << "if token" << std::endl;
             break;
         }
         if (t.token == FOR_TOKEN) {
@@ -292,6 +292,8 @@ void BerryMath::AST::parse() {
                 }
 //                std::cout << "Array";
 //                std::cout << std::endl;
+                unknown.token = INIT_TOKEN;
+                unknown.str = "";
             } else {
                 root->push(OPERATOR, minOp);
 
@@ -339,6 +341,8 @@ void BerryMath::AST::parse() {
                 }
                 root->at(-1)->push(leftAST->root->at(-1));
                 root->at(-1)->push(rightAST->root->at(-1));
+                unknown.token = INIT_TOKEN;
+                unknown.str = "";
                 continue;
             }
         }
