@@ -39,6 +39,22 @@ BerryMath::value* Length(std::vector<BerryMath::value*> arguments, std::map<std:
     }
     return new BerryMath::value(BerryMath::NUMBER, "0");
 }
+BerryMath::value* Type(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto v = arguments[0];
+    auto t = BerryMath::type(v->valueOf());
+    switch (t) {
+        case BerryMath::NUMBER:
+            return new BerryMath::value(BerryMath::STRING, "\"number\"");
+        case BerryMath::STRING:
+            return new BerryMath::value(BerryMath::STRING, "\"string\"");
+        case BerryMath::OBJECT:
+            return new BerryMath::value(BerryMath::STRING, "\"object\"");
+        case BerryMath::FUNCTION:
+        case BerryMath::NATIVE_FUNCTION:
+            return new BerryMath::value(BerryMath::STRING, "\"function\"");
+    }
+    return new BerryMath::value(BerryMath::STRING, "\"undefined\"");
+}
 
 BerryMath::value* print(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
     long sz = arguments.size();
@@ -136,4 +152,16 @@ BerryMath::value* println(std::vector<BerryMath::value*> arguments, std::map<std
     print(arguments, argumentsHash);
     std::cout << std::endl;
     return new BerryMath::value(BerryMath::UNDEFINED, "undefined");
+}
+
+BerryMath::value* input(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    print(arguments, argumentsHash);
+    string v;
+    std::cin >> v;
+    auto t = BerryMath::type(v);
+    if (t == BerryMath::TOKEN_NAME) {
+        t = BerryMath::STRING;
+        v = "\"" + v + "\"";
+    }
+    return new BerryMath::value(t, v);
 }

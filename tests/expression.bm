@@ -2,8 +2,18 @@ a = 0;
 b = "Hello";
 println(b);
 println("\t123");
-println("\033[32m");
+// println("\033[32m");
 println(Length(b));
+c = "123";
+d = Number(c);
+println(d);
+e = input("What's your name?");
+println(e);
+println(Type(a));
+println(Type(b));
+println(Type(c));
+println(Type(d));
+println(Type(e));
 if (a == 0) {
-    println("123");
+    println("test");
 }
