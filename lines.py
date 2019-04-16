@@ -5,7 +5,7 @@ import sys
 import re
 
 root = os.getcwd()
-shields = ["CMakeFiles", "cmake-build-debug", "jsoncpp-src-0.5.0", ".idea", ".git", "system_libs"]
+shields = ["CMakeFiles", "cmake-build-debug", "jsoncpp-src-0.5.0", ".idea", ".git", "system_libs/BerryMathGlobal/include", "system_libs/BerryMathGlobal/src"]
 lines = 0
 sizes = 0
 same = root
