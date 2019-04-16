@@ -1,4 +1,9 @@
 a = 0;
+b = "Hello";
+println(b);
+println("\t123");
+println("\033[32m");
+println(Length(b));
 if (a == 0) {
     println("123");
 }
