@@ -83,6 +83,53 @@ void BerryMath::AST::parse() {
 //            std::cout << "if token" << std::endl;
             break;
         }
+
+        if (t.token == WHILE_TOKEN) {
+            int bracketsCount(0);// 首先存储小括号次数
+            lex::lexToken op_t;
+            bool exitLoop(false);
+            string expression("");
+            do {
+                op_t = lexer.get();
+                if (op_t.str == "(") bracketsCount++;
+                if (op_t.str == ")") bracketsCount--;
+                expression += op_t.str;
+                if (op_t.token == END_TOKEN && bracketsCount != 0) {
+                    root->str = "bad-tree";
+                    exitLoop = true;
+                    break;
+                }
+            } while (bracketsCount != 0);
+//            std::cout << expression << std::endl;
+            if (exitLoop) break;
+            string then("");// 存储接下来的语句
+            bracketsCount = 0;// 存储大括号次数
+            exitLoop = false;
+            bool noBrackets = true;
+            do {
+                if (code[lexer.parseIndex] == '{') {
+                    if (bracketsCount > 1) then += code[lexer.parseIndex];
+                    bracketsCount++;
+                    noBrackets = false;
+                } else if (code[lexer.parseIndex] == '}') {
+                    if (bracketsCount > 1) then += code[lexer.parseIndex];
+                    bracketsCount--;
+                    noBrackets = false;
+                } else {
+                    then += code[lexer.parseIndex];
+                }
+                lexer.parseIndex++;
+            } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
+//            if (exitLoop) break;
+//            AST* expressionAST = new AST(expression);
+//            expressionAST->parse();
+            root->push(OPERATOR, "while");
+//            root->at(-1)->push(expressionAST->value()->at(0));
+            root->at(-1)->push(VALUE, expression);
+            root->at(-1)->push(VALUE, then);
+//            std::cout << "while token" << std::endl;
+            break;
+        }
         if (t.token == FOR_TOKEN) {
             std::cout << "for token" << std::endl;
         }

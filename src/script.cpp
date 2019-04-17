@@ -93,9 +93,22 @@ BerryMath::value* BerryMath::script::run(long line) {
                     delete ret;
                     ret = then->run(line);
                 }
-//                delete ret;
-//                ret = r;
-//                std::cout << r->valueOf() << std::endl;
+            }
+            if (ast->value()->at(0)->value() == "while") {
+//                std::cout << "123" << std::endl;
+                while (true) {
+                    auto s = new script(ast->value()->at(0)->at(0)->value(), filename, this);
+                    s->init(systemJsonContent);
+                    auto con = s->run(line);
+                    if (isTrue(con->valueOf())) {
+                        auto then = new script(ast->value()->at(0)->at(1)->value(), filename, this);
+                        then->init(systemJsonContent);
+                        delete ret;
+                        ret = then->run(line);
+                    } else {
+                        break;
+                    }
+                }
             }
             noBrackets = true;
             c = "";
@@ -168,6 +181,23 @@ void BerryMath::script::parse(value*& ret, AST::ASTNode *root, long line) {
             scope->set(name, v);
         }
 //                std::cout << "set: " << name << std::endl;
+    }
+    if (op == "!=") {
+        string name = now->at(0)->value();
+        auto s = new script(new AST(now->at(1)), filename, this);
+        s->init(systemJsonContent);
+        auto v = s->run(line);
+        delete ret;
+        if (v->typeOf() != OBJECT) {
+            auto aV = scope->of(name);
+            if (aV->valueOf().valueOf() != v->valueOf()) {
+                ret = new value("1");
+            } else {
+                ret = new value("0");
+            }
+        } else {
+            ret = new value("0");
+        }
     }
     if (op == "==") {
         string name = now->at(0)->value();
