@@ -97,6 +97,7 @@ BerryMath::value* BerryMath::script::run(long line) {
 //                ret = r;
 //                std::cout << r->valueOf() << std::endl;
             }
+            noBrackets = true;
             c = "";
         }
         i++;
