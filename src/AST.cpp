@@ -182,8 +182,8 @@ void BerryMath::AST::parse() {
                     if (unknown.token == INIT_TOKEN || unknown.token == NONE_TOKEN) {
                         unknown = op_t;
                     } else {
-                        root->str = "bad-tree";
-                        break;
+//                        root->str = "bad-tree";
+//                        break;
                     }
                 }
             }

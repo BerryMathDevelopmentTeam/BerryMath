@@ -123,7 +123,7 @@ BerryMath::value* print(std::vector<BerryMath::value*> arguments, std::map<std::
                                     if (i + 2 < n.length() && n[i + 1] == '3' && n[i + 2] == '3') {
                                         string t("");
                                         for (i += 3; i < n.length() && n[i] != 'm'; i++) t += n[i];
-                                        t += n[i++];
+                                        t += n[i];
 //                                        std::cout << t << std::endl;
                                         std::cout << ("\033" + t);
                                     } else {
@@ -164,4 +164,11 @@ BerryMath::value* input(std::vector<BerryMath::value*> arguments, std::map<std::
         v = "\"" + v + "\"";
     }
     return new BerryMath::value(t, v);
+}
+BerryMath::value* Exit(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    string c("0");
+    if (arguments.size() >= 1) c = arguments[0]->valueOf();
+    int code = atoi(c.c_str());
+    exit(code);
+//    return new BerryMath::value(BerryMath::UNDEFINED, "undefined");
 }

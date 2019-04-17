@@ -1,19 +1,8 @@
-a = 0;
-b = "Hello";
-println(b);
-println("\t123");
-// println("\033[32m");
-println(Length(b));
-c = "123";
-d = Number(c);
-println(d);
-e = input("What's your name?");
-println(e);
-println(Type(a));
-println(Type(b));
-println(Type(c));
-println(Type(d));
-println(Type(e));
-if (a == 0) {
-    println("test");
+println("Hello", input("What's your name?"));
+password = String(input("Password:"));
+if (password == "123456789") {
+    println("Hi!");
+    Exit(0);
 }
+println("\033[31mWrong password.\033[0m");
+Exit(1);
