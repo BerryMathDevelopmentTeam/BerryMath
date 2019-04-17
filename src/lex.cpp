@@ -197,7 +197,7 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
         } else if (str == "|") {
             token = BerryMath::MATH_OR_TOKEN;
             parseIndex++;
-            if (parseIndex < program.length() && program[parseIndex] == '&') {
+            if (parseIndex < program.length() && program[parseIndex] == '|') {
                 token = BerryMath::LOGICAL_OR_TOKEN;
                 parseIndex++;
                 str += '|';

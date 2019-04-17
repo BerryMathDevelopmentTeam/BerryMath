@@ -44,7 +44,7 @@ bool BerryMath::isTrue(string s) {
             if (s == "''" || s == "\"\"") return false;
             return true;
         case NUMBER:
-            if (s == "0") return false;
+            if (atof(s.c_str()) == 0) return false;
             return true;
         default:
             return false;

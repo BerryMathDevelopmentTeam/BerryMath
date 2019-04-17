@@ -1,10 +1,6 @@
-println("Hello", input("What's your name?"));
-password = String(input("Password:"));
-count = 0;
-while (password != "123456") {
-    count += 1;
-    println("Wrong password.");
-    println("Count: ", String(count));
-    password = String(input("Password:"));
+score = input("score:");
+if (score > 100 || score < 0) {
+    println("Wrong score");
+    Exit(1);
 }
-println("Hi!");
+println(score);
