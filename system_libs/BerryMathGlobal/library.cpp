@@ -22,7 +22,10 @@ BerryMath::value* Number(std::vector<BerryMath::value*> arguments, std::map<std:
 BerryMath::value* String(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
     auto v = arguments[0];
     if (v->typeOf() == BerryMath::NUMBER) {
-        return new BerryMath::value(BerryMath::STRING, "\"" + v->valueOf() + "\"");
+        string t = v->valueOf();
+        while (t.length() > 0 && t[t.length() - 1] == '0') t.erase(t.end() - 1);
+        if (t[t.length() - 1] == '.') t.erase(t.end() - 1);
+        return new BerryMath::value(BerryMath::STRING, "\"" + t + "\"");
     }
     if (v->typeOf() == BerryMath::STRING) {
         return new BerryMath::value(BerryMath::STRING, v->valueOf());
