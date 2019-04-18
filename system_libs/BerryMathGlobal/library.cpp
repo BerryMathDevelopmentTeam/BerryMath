@@ -168,6 +168,13 @@ BerryMath::value* input(std::vector<BerryMath::value*> arguments, std::map<std::
     }
     return new BerryMath::value(t, v);
 }
+BerryMath::value* inputraw(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    print(arguments, argumentsHash);
+    string v;
+    std::cin >> v;
+    v = "\"" + v + "\"";
+    return new BerryMath::value(BerryMath::STRING, v);
+}
 BerryMath::value* Exit(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
     string c("0");
     if (arguments.size() >= 1) c = arguments[0]->valueOf();
