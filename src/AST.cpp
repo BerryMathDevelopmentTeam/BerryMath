@@ -73,13 +73,81 @@ void BerryMath::AST::parse() {
                 }
                 lexer.parseIndex++;
             } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
-//            if (exitLoop) break;
-//            AST* expressionAST = new AST(expression);
-//            expressionAST->parse();
             root->push(OPERATOR, "if");
-//            root->at(-1)->push(expressionAST->value()->at(0));
             root->at(-1)->push(VALUE, expression);
             root->at(-1)->push(VALUE, then);
+            auto rawIndex = lexer.parseIndex;
+            lex::lexToken thenT;
+            do {
+                rawIndex = lexer.parseIndex;
+                thenT = lexer.get();
+                if (thenT.token == ELIF_TOKEN) {
+                    int bracketsCount(0);// 首先存储小括号次数
+                    lex::lexToken op_t;
+                    bool exitLoop(false);
+                    string expression("");
+                    do {
+                        op_t = lexer.get();
+                        if (op_t.str == "(") bracketsCount++;
+                        if (op_t.str == ")") bracketsCount--;
+                        expression += op_t.str;
+                        if (op_t.token == END_TOKEN && bracketsCount != 0) {
+                            root->str = "bad-tree";
+                            exitLoop = true;
+                            break;
+                        }
+                    } while (bracketsCount != 0);
+//            std::cout << expression << std::endl;
+                    if (exitLoop) break;
+                    string then("");// 存储接下来的语句
+                    bracketsCount = 0;// 存储大括号次数
+                    exitLoop = false;
+                    bool noBrackets = true;
+                    do {
+                        if (code[lexer.parseIndex] == '{') {
+                            if (bracketsCount > 1) then += code[lexer.parseIndex];
+                            bracketsCount++;
+                            noBrackets = false;
+                        } else if (code[lexer.parseIndex] == '}') {
+                            if (bracketsCount > 1) then += code[lexer.parseIndex];
+                            bracketsCount--;
+                            noBrackets = false;
+                        } else {
+                            then += code[lexer.parseIndex];
+                        }
+                        lexer.parseIndex++;
+                    } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
+                    root->at(-1)->push(OPERATOR, "elif");
+                    root->at(-1)->at(-1)->push(VALUE, expression);
+                    root->at(-1)->at(-1)->push(VALUE, then);
+                } else if (thenT.token == ELSE_TOKEN) {
+                    int bracketsCount(0);// 首先存储小括号次数
+                    lex::lexToken op_t;
+                    string then("");// 存储接下来的语句
+                    bracketsCount = 0;// 存储大括号次数
+                    bool noBrackets = true;
+                    do {
+                        if (code[lexer.parseIndex] == '{') {
+                            if (bracketsCount > 1) then += code[lexer.parseIndex];
+                            bracketsCount++;
+                            noBrackets = false;
+                        } else if (code[lexer.parseIndex] == '}') {
+                            if (bracketsCount > 1) then += code[lexer.parseIndex];
+                            bracketsCount--;
+                            noBrackets = false;
+                        } else {
+                            then += code[lexer.parseIndex];
+                        }
+                        lexer.parseIndex++;
+                    } while ((noBrackets || bracketsCount != 0) && lexer.parseIndex < code.length());
+                    root->at(-1)->push(OPERATOR, "else");
+                    root->at(-1)->at(-1)->push(VALUE, then);
+                    break;
+                } else {
+                    lexer.parseIndex = rawIndex;
+                    break;
+                }
+            } while (lexer.parseIndex < code.length());
 //            std::cout << "if token" << std::endl;
             break;
         }

@@ -2,5 +2,8 @@ score = input("score:");
 if (score > 100 || score < 0) {
     println("Wrong score");
     Exit(1);
+} elif (score == 90) {
+    println("Great score: 90");
+} else {
+    println(score);
 }
-println(score);

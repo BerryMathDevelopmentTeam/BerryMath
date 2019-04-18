@@ -79,6 +79,41 @@ BerryMath::value* BerryMath::script::run(long line) {
             c = "";
         }
         if (!noBrackets && bigBracketsCount == 0) {// 包含大括号的诸如if语句等
+            auto rawI = i;
+            bool looped = false;
+            while (true) {
+                while (i < code.length() && code[++i] == ' ') { c += code[i]; }
+                if (!(i + 1 < code.length() && code[i] == 'e' && code[i + 1] == 'l')) break;
+//                i = rawI;
+                noBrackets = true;
+                c += code[i];
+                while (true) {
+                    i++;
+                    if (i >= code.length()) break;
+                    if (!(code[i] == '/' && code.length() < i + 1 && code[i + 1] == '/')) // 去除注释的干扰
+                        c += code[i];
+//        std::cout << code[i];
+                    if (code[i] == '\n') {
+                        line++;
+                    }
+                    if (code[i] == '{') {
+                        noBrackets = false;
+                        bigBracketsCount++;
+                    }
+                    if (code[i] == '}') {
+                        noBrackets = false;
+                        bigBracketsCount--;
+                    }
+                    if (!noBrackets && bigBracketsCount == 0) {
+                        break;
+                    }
+                }
+                looped = true;
+            }
+            if (!looped) {
+                i = rawI;
+            }
+//            std::cout << c << std::endl;
             ast = new BerryMath::AST(c);
             ast->parse();
 //            std::cout << "!@$" << std::endl;
@@ -92,6 +127,28 @@ BerryMath::value* BerryMath::script::run(long line) {
                     then->init(systemJsonContent);
                     delete ret;
                     ret = then->run(line);
+                }
+                const auto sz = ast->value()->at(0)->size();
+                for (auto j = 2; j < sz; j++) {
+                    auto node = ast->value()->at(0)->at(j);
+                    if (node->value() == "elif") {
+                        auto s = new script(node->at(0)->value(), filename, this);
+                        s->init(systemJsonContent);
+                        auto con = s->run(line);
+                        if (isTrue(con->valueOf())) {
+                            auto then = new script(node->at(1)->value(), filename, this);
+                            then->init(systemJsonContent);
+                            delete ret;
+                            ret = then->run(line);
+                            break;
+                        }
+                    } else {
+                        auto then = new script(node->at(0)->value(), filename, this);
+                        then->init(systemJsonContent);
+                        delete ret;
+                        ret = then->run(line);
+                        break;
+                    }
                 }
             }
             if (ast->value()->at(0)->value() == "while") {
