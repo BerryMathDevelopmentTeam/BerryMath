@@ -1,19 +1,2 @@
-name = input("name:");
-score = input("score:");
-start = Time();
-level = score / 25;
-if (score > 100 || score < 0) {
-    println("Wrong score");
-    Exit(1);
-} elif (score == 100) {
-    println("Wonderful score:", score);
-} elif (score >= 90) {
-    println("Great score:", score);
-} elif (score >= 60) {
-    println("Qualified score:", score);
-} else {
-    println("Unqualified score:", score);
-}
-println("Your level: Lv" + Round(level, 2) + ". @" + name);
-end = Time();
-println("Used " + String(end - start) + "ms.");
+println(Randint(-10, 10));
+println(Random(-10, 10));

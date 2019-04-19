@@ -20,5 +20,7 @@ extern "C" BerryMath::value* input(std::vector<BerryMath::value*>, std::map<std:
 extern "C" BerryMath::value* inputraw(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
 extern "C" BerryMath::value* Exit(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
 extern "C" BerryMath::value* Time(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
+extern "C" BerryMath::value* Random(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
+extern "C" BerryMath::value* Randint(std::vector<BerryMath::value*>, std::map<std::string, BerryMath::value*>);
 
 #endif

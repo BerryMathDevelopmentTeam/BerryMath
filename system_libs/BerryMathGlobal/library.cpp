@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <BerryMath.h>
+#include <random>
 #include <sys/time.h>
 #include <regex>
 
@@ -258,6 +259,28 @@ BerryMath::value* Exit(std::vector<BerryMath::value*> arguments, std::map<std::s
 }
 BerryMath::value* Time(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
     struct timeval tv;
-    gettimeofday(&tv, NULL);    //该函数在sys/time.h头文件中
+    gettimeofday(&tv, NULL);
     return new BerryMath::value(BerryMath::NUMBER, std::to_string(tv.tv_sec * 1000 + tv.tv_usec / 1000));
+}
+BerryMath::value* Randint(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto s = arguments[0];
+    auto e = arguments[1];
+    auto sV = atoi(s->valueOf().c_str());
+    auto eV = atoi(e->valueOf().c_str());
+//    auto range = eV - sV;
+    std::default_random_engine er;
+    std::uniform_int_distribution<int> ur(sV, eV);
+    er.seed(time(0));
+    return new BerryMath::value(BerryMath::NUMBER, std::to_string(ur(er)));
+}
+BerryMath::value* Random(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto s = arguments[0];
+    auto e = arguments[1];
+    auto sV = atof(s->valueOf().c_str());
+    auto eV = atof(e->valueOf().c_str());
+//    auto range = eV - sV;
+    std::default_random_engine er;
+    std::uniform_real_distribution<double> ur(sV, eV);
+    er.seed(time(0));
+    return new BerryMath::value(BerryMath::NUMBER, std::to_string(ur(er)));
 }
