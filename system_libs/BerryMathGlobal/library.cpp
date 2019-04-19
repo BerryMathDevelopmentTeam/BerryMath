@@ -19,6 +19,80 @@ BerryMath::value* Number(std::vector<BerryMath::value*> arguments, std::map<std:
     }
     return new BerryMath::value(BerryMath::NUMBER, "0");
 }
+BerryMath::value* IntString(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto v = Number(arguments, argumentsHash);
+    string t = v->valueOf();
+    while (t.length() > 0 && t[t.length() - 1] != '.') t.erase(t.end() - 1);
+    t.erase(t.end() - 1);
+    return new BerryMath::value(BerryMath::STRING, "\"" + t + "\"");
+}
+BerryMath::value* Round(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto v = Number(arguments, argumentsHash);
+    auto lenV = arguments[1];
+    auto len = atoi(lenV->valueOf().c_str());
+    string t = v->valueOf();
+    int i = 0;
+    while (t[i++] != '.' && i < t.length()) { }
+    int addCount = len - t.length() + i;
+    for (auto j = 0; j < addCount; j++) {
+        t += "0";
+    }
+    if (addCount < 0) {
+        addCount = -addCount;
+        for (auto j = 1; j < addCount; j++) {
+            t.erase(t.end() - 1);
+        }
+        if (t[t.length() - 1] >= '5') {
+            t.erase(t.end() - 1);
+            t[t.length() - 1] = t[t.length() - 1] + (char)(1);
+        } else {
+            t.erase(t.end() - 1);
+        }
+    }
+    if (t[t.length() - 1] == '.') t.erase(t.end() - 1);
+    return new BerryMath::value(BerryMath::STRING, "\"" + t + "\"");
+}
+BerryMath::value* Floor(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto v = Number(arguments, argumentsHash);
+    auto lenV = arguments[1];
+    auto len = atoi(lenV->valueOf().c_str());
+    string t = v->valueOf();
+    int i = 0;
+    while (t[i++] != '.' && i < t.length()) { }
+    int addCount = len - t.length() + i;
+    for (auto j = 0; j < addCount; j++) {
+        t += "0";
+    }
+    if (addCount < 0) {
+        addCount = -addCount;
+        for (auto j = 0; j < addCount; j++) {
+            t.erase(t.end() - 1);
+        }
+    }
+    if (t[t.length() - 1] == '.') t.erase(t.end() - 1);
+    return new BerryMath::value(BerryMath::STRING, "\"" + t + "\"");
+}
+BerryMath::value* Ceil(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    auto v = Number(arguments, argumentsHash);
+    auto lenV = arguments[1];
+    auto len = atoi(lenV->valueOf().c_str());
+    string t = v->valueOf();
+    int i = 0;
+    while (t[i++] != '.' && i < t.length()) { }
+    int addCount = len - t.length() + i;
+    for (auto j = 0; j < addCount; j++) {
+        t += "0";
+    }
+    if (addCount < 0) {
+        addCount = -addCount;
+        for (auto j = 0; j < addCount; j++) {
+            t.erase(t.end() - 1);
+        }
+        t[t.length() - 1] = t[t.length() - 1] + (char)(1);
+    }
+    if (t[t.length() - 1] == '.') t.erase(t.end() - 1);
+    return new BerryMath::value(BerryMath::STRING, "\"" + t + "\"");
+}
 BerryMath::value* String(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
     auto v = arguments[0];
     if (v->typeOf() == BerryMath::NUMBER) {

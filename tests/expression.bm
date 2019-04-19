@@ -13,4 +13,4 @@ if (score > 100 || score < 0) {
 } else {
     println("Unqualified score:", score);
 }
-println("Your level: " + String(level) + " @" + name);
+println("Your level: " + Round(level, 2) + " @" + name);
