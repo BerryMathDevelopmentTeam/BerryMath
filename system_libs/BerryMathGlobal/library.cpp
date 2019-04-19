@@ -1,9 +1,9 @@
 #include "library.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <BerryMath.h>
+#include <sys/time.h>
 #include <regex>
 
 BerryMath::value* Number(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
@@ -255,4 +255,9 @@ BerryMath::value* Exit(std::vector<BerryMath::value*> arguments, std::map<std::s
     int code = atoi(c.c_str());
     exit(code);
 //    return new BerryMath::value(BerryMath::UNDEFINED, "undefined");
+}
+BerryMath::value* Time(std::vector<BerryMath::value*> arguments, std::map<std::string, BerryMath::value*> argumentsHash) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);    //该函数在sys/time.h头文件中
+    return new BerryMath::value(BerryMath::NUMBER, std::to_string(tv.tv_sec * 1000 + tv.tv_usec / 1000));
 }

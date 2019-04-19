@@ -1,5 +1,6 @@
 name = input("name:");
 score = input("score:");
+start = Time();
 level = score / 25;
 if (score > 100 || score < 0) {
     println("Wrong score");
@@ -13,4 +14,6 @@ if (score > 100 || score < 0) {
 } else {
     println("Unqualified score:", score);
 }
-println("Your level: " + Round(level, 2) + " @" + name);
+println("Your level: Lv" + Round(level, 2) + ". @" + name);
+end = Time();
+println("Used " + String(end - start) + "ms.");
