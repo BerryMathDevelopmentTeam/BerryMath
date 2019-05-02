@@ -127,6 +127,7 @@ BerryMath::value* BerryMath::script::run(long line) {
                     then->init(systemJsonContent);
                     delete ret;
                     ret = then->run(line);
+                    break;
                 }
                 const auto sz = ast->value()->at(0)->size();
                 for (auto j = 2; j < sz; j++) {

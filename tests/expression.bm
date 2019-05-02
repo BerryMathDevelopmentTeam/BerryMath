@@ -1,2 +1,10 @@
-println(Randint(-10, 10));
-println(Random(-10, 10));
+p = Randint(-100, 100);
+
+println(p);
+if (p < 0) {
+    println("less than 0");
+} elif (p == 0) {
+    println("equal 0");
+} else {
+    println("more than 0");
+}
