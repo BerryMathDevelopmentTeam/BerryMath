@@ -82,6 +82,15 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
             } else if (str == "function") {
                 token = BerryMath::CREATE_FUNCTION_TOKEN;
                 break;
+            } else if (str == "break") {
+                token = BerryMath::BREAK_TOKEN;
+                break;
+            } else if (str == "continue") {
+                token = BerryMath::CONTINUE_TOKEN;
+                break;
+            } else if (str == "return") {
+                token = BerryMath::CONTINUE_TOKEN;
+                break;
             } else {
                 if (str != "") {
                     token = BerryMath::UNKNOWN_TOKEN;

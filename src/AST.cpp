@@ -201,6 +201,12 @@ void BerryMath::AST::parse() {
         if (t.token == FOR_TOKEN) {
             std::cout << "for token" << std::endl;
         }
+        if (t.token == BREAK_TOKEN) {
+            root->push(OPERATOR, "break");
+        }
+        if (t.token == CONTINUE_TOKEN) {
+            root->push(OPERATOR, "continue");
+        }
         if (t.token == END_TOKEN) {
             if (unknown.token != NONE_TOKEN && unknown.token != INIT_TOKEN) {
 //                    std::cerr << BOLDRED << "SyntaxError: Unexpected token '" << unknown.str << "'." << RESET << std::endl;

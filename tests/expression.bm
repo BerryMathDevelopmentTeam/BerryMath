@@ -2,9 +2,9 @@ p = Randint(-100, 100);
 
 println(p);
 if (p < 0) {
-    println("less than 0");
+    println("less than 0");// 小于0
 } elif (p == 0) {
-    println("equal 0");
+    println("equal 0");// 等于0
 } else {
-    println("more than 0");
+    println("more than 0");// 大于0
 }

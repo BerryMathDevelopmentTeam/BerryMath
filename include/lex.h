@@ -58,6 +58,8 @@ namespace BerryMath {
         CREATE_VARIABLE_TOKEN, CREATE_FUNCTION_TOKEN,
         IF_TOKEN, ELIF_TOKEN, ELSE_TOKEN,
         WHILE_TOKEN, DO_TOKEN, FOR_TOKEN,
+        BREAK_TOKEN, CONTINUE_TOKEN,
+        RETURN_TOKEN,
         INIT_TOKEN, NOTE_TOKEN
     };
     class lex {

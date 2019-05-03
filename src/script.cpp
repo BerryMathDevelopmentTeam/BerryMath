@@ -75,6 +75,14 @@ BerryMath::value* BerryMath::script::run(long line) {
             ast = new BerryMath::AST(c);
             ast->parse();
             auto root = ast->value();
+            if (root->at(0)->value() == "break") {
+                delete ret;
+                ret = new BerryMath::value(TOKEN_NAME, "break loop");
+                return ret;
+            }
+            if (root->at(0)->value() == "continue") {
+                return ret;
+            }
             parse(ret, root, line);
             c = "";
         }
@@ -163,6 +171,13 @@ BerryMath::value* BerryMath::script::run(long line) {
                         then->init(systemJsonContent);
                         delete ret;
                         ret = then->run(line);
+                        if (ret->typeOf() == TOKEN_NAME) {
+                            if (ret->valueOf() == "break loop") {
+                                delete ret;
+                                ret = new value(UNDEFINED, "undefined");
+                                break;
+                            }
+                        }
                     } else {
                         break;
                     }
