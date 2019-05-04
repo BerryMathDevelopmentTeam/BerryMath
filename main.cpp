@@ -4,14 +4,14 @@
 
 int main() {
 //    BerryMath::script s("foo= 1 + 5 * 2;");
-    string filename("expression.bm");
+    string filename("for.bm");
     std::ifstream in("tests/" + filename);
 
     // 载入script
     string script("");
     string tmp;
     if (!in.is_open()) {
-        std::cerr << RED << "SystemError: Opening 'tests/variable.bm' failed." << RESET << std::endl;
+        std::cerr << RED << "SystemError: Opening 'tests/for.bm' failed." << RESET << std::endl;
         exit(1);
     }
     while (getline(in, tmp)) {

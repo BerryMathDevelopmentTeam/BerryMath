@@ -63,7 +63,6 @@ BerryMath::value* BerryMath::script::run(long line) {
             bigBracketsCount++;
         }
         if (code[i] == '}') {
-            noBrackets = false;
             bigBracketsCount--;
         }
         if (
@@ -124,7 +123,6 @@ BerryMath::value* BerryMath::script::run(long line) {
 //            std::cout << c << std::endl;
             ast = new BerryMath::AST(c);
             ast->parse();
-//            std::cout << "!@$" << std::endl;
             if (ast->value()->at(0)->value() == "if") {
 //                std::cout << "123" << std::endl;
                 auto s = new script(ast->value()->at(0)->at(0)->value(), filename, this);

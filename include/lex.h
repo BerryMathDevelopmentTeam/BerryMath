@@ -60,6 +60,7 @@ namespace BerryMath {
         WHILE_TOKEN, DO_TOKEN, FOR_TOKEN,
         BREAK_TOKEN, CONTINUE_TOKEN,
         RETURN_TOKEN,
+        FROM_TOKEN, TO_TOKEN, WITH_TOKEN,
         INIT_TOKEN, NOTE_TOKEN
     };
     class lex {

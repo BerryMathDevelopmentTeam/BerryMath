@@ -198,8 +198,84 @@ void BerryMath::AST::parse() {
 //            std::cout << "while token" << std::endl;
             break;
         }
-        if (t.token == FOR_TOKEN) {
-            std::cout << "for token" << std::endl;
+        if (t.str == "for") {
+            // for循环格式:
+            // for from s to e with v {
+            //      s, e为一个表达式, v为循环变量
+            // }
+
+
+            // get from token
+            t = lexer.get();
+            if (t.token != FROM_TOKEN) {
+                root->str = "bad-tree";
+                break;
+            }
+
+
+            // get from的值
+            string exprFrom("");
+            lex::lexToken op_t = lexer.get();
+            while (op_t.token != TO_TOKEN && op_t.token != END_TOKEN) {
+                exprFrom += op_t.str;
+                op_t = lexer.get();
+            }
+            if (op_t.token != TO_TOKEN) {
+                root->str = "bad-tree";
+                break;
+            }
+
+            // get to的值
+            string exprTo("");
+            op_t = lexer.get();
+            while (op_t.token != WITH_TOKEN && op_t.token != END_TOKEN) {
+                exprTo += op_t.str;
+                op_t = lexer.get();
+            }
+            if (op_t.token != WITH_TOKEN) {
+                root->str = "bad-tree";
+                break;
+            }
+
+            // 获取循环变量名
+            t = lexer.get();
+            string withToken = t.str;
+
+            // 获取循环变量到底是for循环内部局部变量还是全局变量还是for循环所在作用域的变量
+            auto tmpParseIndex = lexer.parseIndex;
+            string loopFlag("");
+            t = lexer.get();
+            loopFlag = t.str;
+            if (loopFlag != "local" && loopFlag != "global" && loopFlag != "out") {
+                loopFlag = "local";// 这说明省略了循环变量的类型，就默认为local
+                lexer.parseIndex = tmpParseIndex;
+            }
+
+            // 获取for语句中的代码
+            t = lexer.get();
+            if (t.str != "{") {
+                root->str = "bad-tree";
+                break;
+            }
+            string then("{");
+            bool exitLoop(false);
+            int bracketCount(1);
+            int i(lexer.parseIndex);
+            for (; i < code.length(); i++) {
+                if (code[i] == '{') bracketCount++;
+                if (code[i] == '}') bracketCount--;
+                then += code[i];
+                if (bracketCount == 0) break;
+            }
+
+            root->push(OPERATOR, "for");
+            root->at(-1)->push(OPERATOR, "range");
+            root->at(-1)->at(0)->push(VALUE, exprFrom);
+            root->at(-1)->at(0)->push(VALUE, exprTo);
+            root->at(-1)->push(OPERATOR, "with");
+            root->at(-1)->at(1)->push(VALUE, withToken);
+            root->at(-1)->at(1)->push(VALUE, loopFlag);
+            root->at(-1)->push(VALUE, then);
         }
         if (t.token == BREAK_TOKEN) {
             root->push(OPERATOR, "break");

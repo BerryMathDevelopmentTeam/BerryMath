@@ -42,7 +42,32 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
             }
             break;
         }
+        if (program[parseIndex] >= '0' && program[parseIndex] <= '9' && !trim(str).empty()) {
+            token = NUMBER_TOKEN;
+        }
+        if (program[parseIndex] == '.' && !trim(str).empty()) {
+            token = DOT_TOKEN;
+        }
         if (program[parseIndex] == ' ') {
+            auto tmp = str;
+            str = trim(str);
+            if (str == "for") {
+                token = FOR_TOKEN;
+                break;
+            } else if (str == "from") {
+                token = FROM_TOKEN;
+                break;
+            } else if (str == "to") {
+                token = TO_TOKEN;
+                break;
+            } else if (str == "with") {
+                token = WITH_TOKEN;
+                break;
+            } else if (type(str) == NUMBER_TOKEN) {
+                token = NUMBER_TOKEN;
+                break;
+            }
+            str = tmp;
             if (token == BerryMath::INIT_TOKEN) {
                 parseIndex++;
                 continue;
@@ -56,8 +81,9 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
             whileToEnd();
             break;
         }
-        str = trim(str);
         if (BerryMath::isSymbol(program[parseIndex])) {
+            auto tmp = str;
+            str = trim(str);
             if (str == "if") {
                 token = BerryMath::IF_TOKEN;
                 break;
@@ -91,11 +117,21 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
             } else if (str == "return") {
                 token = BerryMath::CONTINUE_TOKEN;
                 break;
+            } else if (str == "from") {
+                token = BerryMath::FROM_TOKEN;
+                break;
+            } else if (str == "to") {
+                token = BerryMath::TO_TOKEN;
+                break;
+            } else if (str == "with") {
+                token = BerryMath::WITH_TOKEN;
+                break;
             } else {
                 if (str != "") {
                     token = BerryMath::UNKNOWN_TOKEN;
                     break;
                 }
+
             }
         }
         str += program[parseIndex];
