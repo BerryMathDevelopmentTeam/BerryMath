@@ -1,3 +1,4 @@
-for from 0 to 10000 with i by 2 local  {
+for from 0 to 100 with i by 2 local  {
     res = i * i;
+    println(res);
 }

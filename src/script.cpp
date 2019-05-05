@@ -215,17 +215,36 @@ BerryMath::value* BerryMath::script::run(long line) {
                 auto var = new variable(name, fromV);
 //                std::cout << then << std::endl;
                 if (flag == "local") {
+                    auto sc = new script(then, filename, this);
+                    sc->init(systemJsonContent);
                     scope->insert(var);
                     for (int s = from; s < to; s++) {
                         scope->set(name, new value(NUMBER, std::to_string(s)));
-                        auto sc = new script(then, filename, this);
-                        sc->init(systemJsonContent);
                         delete ret;
                         ret = sc->run(line);
+                        if (ret->typeOf() == TOKEN_NAME) {
+                            if (ret->valueOf() == "break loop") {
+                                break;
+                            }
+                        }
 //                        std::cout << scope->of(name)->valueOf().valueOf() << std::endl;
                     }
                 } else {
+                    auto sc = new script(then, filename, this);
+                    sc->init(systemJsonContent);
                     parent->insert(var);
+                    for (int s = from; s < to; s++) {
+                        parent->set(name, new value(NUMBER, std::to_string(s)));
+
+                        delete ret;
+                        ret = sc->run(line);
+                        if (ret->typeOf() == TOKEN_NAME) {
+                            if (ret->valueOf() == "break loop") {
+                                break;
+                            }
+                        }
+//                        std::cout << scope->of(name)->valueOf().valueOf() << std::endl;
+                    }
                 }
 
                 delete fromS;
