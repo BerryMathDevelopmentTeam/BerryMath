@@ -42,6 +42,7 @@ namespace BerryMath {
         TOKEN_NAME// BerryMath标记值(不提供给语言，仅仅是native接口值, 比如存储变量名、函数名等)
     };
     TYPE type(string);
+    string stringType(TYPE);
     bool isSymbol(char);
     bool isTrue(string);
     bool isTokenName(string);

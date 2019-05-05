@@ -241,13 +241,25 @@ void BerryMath::AST::parse() {
             t = lexer.get();
             string withToken = t.str;
 
+            // 获取步数
+            auto tmpIndex = lexer.parseIndex;
+            t = lexer.get();
+            string step;
+            if (t.str == "by") {
+                t = lexer.get();
+                step = t.str;
+            } else {
+                step = "1";
+                lexer.parseIndex = tmpIndex;
+            }
+
             // 获取循环变量到底是for循环内部局部变量还是全局变量还是for循环所在作用域的变量
             auto tmpParseIndex = lexer.parseIndex;
             string loopFlag("");
             t = lexer.get();
             loopFlag = t.str;
-            if (loopFlag != "local" && loopFlag != "global" && loopFlag != "out") {
-                loopFlag = "local";// 这说明省略了循环变量的类型，就默认为local
+            if (loopFlag != "local" && loopFlag != "out") {
+                loopFlag = "local";// 省略了循环变量的类型，就默认为local
                 lexer.parseIndex = tmpParseIndex;
             }
 
@@ -257,15 +269,17 @@ void BerryMath::AST::parse() {
                 root->str = "bad-tree";
                 break;
             }
-            string then("{");
+            string then("");
             bool exitLoop(false);
             int bracketCount(1);
             int i(lexer.parseIndex);
             for (; i < code.length(); i++) {
                 if (code[i] == '{') bracketCount++;
-                if (code[i] == '}') bracketCount--;
+                if (code[i] == '}') {
+                    bracketCount--;
+                    if (bracketCount == 0) break;
+                }
                 then += code[i];
-                if (bracketCount == 0) break;
             }
 
             root->push(OPERATOR, "for");
@@ -275,7 +289,9 @@ void BerryMath::AST::parse() {
             root->at(-1)->push(OPERATOR, "with");
             root->at(-1)->at(1)->push(VALUE, withToken);
             root->at(-1)->at(1)->push(VALUE, loopFlag);
+            root->at(-1)->at(1)->push(VALUE, step);
             root->at(-1)->push(VALUE, then);
+
         }
         if (t.token == BREAK_TOKEN) {
             root->push(OPERATOR, "break");

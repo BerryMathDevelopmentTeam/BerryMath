@@ -1,17 +1,25 @@
 #include <iostream>
 #include <fstream>
 #include <BerryMath.h>
+#include <sys/time.h>
+int64_t getCurrentTime()
+{
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
 
 int main() {
+    auto op = getCurrentTime();
 //    BerryMath::script s("foo= 1 + 5 * 2;");
-    string filename("for.bm");
-    std::ifstream in("tests/" + filename);
+    string filename("tests/for.bm");
+    std::ifstream in(filename);
 
     // 载入script
     string script("");
     string tmp;
     if (!in.is_open()) {
-        std::cerr << RED << "SystemError: Opening 'tests/for.bm' failed." << RESET << std::endl;
+        std::cerr << RED << "SystemError: Opening '" << filename << "' failed." << RESET << std::endl;
         exit(1);
     }
     while (getline(in, tmp)) {
@@ -34,5 +42,7 @@ int main() {
     s.init(json);
     s.run();
     s.finish();
+    auto ed = getCurrentTime();
+    std::cout << "used " << (ed - op) << "ms.";
     return 0;
 }

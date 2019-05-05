@@ -74,6 +74,10 @@ BerryMath::value* BerryMath::script::run(long line) {
             ast = new BerryMath::AST(c);
             ast->parse();
             auto root = ast->value();
+            if (root->value() == "bad-tree") {
+                Throw(line, "SyntaxError: Bad-tree.");
+                exit(1);
+            }
             if (root->at(0)->value() == "break") {
                 delete ret;
                 ret = new BerryMath::value(TOKEN_NAME, "break loop");
@@ -123,6 +127,10 @@ BerryMath::value* BerryMath::script::run(long line) {
 //            std::cout << c << std::endl;
             ast = new BerryMath::AST(c);
             ast->parse();
+            if (ast->value()->value() == "bad-tree") {
+                Throw(line, "SyntaxError: Bad-tree.");
+                exit(1);
+            }
             if (ast->value()->at(0)->value() == "if") {
 //                std::cout << "123" << std::endl;
                 auto s = new script(ast->value()->at(0)->at(0)->value(), filename, this);
@@ -180,6 +188,48 @@ BerryMath::value* BerryMath::script::run(long line) {
                         break;
                     }
                 }
+            }
+            if (ast->value()->at(0)->value() == "for") {
+                auto fromS = new script(new AST(ast->value()->at(0)->at(0)->at(0)), filename, this);
+                auto toS = new script(new AST(ast->value()->at(0)->at(0)->at(1)), filename, this);
+                fromS->init(systemJsonContent);
+                toS->init(systemJsonContent);
+                auto fromV = fromS->run(line);
+                auto toV = toS->run(line);
+                if (fromV->typeOf() != NUMBER) {
+                    Throw(line, "TypeError: from value must be number");
+                    note("From value: " + fromV->valueOf());
+                    note("From value's type: " + stringType(fromV->typeOf()));
+                }
+                if (toV->typeOf() != NUMBER) {
+                    Throw(line, "TypeError: to value must be number");
+                    note("To value: " + toV->valueOf());
+                    note("To value's type: " + stringType(toV->typeOf()));
+                }
+                int from = atoi(fromV->valueOf().c_str());
+                int to = atoi(toV->valueOf().c_str());
+
+                string name = ast->value()->at(0)->at(1)->at(0)->value();
+                string flag = ast->value()->at(0)->at(1)->at(1)->value();
+                string then = ast->value()->at(0)->at(2)->value();
+                auto var = new variable(name, fromV);
+//                std::cout << then << std::endl;
+                if (flag == "local") {
+                    scope->insert(var);
+                    for (int s = from; s < to; s++) {
+                        scope->set(name, new value(NUMBER, std::to_string(s)));
+                        auto sc = new script(then, filename, this);
+                        sc->init(systemJsonContent);
+                        delete ret;
+                        ret = sc->run(line);
+//                        std::cout << scope->of(name)->valueOf().valueOf() << std::endl;
+                    }
+                } else {
+                    parent->insert(var);
+                }
+
+                delete fromS;
+                delete toS;
             }
             noBrackets = true;
             c = "";

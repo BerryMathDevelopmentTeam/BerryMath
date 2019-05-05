@@ -57,3 +57,15 @@ bool BerryMath::isTokenName(string name) {
     }
     return res;
 }
+string BerryMath::stringType(TYPE t) {
+    switch (t) {
+        case NUMBER: return "number";
+        case STRING: return "string";
+        case TOKEN_NAME: return "token-name";
+        case UNDEFINED: return "undefined";
+        case OBJECT: return "object";
+        case FUNCTION:
+        case NATIVE_FUNCTION:
+            return "function";
+    }
+}

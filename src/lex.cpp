@@ -68,7 +68,7 @@ BerryMath::lex::lexToken BerryMath::lex::get() {
                 break;
             }
             str = tmp;
-            if (token == BerryMath::INIT_TOKEN) {
+            if (token == BerryMath::INIT_TOKEN && trim(str) == "") {
                 parseIndex++;
                 continue;
             } else {
