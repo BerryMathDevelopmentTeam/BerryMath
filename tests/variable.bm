@@ -1,3 +1,0 @@
-test = 423 * 2 / 4 + 2 * (2 << 1);
-test = ~~~test;
-test = test == 1;

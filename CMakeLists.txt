@@ -3,7 +3,6 @@ project(BerryMath)
 
 include_directories(
         include
-        jsoncpp-src-0.5.0/include/json/
 )
 
 AUX_SOURCE_DIRECTORY(src DIR_SRCS)
@@ -12,13 +11,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(
         BerryMath main.cpp
-        include/BerryMath.h src/BerryMath.cpp
-        include/memory.h src/memory.cpp
-        include/btype.h src/btype.cpp include/color.h src/lex.cpp include/lex.h src/AST.cpp include/AST.h src/script.cpp include/script.h include/stringpp.h src/stringpp.cpp src/color.cpp src/version.cpp include/version.h)
-
-# /usr/local/lib/libjsoncpp.dylib
-link_directories(/usr/local/lib)
-target_link_libraries(BerryMath /usr/local/lib/libjsoncpp.dylib)
+        src/BerryMath.cpp include/BerryMath.h
+        src/value.cpp include/value.h
+)
 
 install(TARGETS BerryMath
         CONFIGURATIONS Release

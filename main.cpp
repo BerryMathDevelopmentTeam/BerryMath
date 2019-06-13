@@ -1,38 +1,20 @@
 #include <iostream>
-#include <fstream>
 #include <BerryMath.h>
 
+void TEST1() {
+    auto object = new BM::Object;
+    auto child = new BM::Object;
+    object->insert("number", new BM::Number(0));
+    object->insert("string", new BM::String("Hello world!"));
+    object->insert("p", new BM::Null);
+    object->insert("v", new BM::Undefined);
+    object->insert("child", child);
+    child->insert("Text", new BM::String("I keep my ideas"));
+    std::cout << (*object) << std::endl;
+    delete object;
+}
+
 int main() {
-//    BerryMath::script s("foo= 1 + 5 * 2;");
-    string filename("for.bm");
-    std::ifstream in("tests/" + filename);
-
-    // 载入script
-    string script("");
-    string tmp;
-    if (!in.is_open()) {
-        std::cerr << RED << "SystemError: Opening 'tests/for.bm' failed." << RESET << std::endl;
-        exit(1);
-    }
-    while (getline(in, tmp)) {
-        script += tmp + "\n";
-    }
-
-    // 载入system.json文件
-#if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || defined(__linux) || defined(__unix)// mac, linux, unix
-    std::ifstream input("/usr/local/BerryMath/system_files/system.json");
-#else // windows
-    std::ifstream input("C:\\Program Files\\BerryMath\\system_files\\system.json");
-#endif
-    string json("");
-    while (getline(input, tmp)) {
-        json += tmp + "\n";
-    }
-//    std::cout << script << std::endl;
-    BerryMath::script s(script, filename);
-//    BerryMath::script s("foo = 1 + 5;bar = foo* 2;a=bar%10;b=a-10;c=b/4;");
-    s.init(json);
-    s.run();
-    s.finish();
+    TEST1();
     return 0;
 }
