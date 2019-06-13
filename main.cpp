@@ -13,8 +13,19 @@ void TEST1() {
     std::cout << (*object) << std::endl;
     delete object;
 }
+void TEST2() {
+    string v("let a = 1.0;");
+    BM::Lexer lexer(v);
+    auto t = lexer.get();
+    std::cout << t.s << std::endl;
+    while (t.t != BM::Lexer::END_TOKEN) {
+        t = lexer.get();
+        std::cout << t.s << std::endl;
+    }
+}
 
 int main() {
-    TEST1();
+//    TEST1();
+    TEST2();
     return 0;
 }

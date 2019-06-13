@@ -13,7 +13,7 @@ add_executable(
         BerryMath main.cpp
         src/BerryMath.cpp include/BerryMath.h
         src/value.cpp include/value.h
-)
+        src/lex.cpp include/lex.h)
 
 install(TARGETS BerryMath
         CONFIGURATIONS Release

@@ -101,7 +101,8 @@ namespace BM {
                 o << "\033[1mnull\033[0m";
             } else {
                 o << "null";
-            }}
+            }
+        }
     };
     class Undefined : public Value {
     public:
@@ -116,7 +117,8 @@ namespace BM {
                 o << "\033[35mundefined\033[0m";
             } else {
                 o << "undefined";
-            }}
+            }
+        }
     };
 }
 
