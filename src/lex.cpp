@@ -3,8 +3,8 @@
 
 BM::Lexer::Token BM::Lexer::get() {
     if (i >= script.length()) {
-        t.s = ";";
-        t.t = END_TOKEN;
+        t.s = "";
+        t.t = PROGRAM_END;
         return t;
     }
     t.s = "";
@@ -59,6 +59,7 @@ BM::Lexer::Token BM::Lexer::get() {
     // 运算符判断
     if (t.s == ";") {
         t.t = END_TOKEN;
+        i++;
     } else if (t.s == "=") {
         t.t = SET_TOKEN;
     } else if (t.s == ":") {

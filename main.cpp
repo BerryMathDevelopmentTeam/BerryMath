@@ -15,18 +15,18 @@ void TEST1() {
     delete object;
 }
 void TEST2() {
-    string v("\"let a = 0;\"");
+    string v("let a = 0;a++;");
     BM::Lexer lexer(v);
     auto t = lexer.get();
     std::cout << t.s << std::endl;
-    while (t.t != BM::Lexer::END_TOKEN) {
+    while (t.t != BM::Lexer::PROGRAM_END) {
         t = lexer.get();
         std::cout << t.s << std::endl;
     }
 }
 
 int main() {
-    TEST1();
-//    TEST2();
+//    TEST1();
+    TEST2();
     return 0;
 }

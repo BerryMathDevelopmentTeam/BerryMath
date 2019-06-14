@@ -41,6 +41,7 @@ namespace BM {
             MAND_TO_TOKEN, MOR_TO_TOKEN, MXOR_TO_TOKEN,
             DADD_TOKEN, DSUB_TOKEN,// double add & double sub
             END_TOKEN,// 语句结束
+            PROGRAM_END
         };
         struct Token {
             TOKENS t;
