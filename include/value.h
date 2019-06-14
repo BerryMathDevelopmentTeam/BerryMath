@@ -3,122 +3,114 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <sstream>
 using std::string;
 using std::map;
+typedef unsigned long UL;
 
 namespace BM {
-    class Object;
-    class Value {
+    class Object {
     public:
-        Value() : linked(0) { }
-        virtual ~Value() { }
-        virtual Value* copy() { return nullptr; }
-        bool has(Value* v, Value* root);
-        void bind() { linked++; }
-        void unbind() { linked--; }
-        unsigned int count() { return linked; }
-    protected:
-        unsigned int linked;
-        Object* parent;
-        friend class Object;
-        virtual void print(std::ostream&, bool hl = true, string tab = "") = 0;
-        friend std::ostream& operator<<(std::ostream& o, Value& v) {
-            v.print(o);
-            return o;
+        Object() : linked(0), parent(nullptr) { }
+        bool has(Object*, Object*);
+        void set(const string &key, Object *value);
+        void insert(string, Object*);
+        Object* get(const string &key);
+        void del(const string &key);
+        Object& operator[](const string &key) {
+            return *get(key);
         }
-    };
-    class Object : public Value {
-    public:
-        Object() : Value() { parent = nullptr; }
-        Object(Object& o) {
-            parent = o.parent;
-        }
-        Value* copy() {
+        UL links() { return linked; }
+        UL bind() { return ++linked; }
+        UL unbind() { return --linked; }
+        virtual string toString(bool = true, bool = true, string = "");
+        virtual Object* copy() {
             auto object = new Object();
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 object->set(iter->first, iter->second->copy());
             }
             return object;
         }
-        void insert(string key, Value* value);
-        Value* get(const string& key);
-        void set(const string& key, Value* value);
-        void del(const string& key);
-        ~Object();
+        virtual ~Object();
+        friend std::ostream& operator<<(std::ostream& o, Object& v) {
+            v.print(o);
+            return o;
+        }
     private:
-        std::map<string, Value*> proto;
-        void print(std::ostream& o, bool hl = true, string tab = "");
+        void print(std::ostream&, bool = true);
+        UL linked;
+        map<string, Object*> proto;
+        Object* parent;
     };
-    class Number : public Value {
+    class Number : public Object {
     public:
-        Number() : Value() { parent = nullptr; }
-        Number(double t) : Value(), v(t) { parent = nullptr; }
-        void value(double t) { v = t; }
+        Number() : Object(), v(0) { }
+        Number(double t) : Object(), v(t) { }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            std::ostringstream oss;
+            oss << v;
+            if (hl) o += "\033[33m";
+            o += oss.str();
+            if (hl) o += "\033[0m";
+            return o;
+        }
         double& value() { return v; }
-        ~Number() { }
-        Value* copy() {
+        Object* copy() {
             return new Number(v);
         }
+        ~Number() { }
     private:
-        void print(std::ostream& o, bool hl = true, string tab = "") {
-            if (hl) {
-                o << "\033[33m" << v << "\033[0m";
-            } else {
-                o << v;
-            }}
         double v;
     };
-    class String : public Value {
+    class String : public Object {
     public:
-        String() : Value() { parent = nullptr; }
-        String(string t) : Value(), v(t) { parent = nullptr; }
-        void value(string t) { v = t; }
+        String() : Object(), v("") { }
+        String(const string& t) : Object(), v(t) { }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            if (hl) o += "\033[32m";
+            o += "\"" + v + "\"";
+            if (hl) o += "\033[0m";
+            return o;
+        }
         string& value() { return v; }
-        ~String() { }
-        Value* copy() {
+        Object* copy() {
             return new String(v);
         }
+        ~String() { }
     private:
-        void print(std::ostream& o, bool hl = true, string tab = "") {
-            if (hl) {
-                o << "\033[32m\"" << v << "\"\033[0m";
-            } else {
-                o << "\"" << v << "\"";
-            }
-        }
         string v;
     };
-    class Null : public Value {
+    class Null : public Object {
     public:
-        Null() : Value() { parent = nullptr; }
+        Null() : Object() { }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            if (hl) o += "\033[36m";
+            o += "null";
+            if (hl) o += "\033[0m";
+            return o;
+        }
+        Object* copy() {
+            return new Null;
+        }
         ~Null() { }
-        Value* copy() {
-            return new Null;
-        }
-    private:
-        void print(std::ostream& o, bool hl = true, string tab = "") {
-            if (hl) {
-                o << "\033[1mnull\033[0m";
-            } else {
-                o << "null";
-            }
-        }
     };
-    class Undefined : public Value {
+    class Undefined : public Object {
     public:
-        Undefined() : Value() { parent = nullptr; }
+        Undefined() : Object() { }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            if (hl) o += "\033[35m";
+            o += "undefined";
+            if (hl) o += "\033[0m";
+            return o;
+        }
+        Object* copy() {
+            return new Undefined;
+        }
         ~Undefined() { }
-        Value* copy() {
-            return new Null;
-        }
-    private:
-        void print(std::ostream& o, bool hl = true, string tab = "") {
-            if (hl) {
-                o << "\033[35mundefined\033[0m";
-            } else {
-                o << "undefined";
-            }
-        }
     };
 }
 

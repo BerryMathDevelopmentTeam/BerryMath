@@ -11,6 +11,7 @@ void TEST1() {
     object->insert("child", child);
     child->insert("Text", new BM::String("I keep my ideas"));
     std::cout << (*object) << std::endl;
+    std::cout << (*object)["p"] << std::endl;
     delete object;
 }
 void TEST2() {
@@ -25,7 +26,7 @@ void TEST2() {
 }
 
 int main() {
-//    TEST1();
-    TEST2();
+    TEST1();
+//    TEST2();
     return 0;
 }
