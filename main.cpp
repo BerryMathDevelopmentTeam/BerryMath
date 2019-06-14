@@ -26,7 +26,7 @@ void TEST2() {
 }
 
 int main() {
-//    TEST1();
-    TEST2();
+    TEST1();
+//    TEST2();
     return 0;
 }

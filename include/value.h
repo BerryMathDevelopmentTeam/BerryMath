@@ -17,9 +17,7 @@ namespace BM {
         void insert(string, Object*);
         Object* get(const string &key);
         void del(const string &key);
-        Object& operator[](const string &key) {
-            return *get(key);
-        }
+        Object& operator[](const string &key) { return *get(key); }
         UL links() { return linked; }
         UL bind() { return ++linked; }
         UL unbind() { return --linked; }
@@ -36,7 +34,7 @@ namespace BM {
             v.print(o);
             return o;
         }
-    private:
+    protected:
         void print(std::ostream&, bool = true);
         UL linked;
         map<string, Object*> proto;
