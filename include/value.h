@@ -18,9 +18,9 @@ namespace BM {
         Object* get(const string &key);
         void del(const string &key);
         Object& operator[](const string &key) { return *get(key); }
-        UL links() { return linked; }
-        UL bind() { return ++linked; }
-        UL unbind() { return --linked; }
+        inline UL links() { return linked; }
+        inline UL bind() { return ++linked; }
+        inline UL unbind() { return --linked; }
         virtual string toString(bool = true, bool = true, string = "");
         virtual Object* copy() {
             auto object = new Object();
