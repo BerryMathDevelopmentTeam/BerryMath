@@ -2,11 +2,11 @@
 #include "lex.h"
 
 BM::Lexer::Token BM::Lexer::get() {
-//    if (i >= script.length() || script[i] == ';') {
-//        t.s = ";";
-//        t.t = END_TOKEN;
-//        return t;
-//    }
+    if (i >= script.length()) {
+        t.s = ";";
+        t.t = END_TOKEN;
+        return t;
+    }
     t.s = "";
     t.t = NO_STATUS;
     bool numberDot = false;
@@ -25,8 +25,27 @@ BM::Lexer::Token BM::Lexer::get() {
                     continue;
                 } else break;
             }
+            if (script[i] == '"' || script[i] == '\'') {
+                if (t.t != NO_STATUS) break;
+                auto s = script[i];
+                bool trans = false;// 转义'\'
+                t.s += script[i];
+                for (i++; i < script.length(); i++) {
+                    t.s += script[i];
+                    if (script[i] == s && !trans) {
+                        i++;
+                        break;
+                    }
+                    if (script[i] == '\\') trans = !trans;
+                }
+                t.t = STRING_TOKEN;
+                break;
+            }
+            if (script[i] == ';') {
+                if (t.t == NO_STATUS) t.s = ";";
+                break;
+            }
             t.t = UNKNOWN_OP_TOKEN;
-            if (script[i] == END_TOKEN) break;
 //            if (t.t == NO_STATUS || (t.t > NOTE_TOKEN && t.t < END_TOKEN))
         } else {
             if (t.t > NOTE_TOKEN && t.t < END_TOKEN) break;// 如果是符号token的话, 遇到非符号就说明该token结束了
@@ -35,6 +54,9 @@ BM::Lexer::Token BM::Lexer::get() {
         }
         t.s += script[i];
     }
+
+    // 判断类型
+    // 运算符判断
     if (t.s == ";") {
         t.t = END_TOKEN;
     } else if (t.s == "=") {
@@ -107,6 +129,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = DIV_TO_TOKEN;
     } else if (t.s == "%=") {
         t.t = MOD_TO_TOKEN;
+    } else if (t.s == "**=") {
+        t.t = POWER_TO_TOKEN;
     } else if (t.s == "<<=") {
         t.t = SLEFT_TO_TOKEN;
     } else if (t.s == ">>=") {
@@ -121,6 +145,42 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = DADD_TOKEN;
     } else if (t.s == "--") {
         t.t = DSUB_TOKEN;
+    }
+    // key word token判断
+    else if (t.s == "let") {
+        t.t = LET_TOKEN;
+    } else if (t.s == "def") {
+        t.t = DEF_TOKEN;
+    } else if (t.s == "if") {
+        t.t = IF_TOKEN;
+    } else if (t.s == "elif") {
+        t.t = ELIF_TOKEN;
+    } else if (t.s == "else") {
+        t.t = ELSE_TOKEN;
+    } else if (t.s == "switch") {
+        t.t = SWITCH_TOKEN;
+    } else if (t.s == "case") {
+        t.t = CASE_TOKEN;
+    } else if (t.s == "for") {
+        t.t = FOR_TOKEN;
+    } else if (t.s == "while") {
+        t.t = WHILE_TOKEN;
+    } else if (t.s == "do") {
+        t.t = DO_TOKEN;
+    } else if (t.s == "continue") {
+        t.t = CONTINUE_TOKEN;
+    } else if (t.s == "break") {
+        t.t = BREAK_TOKEN;
+    } else if (t.s == "return") {
+        t.t = RETURN_TOKEN;
+    } else if (t.s == "in") {
+        t.t = IN_TOKEN;
+    } else if (t.s == "of") {
+        t.t = OF_TOKEN;
+    } else if (t.s == "null") {
+        t.t = NULL_TOKEN;
+    } else if (t.s == "undefined") {
+        t.t = UNDEFINED_TOKEN;
     }
     return t;
 }

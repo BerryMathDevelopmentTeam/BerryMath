@@ -14,7 +14,7 @@ void TEST1() {
     delete object;
 }
 void TEST2() {
-    string v("let a = 1.0;");
+    string v("\"let a = 0;\"");
     BM::Lexer lexer(v);
     auto t = lexer.get();
     std::cout << t.s << std::endl;
