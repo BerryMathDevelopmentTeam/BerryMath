@@ -2,6 +2,10 @@
 #include "lex.h"
 
 BM::Lexer::Token BM::Lexer::get() {
+    if (updateLine) {
+        l++;
+        updateLine = false;
+    }
     if (i >= script.length()) {
         t.s = "";
         t.t = PROGRAM_END;
@@ -13,7 +17,11 @@ BM::Lexer::Token BM::Lexer::get() {
     for (; i < script.length(); i++) {
         if (IS_SPACE(script[i])) {
             i++;
-            if (t.t) break;// 已经有分割出来的token, 遇到空符就意味着语句的结束
+            if (t.t) {// 已经有分割出来的token, 遇到空符就意味着语句的结束
+                if (script[i - 1] == '\n') updateLine = true;
+                break;
+            }
+            if (script[i] == '\n') l++;
             // 尚未有分割出来的token, 所以不做处理
             continue;
         }

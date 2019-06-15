@@ -2,6 +2,7 @@
 #define BERRYMATH_BERRYMATH_H
 
 #include "value.h"
+#include "ast.h"
 #include "lex.h"
 
 namespace BM {

@@ -47,14 +47,17 @@ namespace BM {
             TOKENS t;
             string s;
         };
-        Lexer(string& s) : script(s), i(0) { }
+        Lexer(string& s) : script(s), i(0), l(1) { }
         Token get();
         Token token() { return t; }
         UL index() { return i; }
+        UL line() { return l; }
     private:
         Token t;
         string& script;
         UL i;
+        UL l;
+        bool updateLine = false;
 #define IS_SPACE(c) (c == '\t' || c == ' ' || c == '\n')
 #define IS_OP(c) \
     (!(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && c != '_' && c != '$')

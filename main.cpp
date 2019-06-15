@@ -15,7 +15,7 @@ void TEST1() {
     delete object;
 }
 void TEST2() {
-    string v("let a = 0;a++;");
+    string v("let\na = 0;a++;");
     BM::Lexer lexer(v);
     auto t = lexer.get();
     std::cout << t.s << std::endl;
@@ -24,9 +24,18 @@ void TEST2() {
         std::cout << t.s << std::endl;
     }
 }
+void TEST3() {
+    auto r = new BM::ast::node("", 0);
+    r->insert("call", 1);
+    r->insert("fun", 1);
+    r->insert("arg", 1);
+    (*r)[-1].insert("1",1);
+    std::cout << "finish" << std::endl;
+}
 
 int main() {
-    TEST1();
-//    TEST2();
+//    TEST1();
+    TEST2();
+//    TEST3();
     return 0;
 }
