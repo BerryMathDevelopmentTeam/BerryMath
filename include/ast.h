@@ -8,18 +8,19 @@ using std::string;
 using std::vector;
 
 namespace BM {
-    class ast {
+    class AST {
     public:
-        ast() : root(nullptr), script("") { }
-        ast(string& s) : root(nullptr), script(std::move(s)) { }
-        void open(string& s) { script = std::move(s); }
+        AST() : root(nullptr), script(""), child(false), baseLine(0) { }
+        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0) { }
+        void open(const string& s) { script = s; }
         void parse();
         void clear() {
             if (root) delete root;
             root = nullptr;
         }
-        ~ast() { delete root; }
-    public:
+        ~AST() { if (!child) delete root; }
+    private:
+        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true) { }
         class node {
         public:
             node() : v(""), l(0) { }
@@ -28,10 +29,12 @@ namespace BM {
             inline string value() { return v; }
             inline void value(string c) { v = c; }
             inline UL line() { return l; }
+            inline void line(UL t) { l = t; }
             inline node* get(long index) {
                 if (index < 0) index += children.size();
                 return children[index % children.size()];
             }
+            inline UL length() { return children.size(); }
             node& operator[](long index) { return *get(index); }
             void insert(node* n) { children.push_back(n); }
             void insert(string v, UL l) { children.push_back(new node(v, l)); }
@@ -45,6 +48,8 @@ namespace BM {
             UL l;
             vector<node*> children;
         };
+        bool child;
+        UL baseLine;
         node* root;
         string script;
     };

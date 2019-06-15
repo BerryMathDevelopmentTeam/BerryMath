@@ -25,17 +25,14 @@ void TEST2() {
     }
 }
 void TEST3() {
-    auto r = new BM::ast::node("", 0);
-    r->insert("call", 1);
-    r->insert("fun", 1);
-    r->insert("arg", 1);
-    (*r)[-1].insert("1",1);
-    std::cout << "finish" << std::endl;
+    BM::AST ast("let a = \n0 + 1;");
+    ast.parse();
+
 }
 
 int main() {
 //    TEST1();
-    TEST2();
-//    TEST3();
+//    TEST2();
+    TEST3();
     return 0;
 }

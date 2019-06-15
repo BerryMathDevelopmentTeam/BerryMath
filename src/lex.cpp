@@ -16,16 +16,15 @@ BM::Lexer::Token BM::Lexer::get() {
     bool numberDot = false;
     for (; i < script.length(); i++) {
         if (IS_SPACE(script[i])) {
-            i++;
             if (t.t) {// 已经有分割出来的token, 遇到空符就意味着语句的结束
+                i++;
                 if (script[i - 1] == '\n') updateLine = true;
                 break;
             }
-            if (script[i] == '\n') l++;
+            if (script[i - 1] == '\n') l++;
             // 尚未有分割出来的token, 所以不做处理
             continue;
-        }
-        if (IS_OP(script[i])) {
+        } else if (IS_OP(script[i])) {
             if (t.t >= UNKNOWN_TOKEN && t.t < NOTE_TOKEN) {// 如果是是word token的话, 遇到符号就说明word token的结束, 但是数字如果遇到.除外, 因为这种情况是小数, 但是数字只有一个小数点, 所有当numberDot为true以后又有.就是分割界线了
                 if (script[i] == '.' && t.t == NUMBER_TOKEN && !numberDot) {
                     numberDot = true;
