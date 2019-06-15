@@ -52,7 +52,8 @@ namespace BM {
         UL baseLine;
         node* root;
         string script;
-    };
+        static UL priority(const string&)
+    };;
 }
 
 

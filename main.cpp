@@ -25,7 +25,7 @@ void TEST2() {
     }
 }
 void TEST3() {
-    BM::AST ast("let a = \n0 + 1;");
+    BM::AST ast("(1 + 2 * 3) / 2");
     ast.parse();
 
 }
