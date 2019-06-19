@@ -59,7 +59,7 @@ void BM::AST::parse() {
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) base /= BRACKETS_PRI;
                     else {
                         auto pri = priority(token.s) * base;
-                        if (pri < minOp.pri) {
+                        if (pri < minOp.pri || minOp.op.empty()) {
                             minOp.pri = pri;
                             minOp.op = token.s;
                             minOp.index = opIndex;
@@ -71,7 +71,7 @@ void BM::AST::parse() {
                 opIndex = lexer.i;
                 GET;
             }
-            if (minOp.pri == 15 && minOp.index == 0 && minOp.op.empty()) {
+            if (minOp.pri == 15 && minOp.index == 0 && minOp.line == 0 && minOp.op.empty()) {
                 root = new node(tmpToken.s, tmpTokenLine + baseLine);
                 return;
             }
