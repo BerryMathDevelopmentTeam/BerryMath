@@ -3,6 +3,7 @@
 
 void BM::AST::parse() {
     Lexer lexer(script);
+    auto tmpIndex = lexer.i;
     auto token = lexer.get();
 #define GET token = lexer.get()
     switch (token.t) {
@@ -35,88 +36,83 @@ void BM::AST::parse() {
         }
         case Lexer::NUMBER_TOKEN:
         case Lexer::STRING_TOKEN:
-        {
-            auto tmpIndex = lexer.index();
-            auto tmpLine = lexer.line();
-            auto tmp = token;
-            GET;
-            if (token.t > Lexer::NOTE_TOKEN && token.t < Lexer::END_TOKEN) {
-                auto op = token;
-                auto opLine = lexer.line();
-                string expression("");
-                GET;
-                while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                    expression += token.s;
-                    GET;
-                }
-                auto ast = new AST(expression, lexer.line() + baseLine);
-                ast->parse();
-                root = new node(op.s, opLine + baseLine);
-                root->insert(tmp.s, tmpLine + baseLine);
-                root->insert(expression, lexer.line() + baseLine);
-                delete ast;
-            } else {
-                lexer.i = tmpIndex;
-                lexer.l = tmpLine;
-                root = new node(tmp.s, lexer.line() + baseLine - 1);
-            }
-            break;
-        }
         case Lexer::BRACKETS_LEFT_TOKEN:
         {
-            UL leftLine;
-            string left;
-            string op;
-            string right;
-            leftLine = lexer.line();
-            auto bcount = 1;
+            UL base = 1;
+            struct Operator {
+                UL pri;
+                UL index;
+                UL line;
+                string op;
+            };
+            Operator minOp = {15, 0, 0, ""};
+            const auto BRACKETS_PRI = priority("(");
+            auto opIndex = lexer.i;
+            auto leftLine = lexer.line(), rightLine = lexer.line();
+            if (token.t == Lexer::BRACKETS_LEFT_TOKEN) base = BRACKETS_PRI;
+            auto tmpToken = token;
+            auto tmpTokenLine = lexer.line();
             GET;
             while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
-                    bcount++;
+                if (token.t > Lexer::NOTE_TOKEN && token.t < Lexer::END_TOKEN) {// 是符号
+                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) base *= BRACKETS_PRI;
+                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) base /= BRACKETS_PRI;
+                    else {
+                        auto pri = priority(token.s) * base;
+                        if (pri < minOp.pri) {
+                            minOp.pri = pri;
+                            minOp.op = token.s;
+                            minOp.index = opIndex;
+                            minOp.line = lexer.line();
+                            rightLine = lexer.line();
+                        }
+                    }
                 }
-                if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
-                    bcount--;
-                    if (bcount < 1) break;
-                }
+                opIndex = lexer.i;
+                GET;
+            }
+            if (minOp.pri == 15 && minOp.index == 0 && minOp.op.empty()) {
+                root = new node(tmpToken.s, tmpTokenLine + baseLine);
+                return;
+            }
+            string left, right;
+            lexer.i = tmpIndex;
+            GET;
+            while (lexer.i != minOp.index) {
                 left += token.s;
                 GET;
             }
-            if (token.t == Lexer::END_TOKEN || token.t == Lexer::PROGRAM_END) {
-                auto ast = new AST(left, leftLine + baseLine);
-                ast->parse();
-                root = ast->root;
-                delete ast;
-                break;
+            if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
+                left.erase(0, 1);
+            } else {
+                left += token.s;
             }
             GET;
-            if (!(token.t > Lexer::NOTE_TOKEN && token.t < Lexer::END_TOKEN)) {
-                root->value("err");
-                root->insert("Uncaught SyntaxError: Unexpected token " + token.s, lexer.line() + baseLine);
-                break;
-            }
-            auto opLine = lexer.line();
-            op = token.s;
-            auto rightLine = lexer.line();
-            do {
-                GET;
+            GET;
+            while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
                 right += token.s;
-            } while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END);
-            auto leftAST = new AST(left, leftLine + baseLine);
-            auto rightAST = new AST(right, rightLine + baseLine);
-            leftAST->parse();
-            rightAST->parse();
-            root = new node(op, opLine + baseLine);
-            root->insert(leftAST->root);
-            root->insert(rightAST->root);
-            delete leftAST;
-            delete rightAST;
+                GET;
+            }
+            if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
+                right.erase(0, 1);
+            } else {
+                right += token.s;
+            }
+            auto leftAst = new AST(left, leftLine + baseLine);
+            auto rightAst = new AST(right, rightLine + baseLine);
+            leftAst->parse();
+            rightAst->parse();
+            root = new node(minOp.op, minOp.line + baseLine);
+            root->insert(leftAst->root);
+            root->insert(rightAst->root);
+            delete leftAst;
+            delete rightAst;
             break;
         }
     }
 }
 
-UL BM::AST::priority(const string& op) {
+inline UL BM::AST::priority(const string& op) {
     if (op == "(" || op == "[" || op == ".") return 14;
     if (op == "++" || op == "--" || op == "!" || op == "~") return 13;
     if (op == "*" || op == "/" || op == "%") return 12;
