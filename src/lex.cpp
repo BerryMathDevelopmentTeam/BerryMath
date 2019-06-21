@@ -25,6 +25,9 @@ BM::Lexer::Token BM::Lexer::get() {
             // 尚未有分割出来的token, 所以不做处理
             continue;
         } else if (IS_OP(script[i])) {
+            if (!t.s.empty() && (script[i] == '(' || script[i] == '[' || script[i] == '{')) {
+                break;
+            }
             if (t.t >= UNKNOWN_TOKEN && t.t < NOTE_TOKEN) {// 如果是是word token的话, 遇到符号就说明word token的结束, 但是数字如果遇到.除外, 因为这种情况是小数, 但是数字只有一个小数点, 所有当numberDot为true以后又有.就是分割界线了
                 if (script[i] == '.' && t.t == NUMBER_TOKEN && !numberDot) {
                     numberDot = true;
@@ -52,15 +55,17 @@ BM::Lexer::Token BM::Lexer::get() {
                 if (t.t == NO_STATUS) t.s = ";";
                 break;
             }
-            if (script[i] == ')') {
-                if (t.t == NO_STATUS) t.s = ")";
+            if (script[i] == ')' || script[i] == ']' || script[i] == '}') {
+                if (t.t == NO_STATUS) t.s = script[i];
                 i++;
                 break;
             }
             t.t = UNKNOWN_OP_TOKEN;
 //            if (t.t == NO_STATUS || (t.t > NOTE_TOKEN && t.t < END_TOKEN))
         } else {
-            if (t.t > NOTE_TOKEN && t.t < END_TOKEN) break;// 如果是符号token的话, 遇到非符号就说明该token结束了
+            if (
+                    t.t > NOTE_TOKEN && t.t < END_TOKEN
+                    ) break;// 如果是符号token的话, 遇到非符号就说明该token结束了
             if (IS_NUM(script[i])) t.t = NUMBER_TOKEN;
             else t.t = UNKNOWN_TOKEN;
         }
@@ -102,6 +107,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = BIG_BRACKETS_RIGHT_TOKEN;
     } else if (t.s == ".") {
         t.t = DOT_TOKEN;
+    } else if (t.s == ",") {
+        t.t = COMMA_TOKEN;
     } else if (t.s == "&") {
         t.t = MAND_TOKEN;
     } else if (t.s == "|") {
