@@ -1,5 +1,7 @@
 #include <iostream>
 #include <BerryMath.h>
+//#include <benchmark/benchmark.h>
+
 
 void TEST1() {
     auto object = new BM::Object;
@@ -25,7 +27,7 @@ void TEST2() {
     }
 }
 void TEST3() {
-    BM::AST ast("a(5 * (2 + 3 * c(213)))");
+    BM::AST ast("if (a == 0) {}");
     ast.parse();
 
 }

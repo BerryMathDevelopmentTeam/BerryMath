@@ -201,6 +201,10 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = NULL_TOKEN;
     } else if (t.s == "undefined") {
         t.t = UNDEFINED_TOKEN;
+    } else if (t.s == "enum") {
+        t.t = ENUM_TOKEN;
+    } else if (t.s == "using") {
+        t.t = USING_TOKEN;
     }
     return t;
 }

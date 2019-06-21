@@ -221,6 +221,31 @@ void BM::AST::parse() {
             }
             break;
         }
+        case Lexer::IF_TOKEN:
+        {
+            GET;
+            if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+            string ifExpression;
+            auto bcCount = 1;
+            while (bcCount > 0) {
+                GET;
+                if (token.t == Lexer::END_TOKEN) {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                    return;
+                }
+                ifExpression += token.s;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
+            }
+            ifExpression.erase(ifExpression.length() - 1, 1);
+            std::cout << std::endl;
+            break;
+        }
     }
 }
 

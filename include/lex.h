@@ -40,6 +40,8 @@ namespace BM {
             SLEFT_TO_TOKEN, SRIGHT_TO_TOKEN,
             MAND_TO_TOKEN, MOR_TO_TOKEN, MXOR_TO_TOKEN,
             DADD_TOKEN, DSUB_TOKEN,// double add & double sub
+            ENUM_TOKEN,
+            USING_TOKEN,
             END_TOKEN,// 语句结束
             PROGRAM_END
         };
