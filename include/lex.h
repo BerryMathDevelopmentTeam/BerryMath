@@ -15,7 +15,7 @@ namespace BM {
             UNKNOWN_TOKEN,// 未知token
             // key words
             LET_TOKEN, DEF_TOKEN,
-            IF_TOKEN, ELIF_TOKEN, ELSE_TOKEN, SWITCH_TOKEN, CASE_TOKEN,
+            IF_TOKEN, ELIF_TOKEN, ELSE_TOKEN, SWITCH_TOKEN, CASE_TOKEN, DEFAULT_TOKEN,
             FOR_TOKEN, WHILE_TOKEN, DO_TOKEN, CONTINUE_TOKEN, BREAK_TOKEN,
             RETURN_TOKEN,
             IN_TOKEN, OF_TOKEN,
@@ -53,8 +53,7 @@ namespace BM {
         Lexer(const string& s) : script(s), i(0), l(1) { }
         void open(const string& s) {
             script = s;
-            i = 0;
-            l = 1;
+
         }
         Token get();
         Token token() { return t; }

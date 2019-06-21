@@ -208,6 +208,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = ENUM_TOKEN;
     } else if (t.s == "using") {
         t.t = USING_TOKEN;
+    } else if (t.s == "default") {
+        t.t = DEFAULT_TOKEN;
     }
     return t;
 }

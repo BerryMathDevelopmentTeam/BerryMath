@@ -26,7 +26,7 @@ void BM::AST::parse() {
             string expression("");
             do {
                 GET;
-                expression += token.s;
+                expression+= " " + token.s;
             } while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END);
             auto ast = new AST(expression, lexer.line()  + baseLine - 1);
             ast->parse();
@@ -115,23 +115,23 @@ void BM::AST::parse() {
             lexer.i = tmpIndex;
             GET;
             while (lexer.i < minOp.index) {
-                left += token.s;
+                left+= " " + token.s;
                 GET;
             }
             if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
                 left.erase(0, 1);
             } else if (minOp.op != "call") {
-                left += token.s;
+                left+= " " + token.s;
                 GET;
                 GET;
                 while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                    right += token.s;
+                    right+= " " + token.s;
                     GET;
                 }
                 if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
                     right.erase(0, 1);
                 } else {
-                    right += token.s;
+                    right+= " " + token.s;
                 }
                 long long leftBCC = 0, rightBCC = 0;
                 for (auto i = 0; i < left.length(); i++) {
@@ -178,7 +178,7 @@ void BM::AST::parse() {
                 std::vector<string> args;
                 string arg;
                 while (brCount > 0) {
-                    arg += token.s;
+                    arg+= " " + token.s;
                     GET;
                     if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
@@ -198,7 +198,7 @@ void BM::AST::parse() {
                 }
                 GET;
                 while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                    right += token.s;
+                    right+= " " + token.s;
                     GET;
                 }
                 auto callLine = minOp.line + baseLine;
@@ -239,7 +239,7 @@ void BM::AST::parse() {
                     root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                     return;
                 }
-                ifExpression += token.s;
+                ifExpression+= " " + token.s;
                 if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
                 else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
             }
@@ -256,7 +256,7 @@ void BM::AST::parse() {
             auto ifScriptLine = lexer.l;
             while (bcCount > 0) {
                 GET;
-                if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                if (token.t == Lexer::PROGRAM_END) {
                     root = new node("bad-tree", lexer.l + baseLine - 1);
                     root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                     return;
@@ -296,7 +296,7 @@ void BM::AST::parse() {
                             root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                             return;
                         }
-                        elifExpression += token.s;
+                        elifExpression+= " " + token.s;
                         if (token.t == Lexer::BRACKETS_LEFT_TOKEN) elbcCount++;
                         else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) elbcCount--;
                     }
@@ -313,7 +313,7 @@ void BM::AST::parse() {
                     auto elifScriptLine = lexer.l;
                     while (elbcCount > 0) {
                         GET;
-                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                        if (token.t == Lexer::PROGRAM_END) {
                             root = new node("bad-tree", lexer.l + baseLine - 1);
                             root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                             return;
@@ -341,7 +341,7 @@ void BM::AST::parse() {
                     auto elScriptLine = lexer.l;
                     while (elBcCount > 0) {
                         GET;
-                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                        if (token.t == Lexer::PROGRAM_END) {
                             root = new node("bad-tree", lexer.l + baseLine - 1);
                             root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                             return;
@@ -359,6 +359,59 @@ void BM::AST::parse() {
                     break;
                 }
             }
+            break;
+        }
+        case Lexer::SWITCH_TOKEN:
+        {
+            auto switchLine = lexer.l;
+            GET;
+            if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+            auto bcCount = 1;
+            string switchExpr;
+            GET;
+            while (bcCount > 0) {
+                switchExpr += " " + token.s;
+                GET;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
+                else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                    return;
+                }
+            }
+            GET;
+            if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+            bcCount = 1;
+            string block;
+            GET;
+            if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bcCount++;
+            else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bcCount--;
+            else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                return;
+            }
+            while (bcCount > 0) {
+                block += " " + token.s;
+                GET;
+                if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bcCount--;
+                else if (token.t == Lexer::PROGRAM_END) {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                    return;
+                }
+            }
+            std::cout << "";
             break;
         }
     }
