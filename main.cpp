@@ -27,7 +27,12 @@ void TEST2() {
     }
 }
 void TEST3() {
-    BM::AST ast("if (a == 0) {}");
+    BM::AST ast("a(\"123\", \"hello\" * (23 + 4))");
+    ast.parse();
+
+}
+void TEST4() {
+    BM::AST ast("if (a == 0) {\nprintln(\"eq 0\")\n} elif (a == 2) {\nprintln(\"eq 2\")\n} elif (a == 3) {\nprintln(\"eq 3\")\n} else {\nprintln(\"none\")\n}");
     ast.parse();
 
 }
@@ -35,6 +40,7 @@ void TEST3() {
 int main() {
 //    TEST1();
 //    TEST2();
-    TEST3();
+//    TEST3();
+    TEST4();
     return 0;
 }

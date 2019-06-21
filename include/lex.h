@@ -49,14 +49,20 @@ namespace BM {
             TOKENS t;
             string s;
         };
-        Lexer(string& s) : script(s), i(0), l(1) { }
+        Lexer() : script(""), i(0), l(1) { }
+        Lexer(const string& s) : script(s), i(0), l(1) { }
+        void open(const string& s) {
+            script = s;
+            i = 0;
+            l = 1;
+        }
         Token get();
         Token token() { return t; }
         UL index() { return i; }
         UL line() { return l; }
     private:
         Token t;
-        string& script;
+        string script;
         UL i;
         UL l;
         bool updateLine = false;

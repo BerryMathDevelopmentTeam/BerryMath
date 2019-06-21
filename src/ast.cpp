@@ -3,7 +3,6 @@
 #include "ast.h"
 
 void BM::AST::parse() {
-    Lexer lexer(script);
     auto tmpIndex = lexer.i;
     auto token = lexer.get();
 #define GET token = lexer.get()
@@ -66,7 +65,7 @@ void BM::AST::parse() {
             if (token.t == Lexer::BRACKETS_LEFT_TOKEN) base = BRACKETS_PRI;
             auto tmpToken = token;
             auto tmpTokenLine = lexer.line();
-            auto tmpTokenIndex = lexer.index();
+//            auto tmpTokenIndex = lexer.index();
             GET;
             while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
                 if (token.t > Lexer::NOTE_TOKEN && token.t < Lexer::END_TOKEN) {// 是符号
@@ -187,7 +186,7 @@ void BM::AST::parse() {
                         arg.erase(0, 1);
                         args.push_back(arg);
                         arg = "";
-                    } else if (token.t == Lexer::PROGRAM_END) {
+                    } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
                         root = new node("bad-tree", lexer.l + baseLine - 1);
                         root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                         return;
@@ -223,17 +222,19 @@ void BM::AST::parse() {
         }
         case Lexer::IF_TOKEN:
         {
+            auto ifLine = lexer.l;
             GET;
             if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
                 root = new node("bad-tree", lexer.l + baseLine - 1);
                 root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
                 return;
             }
+            auto exprLine = lexer.l;
             string ifExpression;
             auto bcCount = 1;
             while (bcCount > 0) {
                 GET;
-                if (token.t == Lexer::END_TOKEN) {
+                if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
                     root = new node("bad-tree", lexer.l + baseLine - 1);
                     root->insert("Lack of parentheses", lexer.l + baseLine - 1);
                     return;
@@ -243,7 +244,121 @@ void BM::AST::parse() {
                 else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
             }
             ifExpression.erase(ifExpression.length() - 1, 1);
-            std::cout << std::endl;
+            GET;
+            if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+
+            string ifScript;
+            bcCount = 1;
+            auto ifScriptLine = lexer.l;
+            while (bcCount > 0) {
+                GET;
+                if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                    return;
+                }
+                ifScript += " " + token.s;
+                if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bcCount--;
+            }
+            ifScript.erase(ifScript.length() - 1, 1);
+            root = new node("if", ifLine + baseLine - 1);
+            auto ifExprAst = new AST(ifExpression, exprLine + baseLine - 1);
+            ifExprAst->parse();
+            root->insert(ifExprAst->root);
+            root->insert(ifScript, ifScriptLine + baseLine - 1);
+            root->insert("els", lexer.l + baseLine - 1);
+            delete ifExprAst;
+
+            // elif, else等的解析
+            UL tmpIndex;
+            while (true) {
+                tmpIndex = lexer.i;
+                GET;
+                if (token.t == Lexer::ELIF_TOKEN) {
+                    GET;
+                    if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                        root = new node("bad-tree", lexer.l + baseLine - 1);
+                        root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                        return;
+                    }
+                    auto elExprLine = lexer.l;
+                    string elifExpression;
+                    auto elbcCount = 1;
+                    while (elbcCount > 0) {
+                        GET;
+                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                            root = new node("bad-tree", lexer.l + baseLine - 1);
+                            root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                            return;
+                        }
+                        elifExpression += token.s;
+                        if (token.t == Lexer::BRACKETS_LEFT_TOKEN) elbcCount++;
+                        else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) elbcCount--;
+                    }
+                    elifExpression.erase(elifExpression.length() - 1, 1);
+                    GET;
+                    if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                        root = new node("bad-tree", lexer.l + baseLine - 1);
+                        root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                        return;
+                    }
+
+                    string elifScript;
+                    elbcCount = 1;
+                    auto elifScriptLine = lexer.l;
+                    while (elbcCount > 0) {
+                        GET;
+                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                            root = new node("bad-tree", lexer.l + baseLine - 1);
+                            root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                            return;
+                        }
+                        elifScript += " " + token.s;
+                        if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) elbcCount++;
+                        else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) elbcCount--;
+                    }
+                    elifScript.erase(elifScript.length() - 1, 1);
+                    auto elIfAst = new AST(elifExpression, elExprLine + baseLine - 1);
+                    elIfAst->parse();
+                    root->get(2)->insert(new node("elif", elifScriptLine + baseLine - 1));
+                    root->get(2)->get(-1)->insert(elIfAst->root);
+                    root->get(2)->get(-1)->insert(elifScript, elifScriptLine + baseLine - 1);
+                    delete elIfAst;
+                } else if (token.t == Lexer::ELSE_TOKEN) {
+                    GET;
+                    UL elBcCount = 1;
+                    if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                        root = new node("bad-tree", lexer.l + baseLine - 1);
+                        root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                        return;
+                    }
+                    string elScript;
+                    auto elScriptLine = lexer.l;
+                    while (elBcCount > 0) {
+                        GET;
+                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                            root = new node("bad-tree", lexer.l + baseLine - 1);
+                            root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                            return;
+                        }
+                        elScript += " " + token.s;
+                        if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) elBcCount++;
+                        else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) elBcCount--;
+                    }
+                    elScript.erase(elScript.length() - 1, 1);
+                    root->get(2)->insert("else", elScriptLine + baseLine - 1);
+                    root->get(2)->get(-1)->insert(elScript,  elScriptLine + baseLine - 1);
+                    break;
+                } else {
+                    lexer.i = tmpIndex;
+                    break;
+                }
+            }
             break;
         }
     }

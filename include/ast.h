@@ -10,9 +10,9 @@ using std::vector;
 namespace BM {
     class AST {
     public:
-        AST() : root(nullptr), script(""), child(false), baseLine(0) { }
-        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0) { }
-        void open(const string& s) { script = s; }
+        AST() : root(nullptr), script(""), child(false), baseLine(0), lexer(script) { }
+        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script) { }
+        void open(const string& s) { script = s;lexer.open(script); }
         void parse();
         void clear() {
             if (root) delete root;
@@ -20,7 +20,7 @@ namespace BM {
         }
         ~AST() { if (!child) delete root; }
     private:
-        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true) { }
+        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script) { }
         class node {
         public:
             node() : v(""), l(0) { }
@@ -52,6 +52,7 @@ namespace BM {
         UL baseLine;
         node* root;
         string script;
+        Lexer lexer;
         static inline UL priority(const string&);
     };;
 }

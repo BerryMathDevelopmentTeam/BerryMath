@@ -56,7 +56,10 @@ BM::Lexer::Token BM::Lexer::get() {
                 break;
             }
             if (script[i] == ')' || script[i] == ']' || script[i] == '}') {
-                if (t.t == NO_STATUS) t.s = script[i];
+                if (t.t == NO_STATUS) {
+                    t.s = script[i];
+                    t.t = UNKNOWN_OP_TOKEN;
+                }
                 i++;
                 break;
             }
