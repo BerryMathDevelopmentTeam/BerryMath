@@ -50,13 +50,13 @@ def each(files, root):
 					line = len(content.split("\n"))
 					size = os.path.getsize(path)
 					file.close()
-					path = re.sub("^" + same, "..", path)
+					path = re.sub("^" + same, ".", path)
 					print("\033[33m" + path + "\033[0m have \033[34m" + str(line) + "\033[0m lines, \033[34m" + sizeStr(size) + "\033[0m.")
 					lines += line
 					sizes += size
 
 def main():
-	print("\033[36mKeep '..'='" + same + "'\033[0m")
+	print("\033[36m'.'='" + same + "'\033[0m")
 	each(os.listdir(root), root)
 	print("\033[32mTotal number of lines: \033[35m" + str(lines) + "\033[32m, Total number of size: \033[35m" + sizeStr(sizes) + "\033[0m")
 def help():
