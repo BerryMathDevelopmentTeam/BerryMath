@@ -28,7 +28,9 @@ void TEST2() {
     }
 }
 void TEST3() {
-    BM::AST ast("a(\"123\", \"hello\" * (23 + 4))");
+    BM::AST ast("a(\"123\", 3, \"hello\" * (23 + 4));a += 1;");
+    ast.parse();
+
     ast.parse();
 
 }
@@ -66,11 +68,11 @@ void TEST7() {
 int main() {
 //    TEST1();
 //    TEST2();
-//    TEST3();
+    TEST3();
 //    TEST4();
 //    TEST5();
 //    TEST6();
-    TEST7();
+//    TEST7();
 
     // Get speed
     /*auto start = clock();

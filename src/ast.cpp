@@ -111,23 +111,23 @@ void BM::AST::parse() {
             lexer.i = tmpIndex;
             GET;
             while (lexer.i < minOp.index) {
-                left+= " " + token.s;
+                left += " " + token.s;
                 GET;
             }
             if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
-                left.erase(0, 1);
+                left.erase(0, 2);
             } else if (minOp.op != "call") {
                 left+= " " + token.s;
                 GET;
                 GET;
                 while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                    right+= " " + token.s;
+                    right += " " + token.s;
                     GET;
                 }
                 if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
-                    right.erase(0, 1);
+                    right.erase(0, 2);
                 } else {
-                    right+= " " + token.s;
+                    right += " " + token.s;
                 }
                 long long leftBCC = 0, rightBCC = 0;
                 for (auto i = 0; i < left.length(); i++) {
@@ -176,12 +176,12 @@ void BM::AST::parse() {
                 std::vector<string> args;
                 string arg;
                 while (brCount > 0) {
-                    arg+= " " + token.s;
+                    arg += " " + token.s;
                     GET;
                     if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
                     else if (token.t == Lexer::COMMA_TOKEN) {
-                        arg.erase(0, 1);
+                        arg.erase(0, 2);
                         args.push_back(arg);
                         arg = "";
                     } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
@@ -191,12 +191,12 @@ void BM::AST::parse() {
                     }
                 }
                 if (!arg.empty()) {
-                    arg.erase(0, 1);
+                    arg.erase(0, 2);
                     args.push_back(arg);
                 }
                 GET;
                 while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                    right+= " " + token.s;
+                    right += " " + token.s;
                     GET;
                 }
                 auto callLine = minOp.line + baseLine;
