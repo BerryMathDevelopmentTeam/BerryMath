@@ -496,8 +496,8 @@ void BM::AST::parse() {
                 if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
                 else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
             }
-
             whileExpression.erase(whileExpression.length() - 1, 1);
+
             GET;
             if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
                 root = new node("bad-tree", lexer.l + baseLine - 1);
@@ -528,6 +528,68 @@ void BM::AST::parse() {
             root->insert(whileScript, whileScriptLine);
 
             delete exprAst;
+            break;
+        }
+        case Lexer::DO_TOKEN:
+        {
+            auto doLine = lexer.l;
+
+            GET;
+            if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+
+            string whileScript;
+            auto bcCount = 1;
+            auto whileScriptLine = lexer.l;
+            while (bcCount > 0) {
+                GET;
+                if (token.t == Lexer::PROGRAM_END) {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                    return;
+                }
+                whileScript += " " + token.s;
+                if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bcCount--;
+            }
+            whileScript.erase(whileScript.length() - 1, 1);
+
+            GET;
+            if (token.t != Lexer::WHILE_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+            GET;
+            if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine - 1);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                return;
+            }
+            auto exprLine = lexer.l;
+            string whileExpression;
+            bcCount = 1;
+            while (bcCount > 0) {
+                GET;
+                if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Lack of parentheses", lexer.l + baseLine - 1);
+                    return;
+                }
+                whileExpression += " " + token.s;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
+            }
+            whileExpression.erase(whileExpression.length() - 1, 1);
+            root = new node("do", doLine + baseLine - 1);
+            auto exprAst = new AST(whileExpression, exprLine + baseLine - 1);
+            exprAst->parse();
+            CHECK(exprAst);
+            root->insert(whileScript, whileScriptLine);
+            root->insert(exprAst->root);
             break;
         }
     }
