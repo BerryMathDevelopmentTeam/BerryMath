@@ -33,8 +33,8 @@ void BM::AST::parse() {
             root->insert(ast->root);
             if (ast->root->value() == "bad-tree") {
                 delete root;
-                root = new node("bad-tree", ast->root->line());
-                root->insert(ast->root->get(0));
+                root = ast->root;
+                delete ast;
                 return;
             }
             delete ast;
@@ -152,15 +152,17 @@ void BM::AST::parse() {
                 leftAst->parse();
                 if (leftAst->root->value() == "bad-tree") {
                     delete root;
-                    root = new node("bad-tree", leftAst->root->line());
-                    root->insert(leftAst->root->get(0));
+                    root = leftAst->root;
+                    delete leftAst;
+                    delete rightAst;
                     return;
                 }
                 rightAst->parse();
                 if (rightAst->root->value() == "bad-tree") {
                     delete root;
-                    root = new node("bad-tree", rightAst->root->line());
-                    root->insert(rightAst->root->get(0));
+                    root = rightAst->root;
+                    delete leftAst;
+                    delete rightAst;
                     return;
                 }
                 root = new node(minOp.op, minOp.line  + baseLine - 1);
@@ -210,8 +212,8 @@ void BM::AST::parse() {
                     ast->parse();
                     if (ast->root->value() == "bad-tree") {
                         delete root;
-                        root = new node("bad-tree", ast->root->line());
-                        root->insert(ast->root->get(0));
+                        root = ast->root;
+                        delete ast;
                         return;
                     }
                     root->get(1)->insert(ast->root);
@@ -266,9 +268,14 @@ void BM::AST::parse() {
                 else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bcCount--;
             }
             ifScript.erase(ifScript.length() - 1, 1);
-            root = new node("if", ifLine + baseLine - 1);
             auto ifExprAst = new AST(ifExpression, exprLine + baseLine - 1);
             ifExprAst->parse();
+            if (ifExprAst->root->value() == "bad-tree") {
+                root = ifExprAst->root;
+                delete ifExprAst;
+                return;
+            }
+            root = new node("if", ifLine + baseLine - 1);
             root->insert(ifExprAst->root);
             root->insert(ifScript, ifScriptLine + baseLine - 1);
             root->insert("els", lexer.l + baseLine - 1);
@@ -325,6 +332,12 @@ void BM::AST::parse() {
                     elifScript.erase(elifScript.length() - 1, 1);
                     auto elIfAst = new AST(elifExpression, elExprLine + baseLine - 1);
                     elIfAst->parse();
+                    if (elIfAst->root->value() == "bad-tree") {
+                        delete root;
+                        root = elIfAst->root;
+                        delete elIfAst;
+                        return;
+                    }
                     root->get(2)->insert(new node("elif", elifScriptLine + baseLine - 1));
                     root->get(2)->get(-1)->insert(elIfAst->root);
                     root->get(2)->get(-1)->insert(elifScript, elifScriptLine + baseLine - 1);
@@ -411,7 +424,72 @@ void BM::AST::parse() {
                     return;
                 }
             }
-            std::cout << "";
+            auto rawLexerI = lexer.i;
+            auto rawLexerL = lexer.l;
+            lexer.open(block);
+            GET;
+            root = new node("switch", rawLexerL );
+            while (token.t != Lexer::PROGRAM_END) {
+                if (token.t == Lexer::CASE_TOKEN) {
+                    auto caseLine = lexer.l;
+                    string caseExpr;
+                    GET;
+                    while (token.t != Lexer::COLON_TOKEN) {
+                        caseExpr += " " + token.s;
+                        GET;
+                    }
+                    bcCount = 0;
+                    string script;
+                    auto lastI = lexer.i;
+                    GET;
+                    while (true) {
+                        if ((token.t == Lexer::DEFAULT_TOKEN || token.t == Lexer::CASE_TOKEN) && bcCount < 1) break;
+                        script += " " + token.s;
+                        lastI = lexer.i;
+                        GET;
+                    }
+                    root->insert("case", caseLine + baseLine - 1);
+                    auto ast = new AST(caseExpr, caseLine + baseLine - 1);
+                    ast->parse();
+                    if (ast->root->value() == "bad-tree") {
+                        delete root;
+                        root = ast->root;
+                        delete ast;
+                        return;
+                    }
+                    root->get(-1)->insert(ast->root);
+                    root->get(-1)->insert(script, lexer.l + baseLine - 1);
+                    delete ast;
+
+                    lexer.i = lastI;
+                } else if (token.t == Lexer::DEFAULT_TOKEN) {
+                    auto defaultLine = lexer.l;
+                    GET;
+                    if (token.t != Lexer::COLON_TOKEN) {
+                        root = new node("bad-tree", lexer.l + baseLine - 1);
+                        root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                        return;
+                    }
+                    string script;
+                    GET;
+                    while (token.t != Lexer::PROGRAM_END) {
+                        script += " " + token.s;
+                        GET;
+                    }
+                    root->insert("default", defaultLine + baseLine - 1);
+                    root->get(-1)->insert(script, lexer.l + baseLine - 1);
+                } else {
+                    root = new node("bad-tree", lexer.l + baseLine - 1);
+                    root->insert("Unexpected token " + token.s, lexer.l + baseLine - 1);
+                    return;
+                }
+                GET;
+            }
+
+            // come back to raw
+            lexer.open(script);
+            lexer.i = rawLexerI;
+            lexer.l = rawLexerL;
             break;
         }
     }

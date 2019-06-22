@@ -18,7 +18,7 @@ void TEST1() {
     delete object;
 }
 void TEST2() {
-    string v("let\na = 0;a++;");
+    string v("let\na1 = 0;a1++;");
     BM::Lexer lexer(v);
     auto t = lexer.get();
     std::cout << t.s << std::endl;
@@ -57,7 +57,7 @@ int main() {
 //    TEST1();
 //    TEST2();
 //    TEST3();
-    TEST4();
+//    TEST4();
     TEST5();
 
     // Get speed

@@ -69,7 +69,7 @@ BM::Lexer::Token BM::Lexer::get() {
             if (
                     t.t > NOTE_TOKEN && t.t < END_TOKEN
                     ) break;// 如果是符号token的话, 遇到非符号就说明该token结束了
-            if (IS_NUM(script[i])) t.t = NUMBER_TOKEN;
+            if (IS_NUM(script[i]) && t.t != UNKNOWN_TOKEN) t.t = NUMBER_TOKEN;
             else t.t = UNKNOWN_TOKEN;
         }
         t.s += script[i];
