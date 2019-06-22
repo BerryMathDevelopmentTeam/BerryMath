@@ -51,6 +51,11 @@ void TEST5() {
     ast.parse();
 
 }
+void TEST6() {
+    BM::AST ast("while (a > 0) { println(\"Hello!\");a++; }");
+    ast.parse();
+
+}
 
 
 int main() {
@@ -58,11 +63,12 @@ int main() {
 //    TEST2();
 //    TEST3();
 //    TEST4();
-    TEST5();
+//    TEST5();
+    TEST6();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST4();
+    for (int i = 0; i < 10000; i++) TEST6();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

@@ -54,6 +54,13 @@ namespace BM {
         string script;
         Lexer lexer;
         static inline UL priority(const string&);
+#define CHECK(astName) \
+    if (astName->root->value() == "bad-tree") { \
+        delete root; \
+        root = astName->root; \
+        delete astName; \
+        return; \
+    }
     };;
 }
 
