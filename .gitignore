@@ -31,7 +31,7 @@
 *.out
 *.app
 
-# 忽略mac中的系统文件
+# 忽略CLion的系统文件
 .idea/
 
 # 忽略CMake产生的文件
@@ -43,6 +43,3 @@ CMakeCache.txt
 
 # 忽略release文件
 /BerryMath
-
-# 忽略jsoncpp的文件
-/jsoncpp-src-0.5.0/
