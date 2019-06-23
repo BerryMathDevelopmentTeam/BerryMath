@@ -210,6 +210,12 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = USING_TOKEN;
     } else if (t.s == "default") {
         t.t = DEFAULT_TOKEN;
+    } else if (t.s == "class") {
+        t.t = CLASS_TOKEN;
+    } else if (t.s == "public") {
+        t.t = PUBLIC_TOKEN;
+    } else if (t.s == "private") {
+        t.t = PRIVATE_TOKEN;
     }
     return t;
 }

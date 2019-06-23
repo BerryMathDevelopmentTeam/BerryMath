@@ -68,6 +68,11 @@ void TEST8() {
     ast.parse();
 
 }
+void TEST9() {
+    BM::AST ast("def a(b = 34 * (1 + 4), public c = b(123), private d = 3, private e) {\nprintln(b, c, d, e);\n}");
+    ast.parse();
+
+}
 
 
 int main() {
@@ -78,11 +83,12 @@ int main() {
 //    TEST5();
 //    TEST6();
 //    TEST7();
-    TEST8();
+//    TEST8();
+    TEST9();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST8();
+    for (int i = 0; i < 10000; i++) TEST9();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

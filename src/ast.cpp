@@ -40,6 +40,8 @@ void BM::AST::parse() {
         case Lexer::STRING_TOKEN:
         case Lexer::BRACKETS_LEFT_TOKEN:
         case Lexer::UNKNOWN_TOKEN:
+        case Lexer::UNDEFINED_TOKEN:
+        case Lexer::NULL_TOKEN:
         {
             UL base = 1;
             struct Operator {
@@ -63,6 +65,7 @@ void BM::AST::parse() {
             auto tmpTokenLine = lexer.l;
 //            auto tmpTokenIndex = lexer.index();
             GET;
+            UL tempTK = 0;
             while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
                 if (token.t > Lexer::NOTE_TOKEN && token.t < Lexer::END_TOKEN) {// 是符号
                     if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
@@ -72,7 +75,7 @@ void BM::AST::parse() {
                             if (pri < minOp.pri || minOp.op.empty()) {
                                 minOp.pri = pri;
                                 minOp.op = "call";
-                                minOp.index = opIndex - unknownTkLen;
+                                minOp.index = tempTK;
                                 minOp.line = lexer.l;
                                 rightLine = lexer.l;
                             }
@@ -94,6 +97,7 @@ void BM::AST::parse() {
                 if (token.t == Lexer::UNKNOWN_TOKEN) {
                     isUnknownTk = true;
                     unknownTkLen = token.s.length();
+                    tempTK = opIndex;
                 }
                 opIndex = lexer.i;
                 GET;
@@ -114,9 +118,9 @@ void BM::AST::parse() {
                 left += " " + token.s;
                 GET;
             }
-            if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
-                left.erase(0, 2);
-            } else if (minOp.op != "call") {
+            /*if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
+//                left.erase(0, 2);
+            } else */if (minOp.op != "call") {
                 left += " " + token.s;
                 GET;
                 GET;
@@ -143,8 +147,8 @@ void BM::AST::parse() {
                     rightBCC *= -1;
                     for (auto i = 0; i < rightBCC; i++) right = "(" + right;
                 }
-                auto leftAst = new AST(left, leftLine  + baseLine);
-                auto rightAst = new AST(right, rightLine  + baseLine);
+                auto leftAst = new AST(left, leftLine + baseLine);
+                auto rightAst = new AST(right, rightLine + baseLine);
                 leftAst->parse();
                 if (leftAst->root->value() == "bad-tree") {
                     delete root;
@@ -168,8 +172,13 @@ void BM::AST::parse() {
                 delete rightAst;
             } else {
                 lexer.i = minOp.index;
+                auto tmpFunNameIndex = lexer.i;
                 GET;
                 UL funLine = lexer.l;
+//                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
+//                    lexer.i = tmpFunNameIndex;
+//                    GET;
+//                }
                 string functionName(token.s);
                 GET;
                 UL brCount = 1;
@@ -651,6 +660,168 @@ void BM::AST::parse() {
             delete ast;
             break;
         }
+        case Lexer::DEF_TOKEN:
+        {
+            auto defLine = lexer.l;
+
+            GET;
+            string funcName(token.s);
+            GET;
+
+            enum ArgType {
+                PUBLIC, PRIVATE
+            };
+            struct Arg {
+                ArgType type;
+                string arg;
+                string defaultValue = "";
+            };
+
+            if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine);
+                return;
+            }
+            string arg;
+            vector<Arg> args;
+            auto bcCount = 1;
+            while (true) {
+                GET;
+                if (token.t == Lexer::COMMA_TOKEN) {
+                    Lexer l(arg);
+                    auto t = l.get();
+                    auto tmpI = l.i;
+                    string defaultValue("");
+                    if (t.t == Lexer::PUBLIC_TOKEN) {
+                        auto name = l.get().s;
+                        auto t2 = l.get();
+                        if (t2.t == Lexer::SET_TOKEN) {
+                            t2 = l.get();
+                            while (t2.t != Lexer::PROGRAM_END) {
+                                defaultValue += " " + t2.s;
+                                t2 = l.get();
+                            }
+                        }
+                        args.push_back(Arg({ PUBLIC, name, defaultValue }));
+                    } else if (t.t == Lexer::UNKNOWN_TOKEN) {
+                        auto t2 = l.get();
+                        if (t2.t == Lexer::SET_TOKEN) {
+                            t2 = l.get();
+                            while (t2.t != Lexer::PROGRAM_END) {
+                                defaultValue += " " + t2.s;
+                                t2 = l.get();
+                            }
+                        }
+                        args.push_back(Arg({ PUBLIC, t.s, defaultValue }));
+                    } else if (t.t == Lexer::PRIVATE_TOKEN) {
+                        auto name = l.get().s;
+                        auto t2 = l.get();
+                        if (t2.t == Lexer::SET_TOKEN) {
+                            t2 = l.get();
+                            while (t2.t != Lexer::PROGRAM_END) {
+                                defaultValue += " " + t2.s;
+                                t2 = l.get();
+                            }
+                        }
+                        args.push_back(Arg({ PRIVATE, name, defaultValue }));
+                    } else {
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("Unexpected token " + token.s, lexer.l + baseLine);
+                        return;
+                    }
+                    arg = "";
+                    continue;
+                } else if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
+                    bcCount++;
+                } else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
+                    if (--bcCount < 1) break;
+                }
+                arg += " " + token.s;
+            }
+            Lexer l(arg);
+            auto t = l.get();
+            string defaultValue("");
+            if (t.t == Lexer::PUBLIC_TOKEN) {
+                auto name = l.get().s;
+                auto t2 = l.get();
+                if (t2.t == Lexer::SET_TOKEN) {
+                    t2 = l.get();
+                    while (t2.t != Lexer::PROGRAM_END) {
+                        defaultValue += " " + t2.s;
+                        t2 = l.get();
+                    }
+                }
+                args.push_back(Arg({ PUBLIC, name, defaultValue }));
+            } else if (t.t == Lexer::UNKNOWN_TOKEN) {
+                auto t2 = l.get();
+                if (t2.t == Lexer::SET_TOKEN) {
+                    t2 = l.get();
+                    while (t2.t != Lexer::PROGRAM_END) {
+                        defaultValue += " " + t2.s;
+                        t2 = l.get();
+                    }
+                }
+                args.push_back(Arg({ PUBLIC, t.s, defaultValue }));
+            } else if (t.t == Lexer::PRIVATE_TOKEN) {
+                auto name = l.get().s;
+                auto t2 = l.get();
+                if (t2.t == Lexer::SET_TOKEN) {
+                    t2 = l.get();
+                    while (t2.t != Lexer::PROGRAM_END) {
+                        defaultValue += " " + t2.s;
+                        t2 = l.get();
+                    }
+                }
+                args.push_back(Arg({ PRIVATE, name, defaultValue }));
+            } else {
+                root = new node("bad-tree", lexer.l + baseLine);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine);
+                return;
+            }
+
+            GET;
+            if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                root = new node("bad-tree", lexer.l + baseLine);
+                root->insert("Unexpected token " + token.s, lexer.l + baseLine);
+                return;
+            }
+            string funcScript;
+            bcCount = 1;
+            auto funcScriptLine = lexer.l;
+            while (bcCount > 0) {
+                GET;
+                if (token.t == Lexer::PROGRAM_END) {
+                    root = new node("bad-tree", lexer.l + baseLine);
+                    root->insert("Lack of parentheses", lexer.l + baseLine);
+                    return;
+                }
+                funcScript += " " + token.s;
+                if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bcCount--;
+            }
+            funcScript.erase(funcScript.length() - 1, 1);
+
+            auto dl = defLine + baseLine;
+            root = new node("def", dl);
+            root->insert(funcName, dl);
+            root->insert("args", dl);
+            for (auto i = 0; i < args.size(); i++) {
+                Arg& a = args[i];
+                root->get(1)->insert(a.arg, dl);
+                if (a.type == PUBLIC) root->get(1)->get(-1)->insert("public", dl);
+                else root->get(1)->get(-1)->insert("private", dl);
+                auto ast = new AST(a.defaultValue, dl);
+                ast->parse();
+                CHECK(ast);
+                root->get(1)->get(-1)->insert(ast->root);
+                delete ast;
+            }
+            root->insert(funcScript, funcScriptLine + baseLine);
+            break;
+        }
+        default:
+            root = new node("undefined", lexer.l + baseLine);
+            break;
     }
 }
 

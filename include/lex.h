@@ -20,6 +20,7 @@ namespace BM {
             RETURN_TOKEN,
             ENUM_TOKEN,
             USING_TOKEN,
+            CLASS_TOKEN, PUBLIC_TOKEN, PRIVATE_TOKEN,
             IN_TOKEN, OF_TOKEN,
             NULL_TOKEN, UNDEFINED_TOKEN,
             NUMBER_TOKEN, STRING_TOKEN,
