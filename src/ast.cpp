@@ -118,9 +118,7 @@ void BM::AST::parse() {
                 left += " " + token.s;
                 GET;
             }
-            /*if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
-//                left.erase(0, 2);
-            } else */if (minOp.op != "call") {
+            if (minOp.op != "call") {
                 left += " " + token.s;
                 GET;
                 GET;
@@ -167,7 +165,7 @@ void BM::AST::parse() {
                 }
                 root = new node(minOp.op, minOp.line  + baseLine);
                 root->insert(leftAst->root);
-                root->insert(rightAst->root);
+                if (minOp.op != "++" && minOp.op != "--") root->insert(rightAst->root);
                 delete leftAst;
                 delete rightAst;
             } else {
@@ -220,6 +218,15 @@ void BM::AST::parse() {
                     delete ast;
                 }
             }
+            break;
+        }
+        case Lexer::DADD_TOKEN:
+        case Lexer::DSUB_TOKEN:
+        {
+            string op(token.s);
+            root = new node(op, lexer.l);
+            GET;
+            root->insert("f-" + token.s, lexer.l);
             break;
         }
         case Lexer::IF_TOKEN:

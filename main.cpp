@@ -73,6 +73,11 @@ void TEST9() {
     ast.parse();
 
 }
+void TEST10() {
+    BM::AST ast("a++;");
+    ast.parse();
+
+}
 
 
 int main() {
@@ -84,11 +89,12 @@ int main() {
 //    TEST6();
 //    TEST7();
 //    TEST8();
-    TEST9();
+//    TEST9();
+    TEST10();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST9();
+    for (int i = 0; i < 10000; i++) TEST10();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }
