@@ -40,7 +40,7 @@ namespace BM {
             void insert(string v, UL l) { children.push_back(new node(v, l)); }
             ~node() {
                 for (auto iter = children.begin(); iter != children.end(); iter++) {
-                    delete (*iter);
+                    if (*iter) delete (*iter);
                 }
             }
         private:
