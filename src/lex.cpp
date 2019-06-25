@@ -28,7 +28,8 @@ BM::Lexer::Token BM::Lexer::get() {
             if (!t.s.empty() && (script[i] == '(' || script[i] == '[' || script[i] == '{')) {
                 break;
             }
-            if (t.t >= UNKNOWN_TOKEN && t.t < NOTE_TOKEN) {// 如果是是word token的话, 遇到符号就说明word token的结束, 但是数字如果遇到.除外, 因为这种情况是小数, 但是数字只有一个小数点, 所有当numberDot为true以后又有.就是分割界线了
+            if (t.t >= UNKNOWN_TOKEN && t.t <
+                                        NOTE_TOKEN) {// 如果是是word token的话, 遇到符号就说明word token的结束, 但是数字如果遇到.除外, 因为这种情况是小数, 但是数字只有一个小数点, 所有当numberDot为true以后又有.就是分割界线了
                 if (script[i] == '.' && t.t == NUMBER_TOKEN && !numberDot) {
                     numberDot = true;
                     t.s += script[i];
@@ -55,7 +56,9 @@ BM::Lexer::Token BM::Lexer::get() {
                 if (t.t == NO_STATUS) t.s = ";";
                 break;
             }
-            if (script[i] == ')' || script[i] == ']' || script[i] == '}') {
+            if (
+                    script[i] == ')' || script[i] == ']' || script[i] == '}' ||
+                    script[i] == '(' || script[i] == '[' || script[i] == '{') {
                 if (t.t == NO_STATUS) {
                     t.s = script[i];
                     t.t = UNKNOWN_OP_TOKEN;
@@ -68,7 +71,8 @@ BM::Lexer::Token BM::Lexer::get() {
         } else {
             if (
                     t.t > NOTE_TOKEN && t.t < END_TOKEN
-                    ) break;// 如果是符号token的话, 遇到非符号就说明该token结束了
+                    )
+                break;// 如果是符号token的话, 遇到非符号就说明该token结束了
             if (IS_NUM(script[i]) && t.t != UNKNOWN_TOKEN) t.t = NUMBER_TOKEN;
             else t.t = UNKNOWN_TOKEN;
         }
@@ -169,7 +173,7 @@ BM::Lexer::Token BM::Lexer::get() {
     } else if (t.s == "--") {
         t.t = DSUB_TOKEN;
     }
-    // key word token判断
+        // key word token判断
     else if (t.s == "let") {
         t.t = LET_TOKEN;
     } else if (t.s == "def") {

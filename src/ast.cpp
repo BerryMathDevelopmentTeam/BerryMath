@@ -163,9 +163,17 @@ void BM::AST::parse() {
                     delete rightAst;
                     return;
                 }
-                root = new node(minOp.op, minOp.line  + baseLine);
-                root->insert(leftAst->root);
-                if (minOp.op != "++" && minOp.op != "--") root->insert(rightAst->root);
+                root = new node(minOp.op, minOp.line + baseLine);
+                if (!((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--"))) {
+                    root->insert(leftAst->root);
+                } else {
+                    root->value("a" + minOp.op);
+                }
+                if (!((right == " " || right == " ()") && (minOp.op == "++" || minOp.op == "--"))) {
+                    root->insert(rightAst->root);
+                } else {
+                    root->value("f" + minOp.op);
+                }
                 delete leftAst;
                 delete rightAst;
             } else {
