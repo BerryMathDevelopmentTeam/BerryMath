@@ -56,7 +56,7 @@ namespace BM {
         static inline UL priority(const string&);
 #define CHECK(astName) \
     if (astName->root->value() == "bad-tree") { \
-        delete root; \
+        if (root) delete root; \
         root = astName->root; \
         delete astName; \
         return; \

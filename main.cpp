@@ -89,6 +89,11 @@ void TEST12() {
     ast.parse();
 
 }
+void TEST13() {
+    BM::AST ast("a[\"123\" + \"Hello\"][123 + 123 * 2]");
+    ast.parse();
+
+}
 
 int main() {
 //    TEST1();
@@ -102,11 +107,12 @@ int main() {
 //    TEST9();
 //    TEST10();
 //    TEST11();
-    TEST12();
+//    TEST12();
+    TEST13();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST12();
+    for (int i = 0; i < 10000; i++) TEST13();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

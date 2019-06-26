@@ -80,8 +80,21 @@ void BM::AST::parse() {
                                 rightLine = lexer.l;
                             }
                         }
+                    } else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) {
+                        base *= BRACKETS_PRI;
+                        if (isUnknownTk) {
+                            auto pri = base;
+                            if (pri < minOp.pri || minOp.op.empty()) {
+                                minOp.pri = pri;
+                                minOp.op = "get";
+                                minOp.index = tempTK;
+                                minOp.line = lexer.l;
+                                rightLine = lexer.l;
+                            }
+                        }
                     }
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) base /= BRACKETS_PRI;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) base /= BRACKETS_PRI;
                     else {
                         auto pri = priority(token.s) * base;
                         if (pri < minOp.pri || minOp.op.empty()) {
@@ -118,7 +131,93 @@ void BM::AST::parse() {
                 left += " " + token.s;
                 GET;
             }
-            if (minOp.op != "call") {
+            if (minOp.op == "call") {
+                lexer.i = minOp.index;
+                auto tmpFunNameIndex = lexer.i;
+                GET;
+                UL funLine = lexer.l;
+//                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
+//                    lexer.i = tmpFunNameIndex;
+//                    GET;
+//                }
+                string functionName(token.s);
+                GET;
+                UL brCount = 1;
+                std::vector<string> args;
+                string arg;
+                while (brCount > 0) {
+                    arg += " " + token.s;
+                    GET;
+                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
+                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
+                    else if (token.t == Lexer::COMMA_TOKEN) {
+                        arg.erase(0, 2);
+                        args.push_back(arg);
+                        arg = "";
+                    } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("Uncaught SyntaxError: Lack of parentheses", lexer.l + baseLine);
+                        return;
+                    }
+                }
+                if (!arg.empty()) {
+                    arg.erase(0, 2);
+                    args.push_back(arg);
+                }
+                GET;
+                while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
+                    right += " " + token.s;
+                    GET;
+                }
+                auto callLine = minOp.line + baseLine;
+                root = new node("call", callLine);
+                root->insert(functionName, funLine  + baseLine);
+                root->insert("arg", funLine  + baseLine);
+                for (auto i = 0; i < args.size(); i++) {
+                    auto ast = new AST(args[i], callLine);
+                    ast->parse();
+                    CHECK(ast);
+                    root->get(1)->insert(ast->root);
+                    delete ast;
+                }
+            } else if (minOp.op == "get") {
+                lexer.i = minOp.index;
+                auto tmpGetNameIndex = lexer.i;
+                GET;
+                UL getLine = lexer.l;
+//                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
+//                    lexer.i = tmpFunNameIndex;
+//                    GET;
+//                }
+                root = new node("get", getLine);
+                root->insert(token.s, lexer.l);
+                string getName(token.s);
+                string expr;
+                while (true) {
+                    UL tempIndex = lexer.i;
+                    GET;
+                    if (token.t != Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) {
+                        lexer.i = tempIndex;
+                        break;
+                    }
+                    UL bcCount = 1;
+                    while (bcCount > 0) {
+                        GET;
+                        if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) bcCount++;
+                        else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) {
+                            bcCount--;
+                            if (bcCount < 1) break;
+                        }
+                        expr += " " + token.s;
+                    }
+                    auto ast = new AST(expr, lexer.l + baseLine);
+                    ast->parse();
+                    CHECK(ast);
+                    root->insert(ast->root);
+                    expr = "";
+                    delete ast;
+                }
+            } else {
                 left += " " + token.s;
                 GET;
                 GET;
@@ -176,55 +275,6 @@ void BM::AST::parse() {
                 }
                 delete leftAst;
                 delete rightAst;
-            } else {
-                lexer.i = minOp.index;
-                auto tmpFunNameIndex = lexer.i;
-                GET;
-                UL funLine = lexer.l;
-//                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
-//                    lexer.i = tmpFunNameIndex;
-//                    GET;
-//                }
-                string functionName(token.s);
-                GET;
-                UL brCount = 1;
-                std::vector<string> args;
-                string arg;
-                while (brCount > 0) {
-                    arg += " " + token.s;
-                    GET;
-                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
-                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
-                    else if (token.t == Lexer::COMMA_TOKEN) {
-                        arg.erase(0, 2);
-                        args.push_back(arg);
-                        arg = "";
-                    } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
-                        root = new node("bad-tree", lexer.l + baseLine);
-                        root->insert("Uncaught SyntaxError: Lack of parentheses", lexer.l + baseLine);
-                        return;
-                    }
-                }
-                if (!arg.empty()) {
-                    arg.erase(0, 2);
-                    args.push_back(arg);
-                }
-                GET;
-                while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
-                    right += " " + token.s;
-                    GET;
-                }
-                auto callLine = minOp.line + baseLine;
-                root = new node("call", callLine);
-                root->insert(functionName, funLine  + baseLine);
-                root->insert("arg", funLine  + baseLine);
-                for (auto i = 0; i < args.size(); i++) {
-                    auto ast = new AST(args[i], callLine);
-                    ast->parse();
-                    CHECK(ast);
-                    root->get(1)->insert(ast->root);
-                    delete ast;
-                }
             }
             break;
         }
@@ -285,11 +335,7 @@ void BM::AST::parse() {
             ifScript.erase(ifScript.length() - 1, 1);
             auto ifExprAst = new AST(ifExpression, exprLine + baseLine);
             ifExprAst->parse();
-            if (ifExprAst->root->value() == "bad-tree") {
-                root = ifExprAst->root;
-                delete ifExprAst;
-                return;
-            }
+            CHECK(ifExprAst);
             root = new node("if", ifLine + baseLine);
             root->insert(ifExprAst->root);
             root->insert(ifScript, ifScriptLine + baseLine);
@@ -665,11 +711,14 @@ void BM::AST::parse() {
             root = new node("for", forLine + baseLine);
             auto ast = new AST(forExprScript, forLine + baseLine);
             ast->parse();
+            CHECK(ast);
             root->insert(ast->root);
             if (ast->root->value() != "in" && ast->root->value() != "of") {
                 ast->parse();
+                CHECK(ast);
                 root->insert(ast->root);
                 ast->parse();
+                CHECK(ast);
                 root->insert(ast->root);
             }
             root->insert(forScript, forScriptLine + baseLine);
@@ -848,6 +897,7 @@ void BM::AST::parse() {
             root = new node("using", usingLine + baseLine);
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
+            CHECK(ast);
             root->insert(ast->root);
             delete ast;
             break;
@@ -864,6 +914,7 @@ void BM::AST::parse() {
             root = new node("break", breakLine + baseLine);
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
+            CHECK(ast);
             if (ast->root->value() != "undefined") root->insert(ast->root);
             else {
                 root->insert(new node("1", lexer.l + baseLine));delete ast->root;
