@@ -80,7 +80,7 @@ void TEST10() {
 
 }
 void TEST11() {
-    BM::Dylib dylib("libadd.dylib");
+    BM::Dylib dylib("libadd");
     dllFun add = (dllFun)dylib.resolve("add");
     std::cout << add(1, 2) << std::endl;
 }
@@ -106,9 +106,9 @@ int main() {
 //    TEST8();
 //    TEST9();
 //    TEST10();
-//    TEST11();
+    TEST11();
 //    TEST12();
-    TEST13();
+//    TEST13();
 
     // Get speed
     /*auto start = clock();

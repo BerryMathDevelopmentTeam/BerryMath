@@ -6,15 +6,19 @@
 // linux, mac, unix等
 #include <dlfcn.h>
 #endif
-#include "Dylib.h"
+#include "dylib.h"
 
 bool BM::Dylib::open() {
 #ifdef Windows95
     // windows
-    dyhandle = LoadLibrary(name.c_str());
+    dyhandle = LoadLibrary((name + ".dll").c_str());
 #else
     // linux, mac, unix等
-    dyhandle = dlopen(name.c_str(), RTLD_NOW);
+#ifdef __MAC_10_0
+    dyhandle = dlopen((name + ".dylib").c_str(), RTLD_NOW);
+#else
+    dyhandle = dlopen((name + ".so").c_str(), RTLD_NOW);
+#endif
 #endif
     return (status = (bool)dyhandle);
 }
