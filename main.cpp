@@ -1,8 +1,10 @@
 #include <iostream>
 #include <ctime>
+#include <dlfcn.h>
 #include <BerryMath.h>
 //#include <benchmark/benchmark.h>
 
+using dllFun = int(*)(int, int);
 
 void TEST1() {
     auto object = new BM::Object;
@@ -78,7 +80,11 @@ void TEST10() {
     ast.parse();
 
 }
-
+void TEST11() {
+    BM::Dylib dylib("libadd.dylib");
+    dllFun add = (dllFun)dylib.resolve("add");
+    std::cout << add(1, 2) << std::endl;
+}
 
 int main() {
 //    TEST1();
@@ -90,11 +96,12 @@ int main() {
 //    TEST7();
 //    TEST8();
 //    TEST9();
-    TEST10();
+//    TEST10();
+    TEST11();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST9();
+    for (int i = 0; i < 10000; i++) TEST1();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

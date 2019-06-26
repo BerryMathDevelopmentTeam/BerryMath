@@ -4,6 +4,7 @@
 #include "value.h"
 #include "ast.h"
 #include "lex.h"
+#include "dylib.h"
 
 namespace BM {
 
