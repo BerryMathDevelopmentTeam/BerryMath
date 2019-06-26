@@ -666,10 +666,12 @@ void BM::AST::parse() {
             auto ast = new AST(forExprScript, forLine + baseLine);
             ast->parse();
             root->insert(ast->root);
-            ast->parse();
-            root->insert(ast->root);
-            ast->parse();
-            root->insert(ast->root);
+            if (ast->root->value() != "in" && ast->root->value() != "of") {
+                ast->parse();
+                root->insert(ast->root);
+                ast->parse();
+                root->insert(ast->root);
+            }
             root->insert(forScript, forScriptLine + baseLine);
 
             delete ast;
@@ -832,6 +834,46 @@ void BM::AST::parse() {
                 delete ast;
             }
             root->insert(funcScript, funcScriptLine + baseLine);
+            break;
+        }
+        case Lexer::USING_TOKEN:
+        {
+            UL usingLine = lexer.l;
+            string expr;
+            GET;
+            while (token.t != Lexer::END_TOKEN) {
+                expr += token.s;
+                GET;
+            }
+            root = new node("using", usingLine + baseLine);
+            auto ast = new AST(expr, lexer.l + baseLine);
+            ast->parse();
+            root->insert(ast->root);
+            delete ast;
+            break;
+        }
+        case Lexer::BREAK_TOKEN:
+        {
+            UL breakLine = lexer.l;
+            string expr;
+            GET;
+            while (token.t != Lexer::END_TOKEN) {
+                expr += token.s;
+                GET;
+            }
+            root = new node("break", breakLine + baseLine);
+            auto ast = new AST(expr, lexer.l + baseLine);
+            ast->parse();
+            if (ast->root->value() != "undefined") root->insert(ast->root);
+            else {
+                root->insert(new node("1", lexer.l + baseLine));delete ast->root;
+            }
+            delete ast;
+            break;
+        }
+        case Lexer::CONTINUE_TOKEN:
+        {
+            root = new node("continue", lexer.l + baseLine);
             break;
         }
         default:

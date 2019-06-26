@@ -21,7 +21,6 @@ namespace BM {
             ENUM_TOKEN,
             USING_TOKEN,
             CLASS_TOKEN, PUBLIC_TOKEN, PRIVATE_TOKEN, NEW_TOKEN,
-            IN_TOKEN, OF_TOKEN,
             NULL_TOKEN, UNDEFINED_TOKEN,
             NUMBER_TOKEN, STRING_TOKEN,
             // 注释token
@@ -43,6 +42,7 @@ namespace BM {
             SLEFT_TO_TOKEN, SRIGHT_TO_TOKEN,
             MAND_TO_TOKEN, MOR_TO_TOKEN, MXOR_TO_TOKEN,
             DADD_TOKEN, DSUB_TOKEN,// double add & double sub
+            IN_TOKEN, OF_TOKEN,
             END_TOKEN,// 语句结束
             PROGRAM_END
         };
