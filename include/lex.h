@@ -21,6 +21,7 @@ namespace BM {
             ENUM_TOKEN,
             USING_TOKEN,
             IMPORT_TOKEN, EXPORT_TOKEN, AS_TOKEN,
+            DELETE_TOKEN,
             CLASS_TOKEN, PUBLIC_TOKEN, PRIVATE_TOKEN, NEW_TOKEN,
             NULL_TOKEN, UNDEFINED_TOKEN,
             NUMBER_TOKEN, STRING_TOKEN,

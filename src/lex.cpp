@@ -228,6 +228,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = EXPORT_TOKEN;
     } else if (t.s == "as") {
         t.t = AS_TOKEN;
+    } else if (t.s == "delete") {
+        t.t = DELETE_TOKEN;
     }
     return t;
 }

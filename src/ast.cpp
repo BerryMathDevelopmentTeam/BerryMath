@@ -960,6 +960,7 @@ void BM::AST::parse() {
             }
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
+            CHECK(ast);
             root->insert(ast->root);
             root->insert("as", lexer.l + baseLine);
             root->get(-1)->insert(asName, lexer.l + baseLine);
@@ -971,6 +972,22 @@ void BM::AST::parse() {
             root = new node("export", lexer.l + baseLine);
             GET;
             root->insert(token.s, lexer.l + baseLine);
+            break;
+        }
+        case Lexer::DELETE_TOKEN:
+        {
+            root = new node("delete", lexer.l + baseLine);
+            GET;
+            string expr;
+            while (token.t != Lexer::END_TOKEN) {
+                expr += " " + token.s;
+                GET;
+            }
+            auto ast = new AST(expr, lexer.l + baseLine);
+            ast->parse();
+            CHECK(ast);
+            root->insert(ast->root);
+            delete ast;
             break;
         }
         default:

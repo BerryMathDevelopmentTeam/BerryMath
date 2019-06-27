@@ -111,6 +111,11 @@ void TEST16() {
     std::cout << scope.get("bar")->value()->toString() << std::endl;
 
 }
+void TEST17() {
+    BM::AST ast("delete a;");
+    ast.parse();
+
+}
 
 int main() {
 //    TEST1();
@@ -128,7 +133,8 @@ int main() {
 //    TEST13();
 //    TEST14();
 //    TEST15();
-    TEST16();
+//    TEST16();
+    TEST17();
 
     // Get speed
     /*auto start = clock();
