@@ -95,9 +95,7 @@ void TEST13() {
 
 }
 void TEST14() {
-    BM::AST ast("import \"Hello-\" + name;export a;");
-    ast.parse();
-
+    BM::AST ast("import \"Hello-\" + name as Hello;");
     ast.parse();
 
 }

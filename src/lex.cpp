@@ -226,6 +226,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = IMPORT_TOKEN;
     } else if (t.s == "export") {
         t.t = EXPORT_TOKEN;
+    } else if (t.s == "as") {
+        t.t = AS_TOKEN;
     }
     return t;
 }

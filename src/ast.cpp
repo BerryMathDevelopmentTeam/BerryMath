@@ -933,13 +933,25 @@ void BM::AST::parse() {
             string expr;
             UL bcCount = 0;
             GET;
+            bool hasAs(false);
             while (token.t != Lexer::END_TOKEN || bcCount > 0) {
+                if (token.t == Lexer::AS_TOKEN && bcCount < 1) {
+                    hasAs = true;
+                    break;
+                }
                 expr += " " + token.s;
                 GET;
+            }
+            string asName("module");
+            if (hasAs) {
+                GET;
+                asName = token.s;
             }
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
             root->insert(ast->root);
+            root->insert("as", lexer.l + baseLine);
+            root->get(-1)->insert(asName, lexer.l + baseLine);
             delete ast;
             break;
         }
