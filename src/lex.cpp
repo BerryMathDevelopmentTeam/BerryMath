@@ -222,6 +222,10 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = PRIVATE_TOKEN;
     } else if (t.s == "new") {
         t.t = NEW_TOKEN;
+    } else if (t.s == "import") {
+        t.t = IMPORT_TOKEN;
+    } else if (t.s == "export") {
+        t.t = EXPORT_TOKEN;
     }
     return t;
 }

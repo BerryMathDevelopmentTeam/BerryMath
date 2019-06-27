@@ -927,6 +927,29 @@ void BM::AST::parse() {
             root = new node("continue", lexer.l + baseLine);
             break;
         }
+        case Lexer::IMPORT_TOKEN:
+        {
+            root = new node("import", lexer.l + baseLine);
+            string expr;
+            UL bcCount = 0;
+            GET;
+            while (token.t != Lexer::END_TOKEN || bcCount > 0) {
+                expr += " " + token.s;
+                GET;
+            }
+            auto ast = new AST(expr, lexer.l + baseLine);
+            ast->parse();
+            root->insert(ast->root);
+            delete ast;
+            break;
+        }
+        case Lexer::EXPORT_TOKEN:
+        {
+            root = new node("export", lexer.l + baseLine);
+            GET;
+            root->insert(token.s, lexer.l + baseLine);
+            break;
+        }
         default:
             root = new node("undefined", lexer.l + baseLine);
             break;

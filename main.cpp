@@ -94,6 +94,13 @@ void TEST13() {
     ast.parse();
 
 }
+void TEST14() {
+    BM::AST ast("import \"Hello-\" + name;export a;");
+    ast.parse();
+
+    ast.parse();
+
+}
 
 int main() {
 //    TEST1();
@@ -106,9 +113,10 @@ int main() {
 //    TEST8();
 //    TEST9();
 //    TEST10();
-    TEST11();
+//    TEST11();
 //    TEST12();
 //    TEST13();
+    TEST14();
 
     // Get speed
     /*auto start = clock();
