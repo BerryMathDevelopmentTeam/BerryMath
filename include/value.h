@@ -9,6 +9,9 @@ using std::map;
 typedef unsigned long UL;
 
 namespace BM {
+    enum ValueType {
+        OBJECT, NUMBER, STRING, NULL_, UNDEFINED
+    };
     class Object {
     public:
         Object() : linked(0), parent(nullptr) { }
@@ -22,6 +25,7 @@ namespace BM {
         inline UL bind() { return ++linked; }
         inline UL unbind() { return --linked; }
         virtual string toString(bool = true, bool = true, string = "");
+        virtual ValueType type() { return OBJECT; }
         virtual Object* copy() {
             auto object = new Object();
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
@@ -53,6 +57,7 @@ namespace BM {
             if (hl) o += "\033[0m";
             return o;
         }
+        ValueType type() { return NUMBER; }
         double& value() { return v; }
         Object* copy() {
             return new Number(v);
@@ -72,6 +77,7 @@ namespace BM {
             if (hl) o += "\033[0m";
             return o;
         }
+        ValueType type() { return STRING; }
         string& value() { return v; }
         Object* copy() {
             return new String(v);
@@ -93,6 +99,10 @@ namespace BM {
         Object* copy() {
             return new Null;
         }
+        string value() {
+            return "null";
+        }
+        ValueType type() { return NULL_; }
         ~Null() { }
     };
     class Undefined : public Object {
@@ -108,7 +118,47 @@ namespace BM {
         Object* copy() {
             return new Undefined;
         }
+        string value() {
+            return "undefined";
+        }
+        ValueType type() { return UNDEFINED; }
         ~Undefined() { }
+    };
+    class Variable {
+    public:
+        Variable(string t, Object* v = new Undefined) : n(t), val(v) { val->bind(); }
+        Object* value() { return val; }
+        string name() {
+            return n;
+        }
+        void value(Object* v) {
+            if (val->unbind() < 1) delete val;
+            val = v;
+        }
+        ~Variable() { if (val->unbind() < 1) delete val; }
+    private:
+        string n;
+        Object* val;
+    };
+    class Scope {
+    public:
+        enum Flag {
+            SELF, ALL_MIGHT
+        };
+        Scope(Scope* p = nullptr);
+        void set(Variable* variable);
+        Variable* get(string name, Flag flag = ALL_MIGHT);
+        void del(string name);
+        ~Scope() {
+            for (auto iter = variables.begin(); iter != variables.end(); iter++) {
+                delete iter->second;
+                variables.erase((iter++)->first);
+            }
+        }
+#define SCOPE_D_NAME "__scope"
+    private:
+        map<string, Variable*> variables;
+        Scope* parent;
     };
 }
 

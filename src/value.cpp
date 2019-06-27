@@ -77,3 +77,27 @@ BM::Object::~Object() {
     }
     proto.clear();
 }
+
+BM::Scope::Scope(Scope *p) : parent(p) {
+    set(new Variable(SCOPE_D_NAME, new Object));
+}
+void BM::Scope::set(Variable *variable) {
+    auto name = variable->name();
+    auto iter = variables.find(name);
+    if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, variable));
+    variables[name] = variable;
+    if (name != SCOPE_D_NAME) {
+        get(SCOPE_D_NAME, SELF)->value()->insert(name, variable->value());
+    }
+}
+BM::Variable* BM::Scope::get(string name, Flag flag) {
+    auto iter = variables.find(name);
+    if (iter == variables.end()) return nullptr;
+    return iter->second;
+}
+void BM::Scope::del(string name) {
+    auto v = get(name);
+    if (v) delete v;
+    variables.erase(name);
+    get(SCOPE_D_NAME, SELF)->value()->del(name);
+}

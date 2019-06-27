@@ -104,6 +104,13 @@ void TEST15() {
     ast.parse();
 
 }
+void TEST16() {
+    auto variable = new BM::Variable("bar", new BM::Number(123));
+    BM::Scope scope;
+    scope.set(variable);
+    std::cout << scope.get("bar")->value()->toString() << std::endl;
+
+}
 
 int main() {
 //    TEST1();
@@ -120,11 +127,12 @@ int main() {
 //    TEST12();
 //    TEST13();
 //    TEST14();
-    TEST15();
+//    TEST15();
+    TEST16();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST15();
+    for (int i = 0; i < 10000; i++) TEST16();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }
