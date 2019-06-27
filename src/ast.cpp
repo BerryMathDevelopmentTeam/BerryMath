@@ -263,15 +263,16 @@ void BM::AST::parse() {
                     return;
                 }
                 root = new node(minOp.op, minOp.line + baseLine);
-                if (!((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--"))) {
+                if ((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--" || minOp.op == "+" || minOp.op == "-")) {
+                    if (minOp.op == "++" || minOp.op == "--") root->value("f" + minOp.op);
+                    else root->insert("0", minOp.line + baseLine);
+                } else {
                     root->insert(leftAst->root);
-                } else {
-                    root->value("a" + minOp.op);
                 }
-                if (!((right == " " || right == " ()") && (minOp.op == "++" || minOp.op == "--"))) {
-                    root->insert(rightAst->root);
+                if ((right == " " || right == " ()") && (minOp.op == "++" || minOp.op == "--")) {
+                    root->value("b" + minOp.op);
                 } else {
-                    root->value("f" + minOp.op);
+                    root->insert(rightAst->root);
                 }
                 delete leftAst;
                 delete rightAst;
@@ -282,9 +283,19 @@ void BM::AST::parse() {
         case Lexer::DSUB_TOKEN:
         {
             string op(token.s);
+            root = new node("f" + op, lexer.l);
+            GET;
+            root->insert(token.s, lexer.l);
+            break;
+        }
+        case Lexer::SUB_TOKEN:
+        case Lexer::ADD_TOKEN:
+        {
+            string op(token.s);
             root = new node(op, lexer.l);
             GET;
-            root->insert("f-" + token.s, lexer.l);
+            root->insert("0", lexer.l);
+            root->insert(token.s, lexer.l);
             break;
         }
         case Lexer::IF_TOKEN:
