@@ -1009,21 +1009,17 @@ bool BM::AST::Export(string filename) {
     file.close();
     return true;
 }
-string BM::AST::node::exportByString(string tab) {
+string BM::AST::node::exportByString() {
     auto s = value();
     std::regex p1("\'(.)");
     std::regex p2("\"(.)");
     s = std::regex_replace(s, p1, "\\\'$1");
     s = std::regex_replace(s, p2, "\\\"$1");
-    string res(
-            tab + "node \"" + s + "\"\n"
-            + tab + "line " + std::to_string(line()) + "\n"
-            + tab + "children\n"
-    );
+    string res("node \"" + s + "\" line " + std::to_string(line()) + " children ");
     for (UL i = 0; i < children.size(); i++) {
-        res += children[i]->exportByString(tab + "\t");
+        res += children[i]->exportByString();
     }
-    res += tab + "end" + "\n";
+    res += " end ";
     return res;
 }
 

@@ -46,7 +46,7 @@ namespace BM {
             node& operator[](long index) { return *get(index); }
             void insert(node* n) { children.push_back(n); }
             void insert(string v, UL l) { children.push_back(new node(v, l)); }
-            string exportByString(string = "");
+            string exportByString();
             ~node() {
                 for (auto iter = children.begin(); iter != children.end(); iter++) {
                     if (*iter) delete (*iter);
