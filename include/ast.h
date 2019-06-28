@@ -10,9 +10,9 @@ using std::vector;
 namespace BM {
     class AST {
     public:
-        AST() : root(nullptr), script(""), child(false), baseLine(0), lexer(script) { }
-        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script) { }
-        void open(const string& s) { script = s;lexer.open(script); }
+        AST() : root(nullptr), script(""), child(false), baseLine(0), lexer(script), byCache(false) { }
+        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script), byCache(false) { }
+        void open(const string& s) { script = s;lexer.open(script);byCache = false; }
         void parse();
         void clear() {
             if (root) delete root;
@@ -28,7 +28,7 @@ namespace BM {
             s.erase(0, 1);
             s.erase(s.length() - 1, 1);
         }
-        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script) { }
+        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) { }
         class node {
         public:
             node() : v(""), l(0) { }
@@ -58,10 +58,12 @@ namespace BM {
             vector<node*> children;
         };
         bool child;
+        bool byCache;
         UL baseLine;
         node* root;
         string script;
         Lexer lexer;
+        Lexer astLexer;
         static inline UL priority(const string&);
 #define CHECK(astName) \
     if (astName->root->value() == "bad-tree") { \

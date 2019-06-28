@@ -2,7 +2,9 @@
 #define BERRYMATH_LEX_H
 
 #include <string>
+#include <map>
 using std::string;
+using std::map;
 #define ULL unsigned long long
 #define UL unsigned long
 #define U unsigned
@@ -59,19 +61,18 @@ namespace BM {
             i = 0;
             l = 1;
             updateLine = false;
-            lastLineIndex = -1;
         }
         Token get();
         Token token() { return t; }
         UL index() { return i; }
         UL line() { return l; }
     private:
-        Token t;
-        string script;
+        bool updateLine = false;
         UL i;
         UL l;
-        bool updateLine = false;
-        long long lastLineIndex = -1;
+        UL lastI = 0;
+        Token t;
+        string script;
         friend class AST;
 #define IS_SPACE(c) (c == '\t' || c == ' ' || c == '\n')
 #define IS_OP(c) \

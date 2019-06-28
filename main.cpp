@@ -124,6 +124,7 @@ void TEST18() {
 void TEST19() {
     BM::AST ast;
     ast.import("test.bmast");
+    ast.parse();
 
 }
 
@@ -145,8 +146,8 @@ int main() {
 //    TEST15();
 //    TEST16();
 //    TEST17();
-//    TEST18();
-    TEST19();
+    TEST18();
+//    TEST19();
 
     // Get speed
     /*auto start = clock();
