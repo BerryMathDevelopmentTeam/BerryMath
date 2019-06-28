@@ -116,6 +116,11 @@ void TEST17() {
     ast.parse();
 
 }
+void TEST18() {
+    BM::AST ast("if (a == 0) {\nprintln(\"eq 0\");\n} elif (a == 2) {\nprintln(\"eq 2\");\n} elif (a == 3) {\nprintln(\"eq 3\");\n} else {\nprintln(\"none\");\n}");
+    ast.parse();
+    ast.Export("test.bmast");
+}
 
 int main() {
 //    TEST1();
@@ -134,11 +139,12 @@ int main() {
 //    TEST14();
 //    TEST15();
 //    TEST16();
-    TEST17();
+//    TEST17();
+    TEST18();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST16();
+    for (int i = 0; i < 10000; i++) TEST18();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

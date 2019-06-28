@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include "ast.h"
 
 void BM::AST::parse() {
@@ -994,6 +995,28 @@ void BM::AST::parse() {
             root = new node("undefined", lexer.l + baseLine);
             break;
     }
+}
+string BM::AST::exportByString() {
+    if (!root) return "null";
+    return root->exportByString();
+}
+bool BM::AST::Export(string filename) {
+    std::ofstream file(filename);
+    if (!file) return false;
+    file << exportByString() << std::endl;
+    return true;
+}
+
+string BM::AST::node::exportByString(string tab) {
+    string res(
+            tab + "node " + value() + "\n"
+            + tab + "line " + std::to_string(line()) + "\n"
+            + tab + "children\n"
+    );
+    for (UL i = 0; i < children.size(); i++) {
+        res += children[i]->exportByString(tab + "\t");
+    }
+    return res;
 }
 
 inline UL BM::AST::priority(const string& op) {
