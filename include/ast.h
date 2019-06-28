@@ -22,6 +22,7 @@ namespace BM {
         bool Export(string filename = "script.bmast");
         void import(string filename = "script.bmast");
         void importByString(string);
+        string value() { return root->value(); }
         ~AST() { if (!child) delete root; }
     private:
         static void trim(string& s) {
@@ -29,6 +30,7 @@ namespace BM {
             s.erase(s.length() - 1, 1);
         }
         AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) { }
+    public:
         class node {
         public:
             node() : v(""), l(0) { }
@@ -44,7 +46,7 @@ namespace BM {
             }
             inline UL length() { return children.size(); }
             node& operator[](long index) { return *get(index); }
-            void insert(node* n) { children.push_back(n); }
+            void insert(node* n) { if (n) children.push_back(n); }
             void insert(string v, UL l) { children.push_back(new node(v, l)); }
             string exportByString();
             ~node() {
@@ -66,12 +68,18 @@ namespace BM {
         Lexer astLexer;
         static inline UL priority(const string&);
 #define CHECK(astName) \
-    if (astName->root->value() == "bad-tree") { \
+    if (astName->root && astName->root->value() == "bad-tree") { \
         if (root) delete root; \
         root = astName->root; \
         delete astName; \
         return; \
     }
+    public:
+        node* rValue() { return root; }
+        UL line() {
+            if (root) return root->line() + 1;
+            return 0;
+        }
     };;
 }
 

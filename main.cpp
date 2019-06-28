@@ -105,9 +105,8 @@ void TEST15() {
 
 }
 void TEST16() {
-    auto variable = new BM::Variable("bar", new BM::Number(123));
     BM::Scope scope;
-    scope.set(variable);
+    scope.set("bat", new BM::Number(123));
     std::cout << scope.get("bar")->value()->toString() << std::endl;
 
 }
@@ -126,6 +125,12 @@ void TEST19() {
     ast.import("test.bmast");
     ast.parse();
 
+}
+void TEST20() {
+    BM::Interpreter interpreter("let a = 5 * (1 + 9);a++;export a;", "main.bm");
+    auto e = interpreter.run();
+    auto a = (BM::Number*)interpreter["a"].value();
+    std::cout << a->toString() << std::endl;
 }
 
 int main() {
@@ -146,12 +151,13 @@ int main() {
 //    TEST15();
 //    TEST16();
 //    TEST17();
-    TEST18();
+//    TEST18();
 //    TEST19();
+    TEST20();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST19();
+    for (int i = 0; i < 10000; i++) TEST20();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

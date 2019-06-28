@@ -17,7 +17,7 @@ namespace BM {
         Object() : linked(0), parent(nullptr) { }
         bool has(Object*, Object*);
         void set(const string &key, Object *value);
-        void insert(string, Object*);
+        void insert(const string&, Object*);
         Object* get(const string &key);
         void del(const string &key);
         Object& operator[](const string &key) { return *get(key); }
@@ -146,14 +146,15 @@ namespace BM {
             SELF, ALL_MIGHT
         };
         Scope(Scope* p = nullptr);
-        void set(Variable* variable);
+        void set(const string&, Object*);
         Variable* get(string name, Flag flag = ALL_MIGHT);
         void del(string name);
+        void clear() { variables.clear(); }
         ~Scope() {
             for (auto iter = variables.begin(); iter != variables.end(); iter++) {
                 delete iter->second;
-                variables.erase((iter++)->first);
             }
+            variables.clear();
         }
 #define SCOPE_D_NAME "__scope"
     private:

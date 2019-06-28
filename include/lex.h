@@ -8,6 +8,8 @@ using std::map;
 #define ULL unsigned long long
 #define UL unsigned long
 #define U unsigned
+#define LL long long
+#define L long
 
 namespace BM {
     class Lexer {

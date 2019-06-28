@@ -54,7 +54,7 @@ BM::Object* BM::Object::get(const string &key) {
     if (iter == proto.end()) return nullptr;
     return iter->second;
 }
-void BM::Object::insert(string key, Object *value) {
+void BM::Object::insert(const string& key, Object *value) {
     proto.insert(std::pair<string, Object*>(key, value));
     if (this != value) value->linked++;
     value->parent = this;
@@ -79,16 +79,7 @@ BM::Object::~Object() {
 }
 
 BM::Scope::Scope(Scope *p) : parent(p) {
-    set(new Variable(SCOPE_D_NAME, new Object));
-}
-void BM::Scope::set(Variable *variable) {
-    auto name = variable->name();
-    auto iter = variables.find(name);
-    if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, variable));
-    variables[name] = variable;
-    if (name != SCOPE_D_NAME) {
-        get(SCOPE_D_NAME, SELF)->value()->insert(name, variable->value());
-    }
+    set(SCOPE_D_NAME, new Object);
 }
 BM::Variable* BM::Scope::get(string name, Flag flag) {
     auto iter = variables.find(name);
@@ -100,4 +91,15 @@ void BM::Scope::del(string name) {
     if (v) delete v;
     variables.erase(name);
     get(SCOPE_D_NAME, SELF)->value()->del(name);
+}
+void BM::Scope::set(const string& name, Object* v) {
+    auto iter = variables.find(name);
+    if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, new Variable(name, v)));
+    else {
+        delete variables[name];
+        variables[name]->value(v);
+    }
+    if (name != SCOPE_D_NAME) {
+        get(SCOPE_D_NAME, SELF)->value()->set(name, v);
+    }
 }

@@ -1,6 +1,7 @@
 #ifndef BERRYMATH_BERRYMATH_H
 #define BERRYMATH_BERRYMATH_H
 
+#include "interpreter.h"
 #include "value.h"
 #include "ast.h"
 #include "lex.h"

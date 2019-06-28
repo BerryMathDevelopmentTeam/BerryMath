@@ -11,6 +11,10 @@ void BM::AST::parse() {
         if (root) delete root;
 #define AGET token = astLexer.get()
         auto AGET;
+        if (token.t == Lexer::PROGRAM_END) {
+            root = new node("PROGRAM-END", astLexer.l + baseLine - 1);
+            return;
+        }
         if (token.s != "node") {
             root = new node("bad-tree", astLexer.l + baseLine - 1);
             root->insert("ASTCache Error: Unexpected token " + token.s, astLexer.l + baseLine - 1);
@@ -321,7 +325,7 @@ void BM::AST::parse() {
                 auto leftAst = new AST(left, leftLine);
                 auto rightAst = new AST(right, rightLine);
                 leftAst->parse();
-                if (leftAst->root->value() == "bad-tree") {
+                if (leftAst->root && leftAst->root->value() == "bad-tree") {
                     delete root;
                     root = leftAst->root;
                     delete leftAst;
@@ -329,7 +333,7 @@ void BM::AST::parse() {
                     return;
                 }
                 rightAst->parse();
-                if (rightAst->root->value() == "bad-tree") {
+                if (rightAst->root && rightAst->root->value() == "bad-tree") {
                     delete root;
                     root = rightAst->root;
                     delete leftAst;
@@ -338,13 +342,13 @@ void BM::AST::parse() {
                 }
                 root = new node(minOp.op, minOp.line);
                 if ((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--" || minOp.op == "+" || minOp.op == "-")) {
-                    if (minOp.op == "++" || minOp.op == "--") root->value("f" + minOp.op);
+                    if (minOp.op == "++" || minOp.op == "--") root->value(minOp.op);
                     else root->insert("0", minOp.line + baseLine - 1);
                 } else {
                     root->insert(leftAst->root);
                 }
                 if ((right == " " || right == " ()") && (minOp.op == "++" || minOp.op == "--")) {
-                    root->value("b" + minOp.op);
+                    root->value(minOp.op);
                 } else {
                     root->insert(rightAst->root);
                 }
@@ -357,7 +361,16 @@ void BM::AST::parse() {
         case Lexer::DSUB_TOKEN:
         {
             string op(token.s);
-            root = new node("f" + op, lexer.l + baseLine - 1);
+            root = new node(op, lexer.l + baseLine - 1);
+            GET;
+            root->insert(token.s, lexer.l + baseLine - 1);
+            break;
+        }
+        case Lexer::MNOT_TOKEN:
+        case Lexer::LNOT_TOKEN:
+        {
+            string op(token.s);
+            root = new node(op, lexer.l + baseLine - 1);
             GET;
             root->insert(token.s, lexer.l + baseLine - 1);
             break;
@@ -1074,9 +1087,11 @@ void BM::AST::parse() {
             delete ast;
             break;
         }
-        default:
-            root = new node("undefined", lexer.l + baseLine - 1);
+        case Lexer::PROGRAM_END:
+        {
+            root = new node("PROGRAM-END", lexer.l + baseLine - 1);
             break;
+        }
     }
 }
 string BM::AST::exportByString() {
