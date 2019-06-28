@@ -121,6 +121,11 @@ void TEST18() {
     ast.parse();
     ast.Export("test.bmast");
 }
+void TEST19() {
+    BM::AST ast;
+    ast.import("test.bmast");
+
+}
 
 int main() {
 //    TEST1();
@@ -140,11 +145,12 @@ int main() {
 //    TEST15();
 //    TEST16();
 //    TEST17();
-    TEST18();
+//    TEST18();
+    TEST19();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST18();
+    for (int i = 0; i < 10000; i++) TEST19();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

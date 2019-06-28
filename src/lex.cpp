@@ -43,9 +43,13 @@ BM::Lexer::Token BM::Lexer::get() {
                 t.s += script[i];
                 for (i++; i < script.length(); i++) {
                     t.s += script[i];
-                    if (script[i] == s && !trans) {
-                        i++;
-                        break;
+                    if (script[i] == s) {
+                        if (!trans) {
+                            i++;
+                            break;
+                        } else {
+                            trans = !trans;
+                        }
                     }
                     if (script[i] == '\\') trans = !trans;
                 }

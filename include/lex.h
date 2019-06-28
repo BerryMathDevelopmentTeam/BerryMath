@@ -58,6 +58,8 @@ namespace BM {
             script = s;
             i = 0;
             l = 1;
+            updateLine = false;
+            lastLineIndex = -1;
         }
         Token get();
         Token token() { return t; }
@@ -69,6 +71,7 @@ namespace BM {
         UL i;
         UL l;
         bool updateLine = false;
+        long long lastLineIndex = -1;
         friend class AST;
 #define IS_SPACE(c) (c == '\t' || c == ' ' || c == '\n')
 #define IS_OP(c) \

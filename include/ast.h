@@ -20,8 +20,14 @@ namespace BM {
         }
         string exportByString();
         bool Export(string filename = "script.bmast");
+        void import(string filename = "script.bmast");
+        void importByString(string);
         ~AST() { if (!child) delete root; }
     private:
+        static void trim(string& s) {
+            s.erase(0, 1);
+            s.erase(s.length() - 1, 1);
+        }
         AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script) { }
         class node {
         public:

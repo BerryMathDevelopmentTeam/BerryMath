@@ -1,0 +1,72 @@
+node "if"
+line 1
+children
+	node "=="
+	line 2
+	children
+		node "a"
+		line 3
+		children
+		end
+		node "0"
+		line 3
+		children
+		end
+	end
+	node " println ( \"eq 0\" ) ; "
+	line 1
+	children
+	end
+	node "els"
+	line 1
+	children
+		node "elif"
+		line 1
+		children
+			node "=="
+			line 2
+			children
+				node "a"
+				line 3
+				children
+				end
+				node "2"
+				line 3
+				children
+				end
+			end
+			node " println ( \"eq 2\" ) ; "
+			line 1
+			children
+			end
+		end
+		node "elif"
+		line 1
+		children
+			node "=="
+			line 2
+			children
+				node "a"
+				line 3
+				children
+				end
+				node "3"
+				line 3
+				children
+				end
+			end
+			node " println ( \"eq 3\" ) ; "
+			line 1
+			children
+			end
+		end
+		node "else"
+		line 1
+		children
+			node " println ( \"none\" ) ; "
+			line 1
+			children
+			end
+		end
+	end
+end
