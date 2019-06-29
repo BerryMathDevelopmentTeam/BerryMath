@@ -128,16 +128,18 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {
     auto s = new Scope(parent ? parent->scope : nullptr);
+    vector<Object*> unknowns;
 
     // 优先级顺序: 指定 > 传参 > 默认
     for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
         s->set(iter->first, iter->second);
     }
     for (UL i = 0; i < args.size(); i++) {
-        s->set(i < desc.size() ? desc[i] : ("argv" + std::to_string(i - desc.size())), args[i]);
+        if (i < desc.size()) s->set(desc[i], args[i]);
+        else unknowns.push_back(args[i]);
     }
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
         s->set(iter->first, iter->second);
     }
-    return native(s);
+    return native(s, unknowns);
 }

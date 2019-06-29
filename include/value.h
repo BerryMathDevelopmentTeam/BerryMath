@@ -75,8 +75,8 @@ namespace BM {
         String(const string& t) : Object(), v(t) { }
         string toString(bool = true, bool hl = true, string tab = "") {
             string o("");
-            if (hl) o += "\033[32m";
-            o += "\"" + v + "\"";
+            if (hl) o += "\033[32m\"" + v + "\"";
+            else o += v;
             if (hl) o += "\033[0m";
             return o;
         }
@@ -142,6 +142,8 @@ namespace BM {
             if (hl) o += "\033[0m";
             return o;
         }
+        void addDesc(string d) { desc.push_back(d); }
+        void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         virtual Object* run(vector<Object*>, map<string, Object*>);
         ~Function() { }
     protected:
@@ -188,7 +190,7 @@ namespace BM {
         map<string, Variable*> variables;
         Scope* parent;
     };
-    using NativeFuncDef = BM::Object*(*)(Scope* s);
+    using NativeFuncDef = BM::Object*(*)(Scope*, vector<Object*>);
     class NativeFunction : public Function {
     public:
         NativeFunction(NativeFuncDef n, Interpreter* p = nullptr) : Function("", p), native(n) { }
@@ -196,6 +198,7 @@ namespace BM {
     private:
         NativeFuncDef native;
     };
+    string toString(Object*);
 }
 
 

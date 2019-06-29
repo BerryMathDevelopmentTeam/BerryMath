@@ -2,7 +2,14 @@
 #define SYS_LIBRARY_H
 
 #include <BerryMath.h>
+#include <vector>
+#include <map>
+using std::vector;
+using std::map;
+using BM::Object;
+using BM::Scope;
 
-extern "C" BM::Object* initModule();
+Object* print(Scope* scope, vector<Object*>);
+extern "C" Object* initModule();
 
 #endif
