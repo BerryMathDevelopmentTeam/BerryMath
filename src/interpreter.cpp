@@ -29,7 +29,7 @@ BM::Object *BM::Interpreter::run() {
             auto name = ast->rValue()->get(0)->value();
             auto var = scope->get(name);
             if (!var) {
-                std::cerr << "Uncaught ReferenceError: " << name << " is not defined at <" << filename << ">:"
+                std::cerr << "ReferenceError: " << name << " is not defined at <" << filename << ">:"
                           << ast->line() << std::endl;
                 THROW;
             }
@@ -73,7 +73,7 @@ BM::Object *BM::Interpreter::run() {
                     if (node->value() == "=") {
                         auto argName = node->get(0)->value();
                         if (node->get(0)->length() > 0 || isNumber(name) || isString(name)) {
-                            std::cerr << "Uncaught ReferenceError: Invalid setting with " << argName << " at <" << filename
+                            std::cerr << "ReferenceError: Invalid setting with " << argName << " at <" << filename
                                       << ">:"
                                       << ast->line() << std::endl;
                             THROW;
@@ -93,7 +93,25 @@ BM::Object *BM::Interpreter::run() {
                         args.push_back(e->get(PASS_RETURN));
                     }
                 }
+                auto fun_ = scope->get(name);
+                if (!fun_) {
+                    std::cerr << "ReferenceError: " << name << " is not defined at <" << filename << ">:"
+                              << ast->line() << std::endl;
+                    THROW;
+                }
+                if (fun_->value()->type() == FUNCTION) {
+                    auto fun = (Function*)fun_;
+                    exports->set(PASS_RETURN, fun->run(args, hashArg));
+                } else if (fun_->value()->type() == NATIVE_FUNCTION) {
+                    auto fun = (NativeFunction*)fun_;
+                    exports->set(PASS_RETURN, fun->run(args, hashArg));
+                } else {
+                    std::cerr << "TypeError: " << name << " is not a function at <" << filename << ">:"
+                              << ast->line() << std::endl;
+                    THROW;
+                }
             } else if (ast->value() == "get") {
+//                auto v = scope->get(ast->rValue()->get(0)->value());
             } else if (len < 1) {
                 if (isNumber(ast->value())) {
                     exports->set(PASS_RETURN, new Number(transSD(ast->value())));
@@ -106,7 +124,7 @@ BM::Object *BM::Interpreter::run() {
                     auto name = ast->value();
                     auto var = scope->get(name);
                     if (!var) {
-                        std::cerr << "Uncaught ReferenceError: " << name << " is not defined at <" << filename << ">:"
+                        std::cerr << "ReferenceError: " << name << " is not defined at <" << filename << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
@@ -116,14 +134,14 @@ BM::Object *BM::Interpreter::run() {
                 if (ast->value() == "++" || ast->value() == "--") {
                     auto name = ast->rValue()->get(0)->value();
                     if (isNumber(name) || isString(name)) {
-                        std::cerr << "Uncaught ReferenceError: Invalid operator with " << name << " at <" << filename
+                        std::cerr << "ReferenceError: Invalid operator with " << name << " at <" << filename
                                   << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
                     auto var = scope->get(name);
                     if (!var) {
-                        std::cerr << "Uncaught ReferenceError: " << name << " is not defined at <" << filename << ">:"
+                        std::cerr << "ReferenceError: " << name << " is not defined at <" << filename << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
@@ -189,7 +207,7 @@ BM::Object *BM::Interpreter::run() {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
                     if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
-                        std::cerr << "Uncaught ReferenceError: Invalid left-hand side in assignment at <" << filename << ">:"
+                        std::cerr << "ReferenceError: Invalid left-hand side in assignment at <" << filename << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
