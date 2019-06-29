@@ -1,4 +1,10 @@
+#include <map>
+#include <vector>
+#include "interpreter.h"
 #include "../include/value.h"
+using std::string;
+using std::map;
+using std::vector;
 
 bool BM::Object::has(Object *v, Object* root = nullptr) {
     if (!root) root = this;
@@ -72,8 +78,8 @@ BM::Object::~Object() {
         Object* v = iter->second;
         if (!v || v->linked < 1 || has(v)) continue;
         v->linked--;
-        if (v->linked < 1) delete v;
-        iter->second = nullptr;
+        if (v->linked < 1)
+            delete v;
     }
     proto.clear();
 }
@@ -81,12 +87,12 @@ BM::Object::~Object() {
 BM::Scope::Scope(Scope *p) : parent(p) {
     set(SCOPE_D_NAME, new Object);
 }
-BM::Variable* BM::Scope::get(string name, Flag flag) {
+BM::Variable* BM::Scope::get(const string& name, Flag flag) {
     auto iter = variables.find(name);
     if (iter == variables.end()) return nullptr;
     return iter->second;
 }
-void BM::Scope::del(string name) {
+void BM::Scope::del(const string& name) {
     auto v = get(name);
     if (v) delete v;
     variables.erase(name);
@@ -96,10 +102,42 @@ void BM::Scope::set(const string& name, Object* v) {
     auto iter = variables.find(name);
     if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, new Variable(name, v)));
     else {
-        delete variables[name];
+        if (variables[name]->value()->unbind() < 1) delete variables[name]->value();
         variables[name]->value(v);
+        v->bind();
     }
     if (name != SCOPE_D_NAME) {
         get(SCOPE_D_NAME, SELF)->value()->set(name, v);
     }
+}
+
+BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
+    Interpreter ip(script, parent ? parent->fn() : "", parent);
+
+    // 优先级顺序: 指定 > 传参 > 默认
+    for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
+        ip.set(iter->first, iter->second);
+    }
+    for (UL i = 0; i < args.size(); i++) {
+        ip.set(i < desc.size() ? desc[i] : ("argv" + std::to_string(i - desc.size())), args[i]);
+    }
+    for (auto iter = hash.begin(); iter != hash.end(); iter++) {
+        ip.set(iter->first, iter->second);
+    }
+    return ip.run()->get(PASS_RETURN);
+}
+BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {
+    auto s = new Scope(parent ? parent->scope : nullptr);
+
+    // 优先级顺序: 指定 > 传参 > 默认
+    for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
+        s->set(iter->first, iter->second);
+    }
+    for (UL i = 0; i < args.size(); i++) {
+        s->set(i < desc.size() ? desc[i] : ("argv" + std::to_string(i - desc.size())), args[i]);
+    }
+    for (auto iter = hash.begin(); iter != hash.end(); iter++) {
+        s->set(iter->first, iter->second);
+    }
+    return native(s);
 }

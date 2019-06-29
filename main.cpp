@@ -127,10 +127,9 @@ void TEST19() {
 
 }
 void TEST20() {
-    BM::Interpreter interpreter("let a = 5 * (1 + 9);a++;export a;", "main.bm");
+    BM::Interpreter interpreter("import \"sys\" as sys;", "main.bm");
     auto e = interpreter.run();
-    auto a = (BM::Number*)interpreter["a"].value();
-    std::cout << a->toString() << std::endl;
+    e->get("__RETURN__");
 }
 
 int main() {

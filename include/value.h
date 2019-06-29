@@ -3,14 +3,17 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 #include <sstream>
 using std::string;
 using std::map;
+using std::vector;
 typedef unsigned long UL;
 
 namespace BM {
+    extern class Interpreter;
     enum ValueType {
-        OBJECT, NUMBER, STRING, NULL_, UNDEFINED
+        OBJECT, NUMBER, STRING, NULL_, UNDEFINED, FUNCTION, NATIVE_FUNCTION
     };
     class Object {
     public:
@@ -124,6 +127,30 @@ namespace BM {
         ValueType type() { return UNDEFINED; }
         ~Undefined() { }
     };
+    class Function : public Object {
+    public:
+        Function(string s = "", Interpreter* p = nullptr) : Object(), script(s), parent(p) { }
+        ValueType type() { return FUNCTION; }
+        Interpreter* interpreter() { return parent; }
+        void interpreter(Interpreter* p) { parent = p; }
+        Object* copy() { return new Function(script, parent); }
+        string value() { return "Function..."; }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            if (hl) o += "\033[34m";
+            o += "Function...";
+            if (hl) o += "\033[0m";
+            return o;
+        }
+        virtual Object* run(vector<Object*>, map<string, Object*>);
+        ~Function() { }
+    protected:
+        friend class Interpreter;
+        string script;
+        Interpreter* parent;
+        map<string, Object*> defaultValues;
+        vector<string> desc;
+    };
     class Variable {
     public:
         Variable(string t, Object* v = new Undefined) : n(t), val(v) { val->bind(); }
@@ -132,10 +159,10 @@ namespace BM {
             return n;
         }
         void value(Object* v) {
-            if (val->unbind() < 1) delete val;
+            if (val && val->unbind() < 1) delete val;
             val = v;
         }
-        ~Variable() { if (val->unbind() < 1) delete val; }
+        ~Variable() { if (val && val->unbind() < 1) delete val; }
     private:
         string n;
         Object* val;
@@ -147,12 +174,12 @@ namespace BM {
         };
         Scope(Scope* p = nullptr);
         void set(const string&, Object*);
-        Variable* get(string name, Flag flag = ALL_MIGHT);
-        void del(string name);
+        Variable* get(const string& name, Flag flag = ALL_MIGHT);
+        void del(const string& name);
         void clear() { variables.clear(); }
         ~Scope() {
             for (auto iter = variables.begin(); iter != variables.end(); iter++) {
-                delete iter->second;
+                if (iter->second) delete iter->second;
             }
             variables.clear();
         }
@@ -160,6 +187,14 @@ namespace BM {
     private:
         map<string, Variable*> variables;
         Scope* parent;
+    };
+    using NativeFuncDef = BM::Object*(*)(Scope* s);
+    class NativeFunction : public Function {
+    public:
+        NativeFunction(NativeFuncDef n, Interpreter* p = nullptr) : Function("", p), native(n) { }
+        Object* run(vector<Object*>, map<string, Object*>);
+    private:
+        NativeFuncDef native;
     };
 }
 

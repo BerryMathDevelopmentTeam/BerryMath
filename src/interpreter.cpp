@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 #include "value.h"
+#include "dylib.h"
 #include "ast.h"
 #include "interpreter.h"
 
@@ -16,7 +18,6 @@ string BM::Interpreter::compile() {
 
 BM::Object *BM::Interpreter::run() {
     Object *exports = new Object;
-    scope->clear();
     scope->set(SCOPE_D_NAME, new Object);
     while (true) {
         if (!child) ast->parse();
@@ -33,6 +34,24 @@ BM::Object *BM::Interpreter::run() {
                 THROW;
             }
             exports->set(name, var->value());
+        } else if (ast->value() == "import") {
+            Interpreter nameIp("", filename);
+            nameIp.child = true;
+            nameIp.ast->root = ast->rValue()->get(0);
+            auto e = nameIp.run();
+            Object* nameRaw = e->get(PASS_RETURN);
+            if (nameRaw->type() == STRING) {
+                string name(((String*)nameRaw)->value());
+                string asName(ast->rValue()->get(1)->get(0)->value());
+                string path(BMMPATH + name);
+                Dylib dylib(path);
+                if (dylib.load()) {
+                    auto initModule = (initModuleFun) dylib.resolve("initModule");
+                    Object* moduleExports = initModule();
+                    scope->set(asName, moduleExports);
+                } WRONG("ImportError", "No module named " + name);
+                dylib.close();
+            } WRONGSCRIPT("import");
         } else if (ast->value() == "let") {
             auto name = ast->rValue()->get(0)->value();
             Interpreter ip("", filename);
@@ -41,10 +60,41 @@ BM::Object *BM::Interpreter::run() {
             auto e = ip.run();
             CHECKITER(e, ip.ast);
             scope->set(name, e->get(PASS_RETURN));
-
         } else { //为表达式
             auto len = ast->rValue()->length();
-            if (len < 1) {
+            if (ast->value() == "call") {
+                auto r = ast->rValue();
+                auto argsNode = r->get(1);
+                string name(r->get(0)->value());
+                vector<Object*> args;
+                map<string, Object*> hashArg;
+                for (UL i = 0; i < argsNode->length(); i++) {
+                    auto node = argsNode->get(i);
+                    if (node->value() == "=") {
+                        auto argName = node->get(0)->value();
+                        if (node->get(0)->length() > 0 || isNumber(name) || isString(name)) {
+                            std::cerr << "Uncaught ReferenceError: Invalid setting with " << argName << " at <" << filename
+                                      << ">:"
+                                      << ast->line() << std::endl;
+                            THROW;
+                        }
+                        auto valueAst = node->get(1);
+                        Interpreter ip("", filename);
+                        ip.child = true;
+                        ip.ast->root = valueAst;
+                        auto e = ip.run();
+                        hashArg.insert(std::pair<string, Object*>(argName, e->get(PASS_RETURN)));
+                    } else {
+                        auto valueAst = node;
+                        Interpreter ip("", filename);
+                        ip.child = true;
+                        ip.ast->root = valueAst;
+                        auto e = ip.run();
+                        args.push_back(e->get(PASS_RETURN));
+                    }
+                }
+            } else if (ast->value() == "get") {
+            } else if (len < 1) {
                 if (isNumber(ast->value())) {
                     exports->set(PASS_RETURN, new Number(transSD(ast->value())));
                 } else if (isString(ast->value())) {
@@ -66,7 +116,7 @@ BM::Object *BM::Interpreter::run() {
                 if (ast->value() == "++" || ast->value() == "--") {
                     auto name = ast->rValue()->get(0)->value();
                     if (isNumber(name) || isString(name)) {
-                        std::cerr << "Uncaught ReferenceError: Invalid dadd operator with " << name << " at <" << filename
+                        std::cerr << "Uncaught ReferenceError: Invalid operator with " << name << " at <" << filename
                                   << ">:"
                                   << ast->line() << std::endl;
                         THROW;
@@ -183,6 +233,7 @@ BM::Object *BM::Interpreter::run() {
         }
         if (child) break;
     }
+    scope->clear();
     if (!exports->get(PASS_RETURN)) exports->set(string(PASS_RETURN), new Undefined);
     return exports;
 }

@@ -10,14 +10,19 @@ using std::string;
 namespace BM {
     class Interpreter {
     public:
-        Interpreter(string s = "", string fn = "", Interpreter* p = nullptr) : script(s), filename(fn), ast(new AST(s)), parent(p), scope(new Scope(p ? p->scope : nullptr)) { }
+        Interpreter(string s = "", string fn = "", Interpreter* p = nullptr) : script(s), filename(fn), ast(new AST(s)), parent(p), scope(new Scope(p ? p->scope : nullptr)), child((bool)p) { }
         void open(string s, string fn = "") { script = s;ast->open(script);filename = fn; }
         string compile();
         Object* run();
         Object* runCC();
         string fn() { return filename; }
-        ~Interpreter() { delete scope; }
+        ~Interpreter() {
+            if (scope) delete scope;
+        }
         Variable& operator[](const string& s) { return *scope->get(s); }
+        void set(const string& name, Object* v) { scope->set(name, v); }
+        Variable* get(const string& name, Scope::Flag flag = Scope::ALL_MIGHT) { return scope->get(name, flag); }
+        void del(const string& name) { scope->del(name); }
     private:
         string script;
         string filename;
@@ -59,6 +64,21 @@ namespace BM {
             << ast->line() << std::endl; \
             THROW; \
 }
+#define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << " at <" << filename << ">:" \
+            << ast->line() << std::endl; \
+            THROW; \
+}
+#define WRONG(name, s)  else { std::cerr << name << ": " << s << " at <" << filename << ">:" \
+            << ast->line() << std::endl; \
+            THROW; \
+}
+#ifdef Windows95
+#define BMMPATH "C:\\BM\\modules\\lib"
+#else
+#define BMMPATH "/usr/local/BM/modules/lib"
+#endif
+        using initModuleFun = BM::Object*(*)();
+        friend class NativeFunction;
     };
 }
 

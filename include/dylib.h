@@ -18,11 +18,7 @@ namespace BM {
         Dylib() : name(""), status(false) { }
         Dylib(const string& n) : name(n), status(false) { open(); }
         void close();
-        bool open(const string& n) {
-            if (dyhandle) close();
-            name = n;
-            return open();
-        }
+        bool open(const string& n);
         void* resolve(const string&);
         ~Dylib() { if (dyhandle) close(); }
         bool load() { return status; }
