@@ -130,7 +130,7 @@ namespace BM {
     class Function : public Object {
     public:
         Function(string s = "", Interpreter* p = nullptr) : Object(), script(s), parent(p) { }
-        ValueType type() { return FUNCTION; }
+        virtual ValueType type() { return FUNCTION; }
         Interpreter* interpreter() { return parent; }
         void interpreter(Interpreter* p) { parent = p; }
         Object* copy() { return new Function(script, parent); }
@@ -179,6 +179,8 @@ namespace BM {
         Variable* get(const string& name, Flag flag = ALL_MIGHT);
         void del(const string& name);
         void clear() { variables.clear(); }
+        void setParent(Scope* p) { parent = p; }
+        Scope* getParent() { return parent; }
         ~Scope() {
             for (auto iter = variables.begin(); iter != variables.end(); iter++) {
                 if (iter->second) delete iter->second;
@@ -191,12 +193,31 @@ namespace BM {
         Scope* parent;
     };
     using NativeFuncDef = BM::Object*(*)(Scope*, vector<Object*>);
-    class NativeFunction : public Function {
+    class NativeFunction : public Object {
     public:
-        NativeFunction(NativeFuncDef n, Interpreter* p = nullptr) : Function("", p), native(n) { }
+        NativeFunction(NativeFuncDef n, Interpreter* p = nullptr) : Object(), native(n), parent(p) { }
         Object* run(vector<Object*>, map<string, Object*>);
+        Interpreter* interpreter() { return parent; }
+        void interpreter(Interpreter* p) { parent = p; }
+        Object* copy() { return new NativeFunction(native, parent); }
+        string value() { return "Function..."; }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            if (hl) o += "\033[34m";
+            o += "Function...";
+            if (hl) o += "\033[0m";
+            return o;
+        }
+        void addDesc(string d) { desc.push_back(d); }
+        void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
+        ValueType type() { return NATIVE_FUNCTION; }
+        ~NativeFunction() { }
     private:
+        friend class Interpreter;
         NativeFuncDef native;
+        Interpreter* parent;
+        map<string, Object*> defaultValues;
+        vector<string> desc;
     };
     string toString(Object*);
 }

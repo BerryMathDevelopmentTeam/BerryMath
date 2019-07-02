@@ -1,6 +1,5 @@
 #ifndef BERRYMATH_DYLIB_H
 #define BERRYMATH_DYLIB_H
-
 #ifdef Windows95
 // windows
 #include<wtypes.h>

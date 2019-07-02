@@ -73,6 +73,7 @@ namespace BM {
         UL i;
         UL l;
         UL lastI = 0;
+        UL sIndex = 0;
         Token t;
         string script;
         friend class AST;

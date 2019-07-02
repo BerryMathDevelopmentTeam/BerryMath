@@ -2,6 +2,7 @@
 #include "lex.h"
 
 BM::Lexer::Token BM::Lexer::get() {
+    sIndex = i;
     if (updateLine) {
         l++;
         updateLine = false;
@@ -235,7 +236,6 @@ BM::Lexer::Token BM::Lexer::get() {
     } else if (t.s == "delete") {
         t.t = DELETE_TOKEN;
     }
-
-//    lastI = (i > lastI ? i : lastI);
+    lastI = (i > lastI ? i : lastI);
     return t;
 }

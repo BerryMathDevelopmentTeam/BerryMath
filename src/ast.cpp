@@ -129,21 +129,24 @@ void BM::AST::parse() {
                 string op;
             };
             bool isUnknownTk = false;
+            LL tempTK = 0;
             UL unknownTkLen = 0;
-            if (token.t == Lexer::UNKNOWN_TOKEN) {
+            if (token.t == Lexer::UNKNOWN_TOKEN || token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) {
                 isUnknownTk = true;
+                tempTK = lexer.sIndex;
                 unknownTkLen = token.s.length();
             }
             Operator minOp = {15, 0, 0, ""};
             const auto BRACKETS_PRI = priority("(");
+            const auto MBRACKETS_PRI = priority("[");
             auto opIndex = lexer.i;
             auto leftLine = lexer.l + baseLine - 1, rightLine = lexer.l + baseLine - 1;
             if (token.t == Lexer::BRACKETS_LEFT_TOKEN) base = BRACKETS_PRI;
             auto tmpToken = token;
             auto tmpTokenLine = lexer.l + baseLine - 1;
+            auto ig = false;
 //            auto tmpTokenIndex = lexer.index();
             GET;
-            UL tempTK = 0;
             while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
                 if (token.t > Lexer::NOTE_TOKEN && token.t < Lexer::END_TOKEN) {// 是符号
                     if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
@@ -161,6 +164,8 @@ void BM::AST::parse() {
                     } else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) {
                         base *= BRACKETS_PRI;
                         if (isUnknownTk) {
+                            base /= BRACKETS_PRI;
+                            base *= MBRACKETS_PRI;
                             auto pri = base;
                             if (pri < minOp.pri || minOp.op.empty()) {
                                 minOp.pri = pri;
@@ -184,11 +189,15 @@ void BM::AST::parse() {
                         }
                     }
                 }
-                isUnknownTk = false;
-                if (token.t == Lexer::UNKNOWN_TOKEN) {
+                if (!isUnknownTk && token.t != Lexer::BRACKETS_LEFT_TOKEN && !ig) {
+                    isUnknownTk = false;
+                    tempTK = -1;
+                }
+                if (token.t < Lexer::UNKNOWN_OP_TOKEN || token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) {
                     isUnknownTk = true;
                     unknownTkLen = token.s.length();
-                    tempTK = opIndex;
+                    if (tempTK == -1) tempTK = opIndex;
+                    ig = true;
                 }
                 opIndex = lexer.i;
                 GET;
@@ -212,17 +221,31 @@ void BM::AST::parse() {
             if (minOp.op == "call") {
                 lexer.i = minOp.index;
                 auto tmpFunNameIndex = lexer.i;
+                string functionName("");
                 GET;
+                UL bcCount = 0;
+                UL mbcCount = 0;
+                while (true) {
+                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
+                        if (bcCount < 1 && mbcCount < 1) break;
+                        bcCount++;
+                    }
+                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) bcCount++;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) bcCount--;
+                    functionName += token.s;
+                    GET;
+                }
                 UL funLine = lexer.l + baseLine - 1;
 //                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
 //                    lexer.i = tmpFunNameIndex;
 //                    GET;
 //                }
-                string functionName(token.s);
                 GET;
                 UL brCount = 1;
                 std::vector<string> args;
                 string arg;
+                bool flag = false;
                 while (brCount > 0) {
                     arg += " " + token.s;
                     GET;
@@ -232,6 +255,7 @@ void BM::AST::parse() {
                         arg.erase(0, 2);
                         args.push_back(arg);
                         arg = "";
+                        flag = true;
                     } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
                         root = new node("bad-tree", lexer.l + baseLine - 1);
                         root->insert("SyntaxError: Lack of parentheses", lexer.l + baseLine - 1);
@@ -239,8 +263,11 @@ void BM::AST::parse() {
                     }
                 }
                 if (!arg.empty()) {
-                    arg.erase(0, 2);
-                    args.push_back(arg);
+                    if (flag) {
+                        arg.erase(0, 2);
+                    } else {
+                        args.push_back(arg);
+                    }
                 }
                 GET;
                 while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
@@ -249,7 +276,9 @@ void BM::AST::parse() {
                 }
                 auto callLine = minOp.line;
                 root = new node("call", callLine);
-                root->insert(functionName, funLine);
+                auto funNameAst = new AST(functionName, callLine);
+                funNameAst->parse();
+                root->insert(funNameAst->root);
                 root->insert("arg", funLine);
                 for (auto i = 0; i < args.size(); i++) {
                     auto ast = new AST(args[i], callLine);
@@ -258,6 +287,7 @@ void BM::AST::parse() {
                     root->get(1)->insert(ast->root);
                     delete ast;
                 }
+                delete funNameAst;
             } else if (minOp.op == "get") {
                 lexer.i = minOp.index;
                 auto tmpGetNameIndex = lexer.i;
@@ -1135,7 +1165,8 @@ void BM::AST::import(string filename) {
 }
 
 inline UL BM::AST::priority(const string& op) {
-    if (op == "(" || op == "[" || op == ".") return 14;
+    if (op == "[" || op == ".") return 15;
+    if (op == "(") return 14;
     if (op == "++" || op == "--" || op == "!" || op == "~") return 13;
     if (op == "*" || op == "/" || op == "%") return 12;
     if (op == "+" || op == "-") return 11;

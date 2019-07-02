@@ -89,7 +89,12 @@ BM::Scope::Scope(Scope *p) : parent(p) {
 }
 BM::Variable* BM::Scope::get(const string& name, Flag flag) {
     auto iter = variables.find(name);
-    if (iter == variables.end()) return nullptr;
+    if (iter == variables.end()) {
+        if (flag == ALL_MIGHT && parent) {
+            return parent->get(name, flag);
+        }
+        return nullptr;
+    }
     return iter->second;
 }
 void BM::Scope::del(const string& name) {

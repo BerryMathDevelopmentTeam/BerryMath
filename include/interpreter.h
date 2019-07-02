@@ -16,9 +16,7 @@ namespace BM {
         Object* run();
         Object* runCC();
         string fn() { return filename; }
-        ~Interpreter() {
-            if (scope) delete scope;
-        }
+        ~Interpreter() { }
         Variable& operator[](const string& s) { return *scope->get(s); }
         void set(const string& name, Object* v) { scope->set(name, v); }
         Variable* get(const string& name, Scope::Flag flag = Scope::ALL_MIGHT) { return scope->get(name, flag); }
@@ -72,13 +70,19 @@ namespace BM {
             << ast->line() << std::endl; \
             THROW; \
 }
+#define NOTDEFINED(v) if (!v) { \
+        std::cerr << "ReferenceError: " << v->name() << " is not defined at <" << filename << ">:" \
+        << ast->line() << std::endl; \
+        THROW; \
+    }
 #ifdef Windows95
 #define BMMPATH "C:\\BM\\modules\\lib"
 #else
 #define BMMPATH "/usr/local/BM/modules/lib"
 #endif
-        using initModuleFun = BM::Object*(*)();
         friend class NativeFunction;
+    public:
+        using initModuleFun = BM::Object*(*)();
     };
 }
 

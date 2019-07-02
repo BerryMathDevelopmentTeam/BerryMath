@@ -37,7 +37,7 @@ void BM::Dylib::close() {
     FreeLibrary(dyhandle);
 #else
     // linux, mac, unix等
-    dlclose(dyhandle);
+//    dlclose(dyhandle);
 #endif
     status = false;
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include <BerryMath.h>
+#include <dlfcn.h>
 //#include <benchmark/benchmark.h>
 
 using dllFun = int(*)(int, int);
@@ -127,9 +128,10 @@ void TEST19() {
 
 }
 void TEST20() {
-    BM::Interpreter interpreter("import \"sys\" as sys;", "main.bm");
+    BM::Interpreter interpreter("import \"sys\" as sys;sys[\"print\"](2 * (7 + 1))", "main.bm");
     auto e = interpreter.run();
     e->get("__RETURN__");
+    delete e;
 }
 
 int main() {
