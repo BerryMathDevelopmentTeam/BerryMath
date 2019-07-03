@@ -14,7 +14,7 @@ namespace BM {
         Interpreter(string s = "", string fn = "", Interpreter *p = nullptr) : script(s), filename(fn), ast(new AST(s)),
                                                                                parent(p),
                                                                                scope(new Scope(p ? p->scope : nullptr)),
-                                                                               child((bool) p) {
+                                                                               child(false) {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");

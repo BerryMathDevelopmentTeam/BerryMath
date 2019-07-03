@@ -148,3 +148,9 @@ BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *
     }
     return native(s, unknowns);
 }
+bool BM::isTrue(Object* o) {
+    if (o->type() == OBJECT || o->type() == FUNCTION || o->type() == NATIVE_FUNCTION || o->type() == STRING) return true;
+    if (o->type() == NULL_ || o->type() == UNDEFINED) return false;
+    auto v = ((Number*)o)->value();
+    return (bool)v;
+}

@@ -118,7 +118,15 @@ void TEST17() {
 
 }
 void TEST18() {
-    BM::AST ast("if (a == 0) {\nprintln(\"eq 0\");\n} elif (a == 2) {\nprintln(\"eq 2\");\n} elif (a == 3) {\nprintln(\"eq 3\");\n} else {\nprintln(\"none\");\n}");
+    BM::AST ast("let n = sys.type.number(sys.io.input(\"N: \", sp = \"\"));// 接受输入, 并将其转为数字\n"
+                        "\n"
+                        "    if (n == 0) {\n"
+                        "        println(\"n == 0\");\n"
+                        "    } elif (n == 1) {\n"
+                        "        println(\"n == 1\");\n"
+                        "    } else {\n"
+                        "        println(\"another\");\n"
+                        "    }");
     ast.parse();
     ast.Export("test.bmast");
 }
@@ -163,10 +171,10 @@ int main() {
 //    TEST15();
 //    TEST16();
 //    TEST17();
-//    TEST18();
+    TEST18();
 //    TEST19();
 //    TEST20();
-    TEST21();
+//    TEST21();
 
     // Get speed
     /*auto start = clock();

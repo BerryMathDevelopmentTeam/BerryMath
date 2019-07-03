@@ -251,7 +251,7 @@ void BM::AST::parse() {
                     GET;
                     if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
-                    else if (token.t == Lexer::COMMA_TOKEN) {
+                    else if (token.t == Lexer::COMMA_TOKEN && brCount == 1) {
                         if (flag) {
                             arg.erase(0, 2);
                             args.push_back(arg);

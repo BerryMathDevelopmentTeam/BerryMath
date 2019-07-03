@@ -220,6 +220,7 @@ namespace BM {
         vector<string> desc;
     };
     string toString(Object*);
+    bool isTrue(Object*);
 }
 
 

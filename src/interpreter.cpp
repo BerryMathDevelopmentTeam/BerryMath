@@ -131,6 +131,25 @@ BM::Object *BM::Interpreter::run() {
             CHECKITER(e, ip.ast);
             scope->set(name, e->get(PASS_RETURN));
         } else if (ast->value() == "if") {
+            auto conAst = ast->rValue()->get(0);
+            Interpreter conIp("", filename, this);
+            conIp.child = true;
+            conIp.ast->root = ast->rValue()->get(1);
+            auto conE = conIp.run();
+            CHECKITER(conE, conIp.ast);
+            auto con = conE->get(PASS_RETURN);
+            if (isTrue(con)) {
+                string script(ast->rValue()->get(1)->value());
+                Interpreter scriptIp("", filename, this);
+                auto e = scriptIp.run();
+                CHECKITER(e, scriptIp.ast);
+                delete e;
+            } else {
+                auto els = ast->rValue()->get(3);
+                for (UL i = 0; i < els->length(); i++) {
+                }
+            }
+            delete conE;
         }
         else { //为表达式
             auto len = ast->rValue()->length();
@@ -247,6 +266,7 @@ BM::Object *BM::Interpreter::run() {
                 if (ast->value() == "++" || ast->value() == "--") {
                     Interpreter ip("", filename, this);
                     ip.ast->root = ast->rValue()->get(0);
+                    ip.child = true;
                     auto e = ip.run();
                     CHECKITER(e, ast);
                     auto n = e->get(PASS_RETURN);
