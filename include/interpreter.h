@@ -48,6 +48,7 @@ namespace BM {
         Interpreter *parent;
 
         static bool isNumber(const string &n) {
+            if (n[0] == '.') return false;
             bool doted = false;
             for (UL i = 0; i < n.length(); i++) {
                 if (n[i] == '.') {

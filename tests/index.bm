@@ -1,8 +1,7 @@
 import "sys" as sys;// 导入系统库
 import "test.bm" as test;// 导入自定义模块文件
 
-sys.print(test.E);// 打印test模块中导出的E
-sys.print(test.PI);// 打印test模块中导出的PI
-// test.PI++;
-sys.print(test.PI);// 打印test模块中导出的PI
-pass;
+sys.io.print(test.E);// 打印test模块中导出的E
+sys.io.print(test.PI);// 打印test模块中导出的PI
+test.PI++;
+sys.io.print(test.PI);// 打印test模块中导出的PI

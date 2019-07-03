@@ -210,8 +210,12 @@ BM::Object *BM::Interpreter::run() {
                 vector<string> keys;
                 auto node = ast->rValue()->get(1);
                 while (true) {
-                    keys.push_back(node->value());
-                    if (node->length() < 2) break;
+                    if (node->length() < 1) {
+                        keys.push_back(node->value());
+                        break;
+                    } else {
+                        keys.push_back(node->get(0)->value());
+                    }
                     node = node->get(1);
                 }
                 auto var = scope->get(startV);
@@ -240,16 +244,11 @@ BM::Object *BM::Interpreter::run() {
                 }
             } else if (len == 1) {
                 if (ast->value() == "++" || ast->value() == "--") {
-                    auto name = ast->rValue()->get(0)->value();
-                    if (isNumber(name) || isString(name)) {
-                        std::cerr << "ReferenceError: Invalid operator with " << name << " at <" << filename
-                                  << ">:"
-                                  << ast->line() << std::endl;
-                        THROW;
-                    }
-                    auto var = scope->get(name);
-                    NOTDEFINED(var, name);
-                    auto n = var->value();
+                    Interpreter ip("", filename, this);
+                    ip.ast->root = ast->rValue()->get(0);
+                    auto e = ip.run();
+                    CHECKITER(e, ast);
+                    auto n = e->get(PASS_RETURN);
 //                std::cout << n->type() << std::endl;
                     if (ast->value() == "++") {
                         if (n->type() == NUMBER) {
