@@ -130,6 +130,7 @@ BM::Object *BM::Interpreter::run() {
             auto e = ip.run();
             CHECKITER(e, ip.ast);
             scope->set(name, e->get(PASS_RETURN));
+        } else if (ast->value() == "if") {
         }
         else { //为表达式
             auto len = ast->rValue()->length();

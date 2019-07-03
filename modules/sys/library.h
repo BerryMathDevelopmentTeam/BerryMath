@@ -11,6 +11,8 @@ using BM::Scope;
 
 Object* print(Scope* scope, vector<Object*>);
 Object* input(Scope* scope, vector<Object*>);
+Object* number(Scope* scope, vector<Object*>);
+Object* String(Scope* scope, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif
