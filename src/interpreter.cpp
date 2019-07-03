@@ -136,6 +136,24 @@ BM::Object *BM::Interpreter::run() {
                     }
                 }
                 exports->set(PASS_RETURN, value);
+            } else if (ast->value() == ".") {
+                string startV(ast->rValue()->get(0)->value());
+                vector<string> keys;
+                auto node = ast->rValue()->get(1);
+                while (true) {
+                    keys.push_back(node->value());
+                    if (node->length() < 2) break;
+                    node = node->get(1);
+                }
+                auto var = scope->get(startV);
+                if (var) {
+                    auto value = var->value();
+                    for (UL i = 0; i < keys.size(); i++) {
+                        value = value->get(keys[i]);
+                        if (value) { } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
+                    }
+                    exports->set(PASS_RETURN, value);
+                } WRONG("ReferenceError", startV + " is not defined");
             } else if (len < 1) {
                 if (isNumber(ast->value())) {
                     exports->set(PASS_RETURN, new Number(transSD(ast->value())));

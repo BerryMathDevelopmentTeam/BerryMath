@@ -128,7 +128,7 @@ void TEST19() {
 
 }
 void TEST20() {
-    BM::Interpreter interpreter("import \"sys\" as sys;sys[\"print\"](2 * (7 + 1))", "main.bm");
+    BM::Interpreter interpreter("import \"sys\" as sys;let a = 2 * (7 + 1);a++;sys.print(\"Hello world\", 123, a, a * 4)", "main.bm");
     auto e = interpreter.run();
     e->get("__RETURN__");
     delete e;
