@@ -237,6 +237,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = DELETE_TOKEN;
     } else if (t.s == "//") {
         t.t = NOTE_TOKEN;
+    } else if (t.s == "pass") {
+        t.t = PASS_TOKEN;
     }
     lastI = (i > lastI ? i : lastI);
     return t;

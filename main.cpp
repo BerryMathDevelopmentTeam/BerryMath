@@ -2,6 +2,7 @@
 #include <ctime>
 #include <BerryMath.h>
 #include <dlfcn.h>
+#include <fstream>
 //#include <benchmark/benchmark.h>
 
 using dllFun = int(*)(int, int);
@@ -128,9 +129,19 @@ void TEST19() {
 
 }
 void TEST20() {
-    BM::Interpreter interpreter("import \"sys\" as sys;\nlet a = 2 * (7 + 1);\na++;\nsys.print(\"Hello world \\\"123\\\"\", 123, a, a * 4);\nsys.print(\"Hello world\", 123, a, a * 4);", "main.bm");
+    BM::Interpreter interpreter("import \"sys\" as sys;\nlet a = 2 * (7 + 1);\na++;\nsys.print(\"Hello world \\\"123\\\"\", 123, a, a * 4);\nlet print = sys.print;\nsys.print(\"Hello world\", 123, a, a * 4);", "main.bm");
     auto e = interpreter.run();
     e->get("__RETURN__");
+    delete e;
+}
+void TEST21() {
+    std::ifstream file("index.bm");
+    string script, tmpLine;
+    while (getline(file, tmpLine)) {
+        script += tmpLine + "\n";
+    }
+    BM::Interpreter interpreter(script, "index.bm");
+    auto e = interpreter.run();
     delete e;
 }
 
@@ -154,11 +165,12 @@ int main() {
 //    TEST17();
 //    TEST18();
 //    TEST19();
-    TEST20();
+//    TEST20();
+    TEST21();
 
     // Get speed
     /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST20();
+    for (int i = 0; i < 10000; i++) TEST21();
     std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }

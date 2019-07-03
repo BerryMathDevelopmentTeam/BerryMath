@@ -1120,6 +1120,11 @@ void BM::AST::parse() {
             delete ast;
             break;
         }
+        case Lexer::PASS_TOKEN:
+        {
+            root = new node("pass", lexer.l + baseLine - 1);
+            break;
+        }
         case Lexer::PROGRAM_END:
         {
             root = new node("PROGRAM-END", lexer.l + baseLine - 1);

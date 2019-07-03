@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <regex>
 using std::string;
 using std::map;
 #define ULL unsigned long long
@@ -24,6 +25,7 @@ namespace BM {
             RETURN_TOKEN,
             ENUM_TOKEN,
             USING_TOKEN,
+            PASS_TOKEN,
             IMPORT_TOKEN, EXPORT_TOKEN, AS_TOKEN,
             DELETE_TOKEN,
             CLASS_TOKEN, PUBLIC_TOKEN, PRIVATE_TOKEN, NEW_TOKEN,
@@ -56,13 +58,27 @@ namespace BM {
             TOKENS t;
             string s;
         };
-        Lexer() : script(""), i(0), l(1) { }
-        Lexer(const string& s) : script(s), i(0), l(1) { }
+        Lexer() : script(""), i(0), l(1) {
+            script += "\n";
+            std::regex pattern("//.*[$\n]", std::regex::icase);
+            script = std::regex_replace(script, pattern, "\n");
+            script += "\npass";
+        }
+        Lexer(const string& s) : script(s), i(0), l(1) {
+            script += "\n";
+            std::regex pattern("//.*[$\n]", std::regex::icase);
+            script = std::regex_replace(script, pattern, "\n");
+            script += "\npass";
+        }
         void open(const string& s) {
             script = s;
             i = 0;
             l = 1;
             updateLine = false;
+            script += "\n";
+            std::regex pattern("//.*[$\n]", std::regex::icase);
+            script = std::regex_replace(script, pattern, "\n");
+            script += "\npass";
         }
         Token get();
         Token token() { return t; }
