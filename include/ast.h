@@ -2,6 +2,7 @@
 #define BERRYMATH_AST_H
 
 #include <string>
+#include <regex>
 #include <vector>
 #include "lex.h"
 using std::string;
@@ -10,8 +11,16 @@ using std::vector;
 namespace BM {
     class AST {
     public:
-        AST() : root(nullptr), script(""), child(false), baseLine(0), lexer(script), byCache(false) { }
-        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script), byCache(false) { }
+        AST() : root(nullptr), script(""), child(false), baseLine(0), lexer(script), byCache(false) {
+            script += "\n";
+            std::regex pattern("//.*[$\n]", std::regex::icase);
+            script = std::regex_replace(script, pattern, "\n");
+        }
+        AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script), byCache(false) {
+            script += "\n";
+            std::regex pattern("//.*[$\n]", std::regex::icase);
+            script = std::regex_replace(script, pattern, "\n");
+        }
         void open(const string& s) { script = s;lexer.open(script);byCache = false; }
         void parse();
         void clear() {
@@ -29,7 +38,11 @@ namespace BM {
             s.erase(0, 1);
             s.erase(s.length() - 1, 1);
         }
-        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) { }
+        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) {
+            script += "\n";
+            std::regex pattern("//.*[$\n]", std::regex::icase);
+            script = std::regex_replace(script, pattern, "\n");
+        }
     public:
         class node {
         public:

@@ -54,25 +54,25 @@ namespace BM {
 #define THROW exports->set(PASS_ERROR, new Number(1));return exports;
 #define CHECKITER(e, ast) \
     if (e->get(PASS_ERROR)) { \
-        std::cerr << "at <" << filename << ">:" << ast->line() << std::endl; \
+        std::cerr << "at <" << filename << ">:" << ast->line() << " in " << __LINE__  << std::endl; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)
 #define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations at <" << filename << ">:" \
-            << ast->line() << std::endl; \
+            << ast->line() << " in " << __LINE__  << std::endl; \
             THROW; \
 }
 #define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << " at <" << filename << ">:" \
-            << ast->line() << std::endl; \
+            << ast->line() << " in " << __LINE__  << std::endl; \
             THROW; \
 }
 #define WRONG(name, s)  else { std::cerr << name << ": " << s << " at <" << filename << ">:" \
-            << ast->line() << std::endl; \
+            << ast->line() << " in " << __LINE__  << std::endl; \
             THROW; \
 }
 #define NOTDEFINED(v) if (!v) { \
         std::cerr << "ReferenceError: " << v->name() << " is not defined at <" << filename << ">:" \
-        << ast->line() << std::endl; \
+        << ast->line() << " in " << __LINE__ << std::endl; \
         THROW; \
     }
 #ifdef Windows95

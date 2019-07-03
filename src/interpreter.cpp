@@ -7,8 +7,6 @@
 #include "ast.h"
 #include "interpreter.h"
 
-BM::Object* tmp;
-
 string BM::Interpreter::compile() {
     string res;
     while (true) {
@@ -24,6 +22,7 @@ BM::Object *BM::Interpreter::run() {
     scope->set(SCOPE_D_NAME, new Object);
     while (true) {
         if (!child) ast->parse();
+//        if (!ast->rValue()) continue;
         if (ast->value() == "PROGRAM-END") break;
         if (ast->value() == "bad-tree") {
             std::cerr << ast->rValue()->get(0)->value() << "at <" << filename << ">:" << ast->line() << std::endl;
@@ -51,7 +50,6 @@ BM::Object *BM::Interpreter::run() {
                     Object *moduleExports = initModule();
                     scope->set(asName, moduleExports);
                 } WRONG("ImportError", "No module named " + name);
-                tmp = this->scope->get("sys")->value();
                 dylib.close();
             } WRONGSCRIPT("import");
         } else if (ast->value() == "let") {
