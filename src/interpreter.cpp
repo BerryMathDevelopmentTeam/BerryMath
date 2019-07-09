@@ -134,19 +134,43 @@ BM::Object *BM::Interpreter::run() {
             auto conAst = ast->rValue()->get(0);
             Interpreter conIp("", filename, this);
             conIp.child = true;
-            conIp.ast->root = ast->rValue()->get(1);
+            conIp.ast->root = conAst;
             auto conE = conIp.run();
             CHECKITER(conE, conIp.ast);
             auto con = conE->get(PASS_RETURN);
             if (isTrue(con)) {
                 string script(ast->rValue()->get(1)->value());
-                Interpreter scriptIp("", filename, this);
+                Interpreter scriptIp(script, filename, this);
                 auto e = scriptIp.run();
                 CHECKITER(e, scriptIp.ast);
                 delete e;
             } else {
-                auto els = ast->rValue()->get(3);
+                auto els = ast->rValue()->get(2);
                 for (UL i = 0; i < els->length(); i++) {
+                    auto elconAst = els->get(i);
+                    if (elconAst->value() == "elif") {
+                        Interpreter elconIp("", filename, this);
+                        elconIp.child = true;
+                        elconIp.ast->root = elconAst->get(0);
+                        auto elconE = elconIp.run();
+                        CHECKITER(conE, conIp.ast);
+                        auto elcon = elconE->get(PASS_RETURN);
+                        if (isTrue(elcon)) {
+                            string script(elconAst->get(1)->value());
+                            Interpreter scriptIp(script, filename, this);
+                            auto e = scriptIp.run();
+                            CHECKITER(e, scriptIp.ast);
+                            delete e;
+                            break;
+                        }
+                    } else {
+                        string script(elconAst->get(0)->value());
+                        Interpreter scriptIp(script, filename, this);
+                        auto e = scriptIp.run();
+                        CHECKITER(e, scriptIp.ast);
+                        delete e;
+                        break;
+                    }
                 }
             }
             delete conE;
@@ -330,7 +354,7 @@ BM::Object *BM::Interpreter::run() {
                     } WRONGEXPRTYPE(op);
                 } else if (
                         op == "=" || op == "+=" || op == "-=" || op == "*=" || op == "/=" || op == "**=" ||
-                        op == "<<=" || op == ">>=" || op == "|=" || op == "&=" || op == "^=" || op == "/="
+                        op == "<<=" || op == ">>=" || op == "|=" || op == "&=" || op == "^="
                         ) {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
@@ -355,6 +379,132 @@ BM::Object *BM::Interpreter::run() {
                                     value->value() += ((String *) right)->value();
                                 } WRONGEXPRTYPE(op);
                             } WRONGEXPRTYPE(op);
+                        } else if (op == "-=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() -= ((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "*=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() *= ((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "/=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() /= ((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "%=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = (int)(value->value()) % (int)((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "**=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = pow(value->value(), ((Number *) right)->value());
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "<<=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = (int)(value->value()) << (int)((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == ">>=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = (int)(value->value()) >> (int)((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "|=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = (int)(value->value()) | (int)((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "&=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = (int)(value->value()) & (int)((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        } else if (op == "^=") {
+                            if (value_->type() == NUMBER) {
+                                if (right->type() == NUMBER) {
+                                    Number *value = (Number *) value_;
+                                    value->value() = (int)(value->value()) ^ (int)((Number *) right)->value();
+                                } WRONGEXPRTYPE(op);
+                            } WRONGEXPRTYPE(op);
+                        }
+                    }
+                } else if (
+                        op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="
+                        ) {
+                    if (left->type() != right->type()) {
+                        std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << " at <" << filename << ">:" << ast->line() << std::endl;
+                        THROW;
+                    }
+                    switch (left->type()) {
+                        case NUMBER:
+                        {
+                            auto leftV = ((Number *) (left))->value();
+                            auto rightV = ((Number *) (right))->value();
+                            if (op == "==") exports->set(PASS_RETURN, new Number(leftV == rightV));
+                            else if (op == "<=") exports->set(PASS_RETURN, new Number(leftV <= rightV));
+                            else if (op == ">=") exports->set(PASS_RETURN, new Number(leftV >= rightV));
+                            else if (op == "<") exports->set(PASS_RETURN, new Number(leftV < rightV));
+                            else if (op == ">") exports->set(PASS_RETURN, new Number(leftV > rightV));
+                            else if (op == "!=") exports->set(PASS_RETURN, new Number(leftV != rightV));
+                            break;
+                        }
+                        case STRING:
+                        {
+                            auto leftV = ((String *) (left))->value();
+                            auto rightV = ((String *) (right))->value();
+                            if (op == "==") exports->set(PASS_RETURN, new Number(leftV == rightV));
+                            else if (op == "<=") exports->set(PASS_RETURN, new Number(leftV <= rightV));
+                            else if (op == ">=") exports->set(PASS_RETURN, new Number(leftV >= rightV));
+                            else if (op == "<") exports->set(PASS_RETURN, new Number(leftV < rightV));
+                            else if (op == ">") exports->set(PASS_RETURN, new Number(leftV > rightV));
+                            else if (op == "!=") exports->set(PASS_RETURN, new Number(leftV != rightV));
+                            break;
+                        }
+                        case NULL_:
+                        case UNDEFINED:
+                        {
+                            if (op == "==") exports->set(PASS_RETURN, new Number(1));
+                            else if (op == "<=") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == ">=") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == "<") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == ">") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == "!=") exports->set(PASS_RETURN, new Number(0));
+                            break;
+                        }
+                        default:
+                        {
+                            auto leftV = (long long)left;
+                            auto rightV = (long long)right;
+                            if (op == "==") exports->set(PASS_RETURN, new Number(leftV == rightV));
+                            else if (op == "<=") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == ">=") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == "<") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == ">") exports->set(PASS_RETURN, new Number(0));
+                            else if (op == "!=") exports->set(PASS_RETURN, new Number(leftV != rightV));
+                            break;
                         }
                     }
                 } else {
@@ -362,17 +512,17 @@ BM::Object *BM::Interpreter::run() {
                         auto leftV = ((Number *) (left))->value();
                         auto rightV = ((Number *) (right))->value();
                         if (op == "-") exports->set(PASS_RETURN, new Number(leftV - rightV));
-                        if (op == "*") exports->set(PASS_RETURN, new Number(leftV * rightV));
-                        if (op == "/") exports->set(PASS_RETURN, new Number(leftV / rightV));
-                        if (op == "%") exports->set(PASS_RETURN, new Number(((LL) (leftV)) % ((LL) (rightV))));
-                        if (op == "**") exports->set(PASS_RETURN, new Number(pow(leftV, rightV)));
-                        if (op == "&") exports->set(PASS_RETURN, new Number(((LL) (leftV)) & ((LL) (rightV))));
-                        if (op == "|") exports->set(PASS_RETURN, new Number(((LL) (leftV)) | ((LL) (rightV))));
-                        if (op == "^") exports->set(PASS_RETURN, new Number(((LL) (leftV)) ^ ((LL) (rightV))));
-                        if (op == "||") exports->set(PASS_RETURN, new Number(((bool) (leftV)) || ((bool) (rightV))));
-                        if (op == "&&") exports->set(PASS_RETURN, new Number(((bool) (leftV)) && ((bool) (rightV))));
-                        if (op == "<<") exports->set(PASS_RETURN, new Number(((LL) (leftV)) << ((LL) (rightV))));
-                        if (op == ">>") exports->set(PASS_RETURN, new Number(((LL) (leftV)) >> ((LL) (rightV))));
+                        else if (op == "*") exports->set(PASS_RETURN, new Number(leftV * rightV));
+                        else if (op == "/") exports->set(PASS_RETURN, new Number(leftV / rightV));
+                        else if (op == "%") exports->set(PASS_RETURN, new Number(((LL) (leftV)) % ((LL) (rightV))));
+                        else if (op == "**") exports->set(PASS_RETURN, new Number(pow(leftV, rightV)));
+                        else if (op == "&") exports->set(PASS_RETURN, new Number(((LL) (leftV)) & ((LL) (rightV))));
+                        else if (op == "|") exports->set(PASS_RETURN, new Number(((LL) (leftV)) | ((LL) (rightV))));
+                        else if (op == "^") exports->set(PASS_RETURN, new Number(((LL) (leftV)) ^ ((LL) (rightV))));
+                        else if (op == "||") exports->set(PASS_RETURN, new Number(((bool) (leftV)) || ((bool) (rightV))));
+                        else if (op == "&&") exports->set(PASS_RETURN, new Number(((bool) (leftV)) && ((bool) (rightV))));
+                        else if (op == "<<") exports->set(PASS_RETURN, new Number(((LL) (leftV)) << ((LL) (rightV))));
+                        else if (op == ">>") exports->set(PASS_RETURN, new Number(((LL) (leftV)) >> ((LL) (rightV))));
                     } WRONGEXPRTYPE(op);
                 }
             }

@@ -171,10 +171,10 @@ int main() {
 //    TEST15();
 //    TEST16();
 //    TEST17();
-    TEST18();
+//    TEST18();
 //    TEST19();
 //    TEST20();
-//    TEST21();
+    TEST21();
 
     // Get speed
     /*auto start = clock();

@@ -3,9 +3,9 @@ import "sys" as sys;// 导入系统库
 let n = sys.type.number(sys.io.input("N: ", sp = ""));// 接受输入, 并将其转为数字
 
 if (n == 0) {
-    println("n == 0");
+    sys.io.print("n == 0");
 } elif (n == 1) {
-    println("n == 1");
+    sys.io.print("n == 1");
 } else {
-    println("another");
+    sys.io.print("another");
 }
