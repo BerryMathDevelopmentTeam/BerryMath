@@ -154,3 +154,8 @@ bool BM::isTrue(Object* o) {
     auto v = ((Number*)o)->value();
     return (bool)v;
 }
+void BM::Scope::load(Scope* p) {
+    for (auto iter = p->variables.begin(); iter != p->variables.end(); iter++) {
+        set(iter->first, iter->second->value());
+    }
+}

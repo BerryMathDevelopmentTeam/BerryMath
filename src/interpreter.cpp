@@ -174,6 +174,42 @@ BM::Object *BM::Interpreter::run() {
                 }
             }
             delete conE;
+        } else if (ast->value() == "for") {
+            // 初始化
+            auto initAst = ast->rValue()->get(0);
+            Interpreter initIp("", filename, this);
+            initIp.ast->root = initAst;
+            initIp.child = true;
+            auto initE = initIp.run();
+            CHECKITER(initE, initAst);
+            scope->load(initIp.scope);
+
+            // 获取条件
+            auto conAst = ast->rValue()->get(1);
+            auto nxtAst = ast->rValue()->get(2);
+            string script(ast->rValue()->get(3)->value());// 获取for循环代码块
+            while (true) {
+                // 条件判断
+                Interpreter conIp("", filename, this);
+                conIp.ast->root = conAst;
+                conIp.child = true;
+                auto conE = conIp.run();
+                CHECKITER(conE, conAst);
+                if (!isTrue(conE->get(PASS_RETURN))) break;
+
+                // 代码块运行
+                Interpreter scriptIp(script, filename, this);
+                scriptIp.scope->load(conIp.scope);
+                auto scriptE = scriptIp.run();
+                CHECKITER(scriptE, scriptIp.ast);
+
+                // 最后表达式执行
+                Interpreter nxtIp("", filename, this);
+                nxtIp.ast->root = nxtAst;
+                nxtIp.child = true;
+                auto nxtE = nxtIp.run();
+                CHECKITER(nxtE, nxtAst);
+            }
         }
         else { //为表达式
             auto len = ast->rValue()->length();
@@ -529,7 +565,6 @@ BM::Object *BM::Interpreter::run() {
         }
         if (child) break;
     }
-    scope->clear();
     if (!exports->get(PASS_RETURN)) exports->set(string(PASS_RETURN), new Undefined);
     return exports;
 }

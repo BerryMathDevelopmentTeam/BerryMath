@@ -814,16 +814,18 @@ void BM::AST::parse() {
             }
             auto bcCount = 1;
             string forExprScript;
-            while (bcCount > 0) {
+            while (true) {
                 GET;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
+                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
+                    if (--bcCount < 1) break;
+                }
                 if (token.t == Lexer::PROGRAM_END) {
                     root = new node("bad-tree", lexer.l + baseLine - 1);
                     root->insert("SyntaxError: Lack of parentheses", lexer.l + baseLine - 1);
                     return;
                 }
                 forExprScript += " " + token.s;
-                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) bcCount++;
-                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
             }
             forExprScript.erase(forExprScript.length() - 1, 1);
 

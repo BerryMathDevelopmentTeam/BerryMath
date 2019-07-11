@@ -180,6 +180,7 @@ namespace BM {
         void del(const string& name);
         void clear() { variables.clear(); }
         void setParent(Scope* p) { parent = p; }
+        void load(Scope*);
         Scope* getParent() { return parent; }
         ~Scope() {
             for (auto iter = variables.begin(); iter != variables.end(); iter++) {
