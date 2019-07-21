@@ -40,6 +40,13 @@ namespace BM {
             s.erase(0, 1);
             s.erase(s.length() - 1, 1);
         }
+        static void replace(string& s, const string& a) {
+            size_t pos;
+            auto alen = a.length();
+            while ((pos = s.find(a)) != string::npos) {
+                s = s.replace(pos, alen, "");
+            }
+        }
         AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);

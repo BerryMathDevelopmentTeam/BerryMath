@@ -76,7 +76,7 @@ namespace BM {
 #define PASS_RETURN "__RETURN__"
 #define THROW exports->set(PASS_ERROR, new Number(1));return exports;
 #define CHECKITER(e, ast) \
-    if (e->get(PASS_ERROR)) { \
+    if (!e || e->get(PASS_ERROR)) { \
         std::cerr << "at <" << filename << ">:" << ast->line() << std::endl; \
         THROW; \
     }

@@ -3,5 +3,5 @@ import "sys" as sys;// 导入系统库
 // let n = sys.type.number(sys.io.input("N: ", sp = ""));// 接受输入, 并将其转为数字
 
 for (let i = 0; i < 10; i++ ) {
-    sys.io.print(1);
+    sys.io.print(i);
 }

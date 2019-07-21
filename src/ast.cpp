@@ -375,12 +375,18 @@ void BM::AST::parse() {
                 }
                 root = new node(minOp.op, minOp.line);
                 if ((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--" || minOp.op == "+" || minOp.op == "-")) {
-                    if (minOp.op == "++" || minOp.op == "--") root->value(minOp.op);
+                    if (minOp.op == "++" || minOp.op == "--")
+                        root->value(minOp.op);
                     else root->insert("0", minOp.line + baseLine - 1);
                 } else {
-                    root->insert(leftAst->root);
+                    if (minOp.op == "++" || minOp.op == "--") root->insert(leftAst->root->value(), minOp.line + baseLine - 1);
+                    else root->insert(leftAst->root);
                 }
-                if ((right == " " || right == " ()") && (minOp.op == "++" || minOp.op == "--")) {
+                replace(right, " ");
+                replace(right, "()");
+                replace(right, "pass");
+                replace(right, ";");
+                if (right == "" && (minOp.op == "++" || minOp.op == "--")) {
                     root->value(minOp.op);
                 } else {
                     root->insert(rightAst->root);
@@ -827,7 +833,8 @@ void BM::AST::parse() {
                 }
                 forExprScript += " " + token.s;
             }
-            forExprScript.erase(forExprScript.length() - 1, 1);
+            auto ch = forExprScript[forExprScript.length() - 1];
+            if (ch == ' ' || ch == '\t' || ch == '\n') forExprScript.erase(forExprScript.length() - 1, 1);
 
             GET;
             if (token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
