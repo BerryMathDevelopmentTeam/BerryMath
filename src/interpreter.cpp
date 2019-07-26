@@ -26,7 +26,7 @@ BM::Object *BM::Interpreter::run() {
 //        if (!ast->rValue()) continue;
         if (ast->value() == "PROGRAM-END") break;
         if (ast->value() == "bad-tree") {
-            std::cerr << ast->rValue()->get(0)->value() << "at <" << filename << ">:" << ast->line() << std::endl;
+            std::cerr << ast->rValue()->get(0)->value() << " at <" << filename << ">:" << ast->line() << std::endl;
             THROW;
         } else if (ast->value() == "export") {
             auto name = ast->rValue()->get(0)->value();
@@ -397,7 +397,7 @@ BM::Object *BM::Interpreter::run() {
                     auto value = var->value();
                     for (UL i = 0; i < keys.size(); i++) {
                         value = value->get(keys[i]);
-                        if (value) { } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
+                         if (value) { } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
                     }
                     exports->set(PASS_RETURN, value);
                 } WRONG("ReferenceError", startV + " is not defined");

@@ -248,24 +248,26 @@ void BM::AST::parse() {
                 std::vector<string> args;
                 string arg;
                 bool flag = false;
-                while (brCount > 0) {
-                    arg += " " + token.s;
-                    GET;
-                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
-                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
-                    else if (token.t == Lexer::COMMA_TOKEN && brCount == 1) {
-                        if (flag) {
-                            arg.erase(0, 2);
-                            args.push_back(arg);
-                        } else {
-                            args.push_back(arg);
-                            flag = true;
+                if (token.t != Lexer::BRACKETS_RIGHT_TOKEN) {
+                    while (brCount > 0) {
+                        arg += " " + token.s;
+                        GET;
+                        if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
+                        else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
+                        else if (token.t == Lexer::COMMA_TOKEN && brCount == 1) {
+                            if (flag) {
+                                arg.erase(0, 2);
+                                args.push_back(arg);
+                            } else {
+                                args.push_back(arg);
+                                flag = true;
+                            }
+                            arg = "";
+                        } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                            root = new node("bad-tree", lexer.l + baseLine - 1);
+                            root->insert("SyntaxError: Lack of parentheses", lexer.l + baseLine - 1);
+                            return;
                         }
-                        arg = "";
-                    } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
-                        root = new node("bad-tree", lexer.l + baseLine - 1);
-                        root->insert("SyntaxError: Lack of parentheses", lexer.l + baseLine - 1);
-                        return;
                     }
                 }
                 if (!arg.empty()) {
@@ -991,10 +993,6 @@ void BM::AST::parse() {
                     }
                 }
                 args.push_back(Arg({ PRIVATE, name, defaultValue }));
-            } else {
-                root = new node("bad-tree", lexer.l + baseLine - 1);
-                root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine - 1);
-                return;
             }
 
             GET;
