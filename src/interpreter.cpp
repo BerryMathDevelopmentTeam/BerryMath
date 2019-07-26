@@ -210,6 +210,21 @@ BM::Object *BM::Interpreter::run() {
                 auto nxtE = nxtIp.run();
                 CHECKITER(nxtE, nxtAst);
             }
+        } else if (ast->value() == "while") {
+            auto conAst = ast->rValue()->get(0);
+            auto script = ast->rValue()->get(1)->value();
+            while (true) {
+                Interpreter conIp("", filename, this);
+                conIp.ast->root = conAst;
+                conIp.child = true;
+                auto conE = conIp.run();
+                CHECKITER(conE, conAst);
+                auto con = conE->get(PASS_RETURN);
+                if (isTrue(con)) {
+                    Interpreter ip(script, filename, this);
+                    CHECKITER(ip.run(), ast->rValue());
+                } else break;
+            }
         }
         else { //为表达式
             auto len = ast->rValue()->length();
