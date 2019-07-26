@@ -82,6 +82,8 @@ void BM::AST::parse() {
     }
 
     // 解析script内容
+    if (root) delete root;
+    root = nullptr;
     auto tmpIndex = lexer.i;
     auto token = lexer.get();
 #define GET token = lexer.get()
@@ -1140,6 +1142,7 @@ void BM::AST::parse() {
             break;
         }
     }
+    if (!root) root = new node("pass", lexer.l + baseLine - 1);
 }
 string BM::AST::exportByString() {
     if (!root) return "null";

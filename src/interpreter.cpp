@@ -225,6 +225,22 @@ BM::Object *BM::Interpreter::run() {
                     CHECKITER(ip.run(), ast->rValue());
                 } else break;
             }
+        } else if (ast->value() == "do") {
+            auto script = ast->rValue()->get(0)->value();
+            auto conAst = ast->rValue()->get(1);
+            while (true) {
+                Interpreter ip(script, filename, this);
+                CHECKITER(ip.run(), ast->rValue());
+
+                Interpreter conIp("", filename, this);
+                conIp.ast->root = conAst;
+                conIp.child = true;
+                auto conE = conIp.run();
+                CHECKITER(conE, conAst);
+                auto con = conE->get(PASS_RETURN);
+                if (!isTrue(con))
+                    break;
+            }
         }
         else { //为表达式
             auto len = ast->rValue()->length();
