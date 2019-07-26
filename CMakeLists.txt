@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 project(BerryMath)
 
-set(
-        SHARED 0
-)
+option(SHARED "Set compile option: shared" OFF)
 
 include_directories(
         include
@@ -13,7 +11,8 @@ AUX_SOURCE_DIRECTORY(src DIR_SRCS)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if (${SHARED})
+if (SHARED)
+    message("shared")
     add_library(BerryMath SHARED
             include/BerryMath.h
             include/value.h
@@ -29,7 +28,7 @@ if (${SHARED})
             src/interpreter.cpp
             )
 else ()
-
+    message("unshared")
     add_executable(
             BerryMath main.cpp
             src/BerryMath.cpp include/BerryMath.h
