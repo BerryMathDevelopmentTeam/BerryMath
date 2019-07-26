@@ -15,6 +15,8 @@ namespace BM {
     enum ValueType {
         OBJECT, NUMBER, STRING, NULL_, UNDEFINED, FUNCTION, NATIVE_FUNCTION
     };
+    class Object;
+    using forEachCB = void(*)(const string&, Object*);
     class Object {
     public:
         Object() : linked(0), parent(nullptr) { }
@@ -41,6 +43,30 @@ namespace BM {
             v.print(o);
             return o;
         }
+        class Iterator {
+        public:
+            Iterator() : bind(nullptr) { }
+            Iterator(Object* b) : bind(b) { iter = bind->proto.begin(); }
+            Iterator(Object& b) : bind(&b) { iter = bind->proto.begin(); }
+            void rebind(Object* b) { bind = b; iter = bind->proto.begin(); }
+            void rebind(Object& b) { bind = &b; iter = bind->proto.begin(); }
+            Object* value() {
+                return iter->second;
+            }
+            Object* next() {
+                iter++;
+                return value();
+            }
+            bool end() {
+                return iter == bind->proto.end();
+            }
+            string key() {
+                return iter->first;
+            }
+        private:
+            Object* bind;
+            map<string, Object*>::iterator iter;
+        };
     protected:
         void print(std::ostream&, bool = true);
         UL linked;

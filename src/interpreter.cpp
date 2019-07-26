@@ -276,6 +276,18 @@ BM::Object *BM::Interpreter::run() {
         } else if (ast->value() == "continue") {
             exports->set(PASS_CONTINUE, new Number);
             break;
+        } else if (ast->value() == "using") {
+            auto objAst = ast->rValue()->get(0);
+            Interpreter ip("", filename, this);
+            ip.ast->root = objAst;
+            ip.child = true;
+            auto e = ip.run();
+            CHECKITER(e, objAst);
+            auto obj = e->get(PASS_RETURN);
+            Object::Iterator iter(obj);
+            for (; !iter.end(); iter.next()) {
+                set(iter.key(), iter.value());
+            }
         }
         else { //为表达式
             auto len = ast->rValue()->length();
