@@ -143,6 +143,8 @@ BM::Object *BM::Interpreter::run() {
                 Interpreter scriptIp(script, filename, this);
                 auto e = scriptIp.run();
                 CHECKITER(e, scriptIp.ast);
+                auto pb = (Number*) e->get(PASS_BREAK);
+                if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                 delete e;
             } else {
                 auto els = ast->rValue()->get(2);
@@ -160,6 +162,8 @@ BM::Object *BM::Interpreter::run() {
                             Interpreter scriptIp(script, filename, this);
                             auto e = scriptIp.run();
                             CHECKITER(e, scriptIp.ast);
+                            auto pb = (Number*) e->get(PASS_BREAK);
+                            if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                             delete e;
                             break;
                         }
@@ -168,6 +172,8 @@ BM::Object *BM::Interpreter::run() {
                         Interpreter scriptIp(script, filename, this);
                         auto e = scriptIp.run();
                         CHECKITER(e, scriptIp.ast);
+                        auto pb = (Number*) e->get(PASS_BREAK);
+                        if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                         delete e;
                         break;
                     }
@@ -202,6 +208,13 @@ BM::Object *BM::Interpreter::run() {
                 scriptIp.scope->load(conIp.scope);
                 auto scriptE = scriptIp.run();
                 CHECKITER(scriptE, scriptIp.ast);
+                auto pb = (Number*) scriptE->get(PASS_BREAK);
+                if (pb) {
+                    double v = pb->value() - 1;
+                    if (v < 1) break;
+                    set(PASS_BREAK, new Number(v));
+                    break;
+                }
 
                 // 最后表达式执行
                 Interpreter nxtIp("", filename, this);
@@ -222,7 +235,15 @@ BM::Object *BM::Interpreter::run() {
                 auto con = conE->get(PASS_RETURN);
                 if (isTrue(con)) {
                     Interpreter ip(script, filename, this);
-                    CHECKITER(ip.run(), ast->rValue());
+                    auto e = ip.run();
+                    CHECKITER(e, ast->rValue());
+                    auto pb = (Number*) e->get(PASS_BREAK);
+                    if (pb) {
+                        double v = pb->value() - 1;
+                        if (v < 1) break;
+                        set(PASS_BREAK, new Number(v));
+                        break;
+                    }
                 } else break;
             }
         } else if (ast->value() == "do") {
@@ -230,7 +251,15 @@ BM::Object *BM::Interpreter::run() {
             auto conAst = ast->rValue()->get(1);
             while (true) {
                 Interpreter ip(script, filename, this);
-                CHECKITER(ip.run(), ast->rValue());
+                auto e = ip.run();
+                CHECKITER(e, ast->rValue());
+                auto pb = (Number*) e->get(PASS_BREAK);
+                if (pb) {
+                    double v = pb->value() - 1;
+                    if (v < 1) break;
+                    set(PASS_BREAK, new Number(v));
+                    break;
+                }
 
                 Interpreter conIp("", filename, this);
                 conIp.ast->root = conAst;
@@ -241,6 +270,12 @@ BM::Object *BM::Interpreter::run() {
                 if (!isTrue(con))
                     break;
             }
+        } else if (ast->value() == "break") {
+            auto count = atoi(ast->rValue()->get(0)->value().c_str());
+            exports->set(PASS_BREAK, new Number(count));
+        } else if (ast->value() == "continue") {
+            exports->set(PASS_CONTINUE, new Number);
+            break;
         }
         else { //为表达式
             auto len = ast->rValue()->length();

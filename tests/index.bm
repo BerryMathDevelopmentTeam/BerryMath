@@ -4,4 +4,6 @@ let i = 0;
 do {
     sys.io.print(i);
     i++;
-} while (i < 0);
+    continue;
+    i--;
+} while (i < 10);
