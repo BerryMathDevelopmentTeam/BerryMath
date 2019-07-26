@@ -288,6 +288,22 @@ BM::Object *BM::Interpreter::run() {
             for (; !iter.end(); iter.next()) {
                 set(iter.key(), iter.value());
             }
+        } else if (ast->value() == "def") {
+            string funname(ast->rValue()->get(0)->value());
+            string script(ast->rValue()->get(2)->value());
+            auto fun = new Function(script, this);
+            auto args = ast->rValue()->get(1);
+            for (UL i = 0; i < args->length(); i++) {
+                auto arg = args->get(i);
+                string argname(arg->value());
+                string defaultValue = arg->get(1)->value();
+                fun->addDesc(argname);
+                Interpreter tmp(defaultValue, filename, this);
+                auto tmpe = tmp.run();
+                CHECKITER(tmpe, arg);
+                fun->defaultValue(argname, tmpe->get(PASS_RETURN));
+            }
+            set(funname, fun);
         }
         else { //为表达式
             auto len = ast->rValue()->length();
