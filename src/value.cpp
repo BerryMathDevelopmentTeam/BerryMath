@@ -129,6 +129,7 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
         ip.set(iter->first, iter->second);
     }
+    ip.upscope = "\033[34mfunction " + funname + "\033[0m";
     return ip.run()->get(PASS_RETURN);
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {

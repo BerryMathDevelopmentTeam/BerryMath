@@ -26,7 +26,7 @@ BM::Object *BM::Interpreter::run() {
 //        if (!ast->rValue()) continue;
         if (ast->value() == "PROGRAM-END") break;
         if (ast->value() == "bad-tree") {
-            std::cerr << ast->rValue()->get(0)->value() << " at <" << filename << ">:" << ast->line() << std::endl;
+            std::cerr << ast->rValue()->get(0)->value() << " at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
             THROW;
         } else if (ast->value() == "export") {
             auto name = ast->rValue()->get(0)->value();
@@ -291,7 +291,7 @@ BM::Object *BM::Interpreter::run() {
         } else if (ast->value() == "def") {
             string funname(ast->rValue()->get(0)->value());
             string script(ast->rValue()->get(2)->value());
-            auto fun = new Function(script, this);
+            auto fun = new Function(funname, script, this);
             auto args = ast->rValue()->get(1);
             for (UL i = 0; i < args->length(); i++) {
                 auto arg = args->get(i);
@@ -318,7 +318,7 @@ BM::Object *BM::Interpreter::run() {
                         auto argName = node->get(0)->value();
                         if (node->get(0)->length() > 0) {
                             std::cerr << "ReferenceError: Invalid setting with " << argName << " at <" << filename
-                                      << ">:"
+                                      << ":" << upscope << ">:"
                                       << ast->line() << std::endl;
                             THROW;
                         }
@@ -345,7 +345,7 @@ BM::Object *BM::Interpreter::run() {
                 auto e = getIp.run();
                 auto fun_ = e->get(PASS_RETURN);
                 if (!fun_) {
-                    std::cerr << "TypeError: The value for getting is not defined at <" << filename << ">:"
+                    std::cerr << "TypeError: The value for getting is not defined at <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     THROW;
                 }
@@ -356,7 +356,7 @@ BM::Object *BM::Interpreter::run() {
                     auto fun = (NativeFunction *) fun_;
                     exports->set(PASS_RETURN, fun->run(args, hashArg));
                 } else {
-                    std::cerr << "TypeError: The value for getting is not a function at <" << filename << ">:"
+                    std::cerr << "TypeError: The value for getting is not a function at <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     THROW;
                 }
@@ -373,7 +373,7 @@ BM::Object *BM::Interpreter::run() {
                     CHECKITER(e, ast);
                     value = value->get(e->get(PASS_RETURN)->toString(false, false));
                     if (!value) {
-                        std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << " is not defined at <" << filename << ">:"
+                        std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << " is not defined at <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
@@ -489,7 +489,7 @@ BM::Object *BM::Interpreter::run() {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
                     if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
-                        std::cerr << "ReferenceError: Invalid left-hand side in assignment at <" << filename << ">:"
+                        std::cerr << "ReferenceError: Invalid left-hand side in assignment at <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
@@ -585,7 +585,7 @@ BM::Object *BM::Interpreter::run() {
                         op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="
                         ) {
                     if (left->type() != right->type()) {
-                        std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << " at <" << filename << ">:" << ast->line() << std::endl;
+                        std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << " at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
                         THROW;
                     }
                     switch (left->type()) {

@@ -58,13 +58,13 @@ namespace BM {
             TOKENS t;
             string s;
         };
-        Lexer() : script(""), i(0), l(1) {
+        Lexer() : script(""), i(0), l(0) {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
             script += "\npass";
         }
-        Lexer(const string& s) : script(s), i(0), l(1) {
+        Lexer(const string& s) : script(s), i(0), l(0) {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
@@ -73,7 +73,7 @@ namespace BM {
         void open(const string& s) {
             script = s;
             i = 0;
-            l = 1;
+            l = 0;
             updateLine = false;
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
@@ -88,7 +88,6 @@ namespace BM {
         bool updateLine = false;
         UL i;
         UL l;
-        UL lastI = 0;
         UL sIndex = 0;
         Token t;
         string script;

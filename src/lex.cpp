@@ -19,10 +19,12 @@ BM::Lexer::Token BM::Lexer::get() {
         if (IS_SPACE(script[i])) {
             if (t.t) {// 已经有分割出来的token, 遇到空符就意味着语句的结束
                 i++;
-                if (script[i - 1] == '\n' && lastI < (i - 1)) updateLine = true;
+                if (script[i - 1] == '\n'/* && lastI < (i - 1)*/)
+                    updateLine = true;
                 break;
             }
-            if (script[i - 1] == '\n' && lastI < (i - 1)) l++;
+            if (script[i - 1] == '\n'/* && lastI < (i - 1)*/)
+                l++;
             // 尚未有分割出来的token, 所以不做处理
             continue;
         } else if (IS_OP(script[i])) {
@@ -240,6 +242,5 @@ BM::Lexer::Token BM::Lexer::get() {
     } else if (t.s == "pass") {
         t.t = PASS_TOKEN;
     }
-    lastI = (i > lastI ? i : lastI);
     return t;
 }

@@ -103,7 +103,9 @@ namespace BM {
             if (root) return root->line() + 1;
             return 0;
         }
-    };;
+    };
+
+#define CHANGELINES(ast) lexer.l = ast->lexer.l + ast->baseLine;
 }
 
 

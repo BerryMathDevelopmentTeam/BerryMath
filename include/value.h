@@ -155,11 +155,13 @@ namespace BM {
     };
     class Function : public Object {
     public:
-        Function(string s = "", Interpreter* p = nullptr) : Object(), script(s), parent(p) { }
+        Function(const string& n = "", const string& s = "", Interpreter* p = nullptr) : Object(), funname(n), script(s), parent(p) {
+            set("name", new String(n));
+        }
         virtual ValueType type() { return FUNCTION; }
         Interpreter* interpreter() { return parent; }
         void interpreter(Interpreter* p) { parent = p; }
-        Object* copy() { return new Function(script, parent); }
+        Object* copy() { return new Function(funname, script, parent); }
         string value() { return "Function..."; }
         string toString(bool = true, bool hl = true, string tab = "") {
             string o("");
@@ -171,6 +173,9 @@ namespace BM {
         void addDesc(string d) { desc.push_back(d); }
         void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         virtual Object* run(vector<Object*>, map<string, Object*>);
+        string functionName() {
+            return funname;
+        }
         ~Function() { }
     protected:
         friend class Interpreter;
@@ -178,6 +183,7 @@ namespace BM {
         Interpreter* parent;
         map<string, Object*> defaultValues;
         vector<string> desc;
+        string funname;
     };
     class Variable {
     public:
@@ -222,11 +228,13 @@ namespace BM {
     using NativeFuncDef = BM::Object*(*)(Scope*, vector<Object*>);
     class NativeFunction : public Object {
     public:
-        NativeFunction(NativeFuncDef n, Interpreter* p = nullptr) : Object(), native(n), parent(p) { }
+        NativeFunction(const string& name, NativeFuncDef n, Interpreter* p = nullptr) : Object(), funname(name), native(n), parent(p) {
+            set("name", new String(name));
+        }
         Object* run(vector<Object*>, map<string, Object*>);
         Interpreter* interpreter() { return parent; }
         void interpreter(Interpreter* p) { parent = p; }
-        Object* copy() { return new NativeFunction(native, parent); }
+        Object* copy() { return new NativeFunction(funname, native, parent); }
         string value() { return "Function..."; }
         string toString(bool = true, bool hl = true, string tab = "") {
             string o("");
@@ -234,6 +242,9 @@ namespace BM {
             o += "Function...";
             if (hl) o += "\033[0m";
             return o;
+        }
+        string functionName() {
+            return funname;
         }
         void addDesc(string d) { desc.push_back(d); }
         void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
@@ -245,6 +256,7 @@ namespace BM {
         Interpreter* parent;
         map<string, Object*> defaultValues;
         vector<string> desc;
+        string funname;
     };
     string toString(Object*);
     bool isTrue(Object*);
