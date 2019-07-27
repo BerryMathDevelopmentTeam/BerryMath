@@ -7,6 +7,7 @@
 
 using dllFun = int(*)(int, int);
 
+
 void TEST1() {
     auto object = new BM::Object;
     auto child = new BM::Object;
