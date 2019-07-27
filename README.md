@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # BerryMath
 
 BerryMath is a simple programming language.
