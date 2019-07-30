@@ -67,11 +67,9 @@ void terminal() {
                         case ')': SBC--;break;
                     }
                 }
-                cout << BBC << ", " << MBC << ", " << SBC << endl;
                 if (!(BBC || MBC || SBC)) break;
             }
             script += ";" + s;
-            cout << script << endl;
             BM::Interpreter ip(script, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
@@ -82,7 +80,6 @@ void terminal() {
             delete e;
         } else {
             script += ";" + tmp;
-            cout << script << endl;
             BM::Interpreter ip(script, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
