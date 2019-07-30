@@ -15,7 +15,7 @@ namespace BM {
                                                                                parent(p),
                                                                                scope(new Scope(p ? p->scope : nullptr)),
                                                                                child(false), upscope("\033[32mglobal\033[0m") {
-            script += "\n";
+            script += ";\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
             script += "\npass";
@@ -25,7 +25,7 @@ namespace BM {
             script = s;
             ast->open(script);
             filename = fn;
-            script += "\n";
+            script += ";\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
             script += "\npass";
