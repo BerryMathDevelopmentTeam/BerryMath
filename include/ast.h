@@ -15,13 +15,13 @@ namespace BM {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
-            script += "\npass";
+            script += "\n;pass";
         }
         AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script), byCache(false) {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
-            script += "\npass";
+            script += "\n;pass";
         }
         void open(const string& s) { script = s;lexer.open(script);byCache = false; }
         void parse();
@@ -51,7 +51,7 @@ namespace BM {
             script += "\n";
             std::regex pattern("//.*[$\n]", std::regex::icase);
             script = std::regex_replace(script, pattern, "\n");
-            script += "\npass";
+            script += "\n;pass";
         }
     public:
         class node {

@@ -413,7 +413,6 @@ BM::Object *BM::Interpreter::run() {
                     auto name = ast->value();
                     auto var = scope->get(name);
                     NOTDEFINED(var, name);
-                    exports->set(name, var->value());
                     exports->set(PASS_RETURN, var->value());
                 }
             } else if (len == 1) {

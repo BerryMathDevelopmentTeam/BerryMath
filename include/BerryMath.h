@@ -8,7 +8,8 @@
 #include "dylib.h"
 
 namespace BM {
-
+#define BM_0_0_1_BETA
+#define BMVersion "v0.0.1-beta"
 }
 
 #endif //BERRYMATH_BERRYMATH_H

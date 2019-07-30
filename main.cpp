@@ -1,185 +1,127 @@
 #include <iostream>
-#include <ctime>
 #include <BerryMath.h>
-#include <dlfcn.h>
 #include <fstream>
-//#include <benchmark/benchmark.h>
+using std::cout;
+using std::endl;
+using std::cin;
+using std::fstream;
 
-using dllFun = int(*)(int, int);
+void terminal() {
+    cout << "BerryMath Terminal" << endl;
+    cout << "v0.0.1-beta" << endl;
+    cout << "        \033[32m_____\033[0m" << endl;
+    cout << "         \033[32m/\\\033[0m" << endl;
+    cout << "        \033[32m/  |\033[0m" << endl;
+    cout << "    \033[41m     \033[0m  \033[45m   \033[0m" << endl;
+    cout << "   \033[41m       \033[45m     \033[0m" << endl;
+    cout << "  \033[41m   \033[35mB\033[0m\033[41m    \033[45m  \033[31mM\033[0m\033[45m  \033[0m" << endl;
+    cout << "   \033[41m      \033[45m     \033[0m" << endl;
+    cout << "     \033[41m    \033[45m    \033[0m" << endl;
+    string script;
 
-
-void TEST1() {
-    auto object = new BM::Object;
-    auto child = new BM::Object;
-    object->insert("number", new BM::Number(0));
-    object->insert("string", new BM::String("Hello world!"));
-    object->insert("p", new BM::Null);
-    object->insert("v", new BM::Undefined);
-    object->insert("child", child);
-    child->insert("Text", new BM::String("I keep my ideas"));
-    std::cout << (*object) << std::endl;
-    std::cout << (*object)["p"] << std::endl;
-    delete object;
-}
-void TEST2() {
-    string v("let\na1 = 0;a1++;");
-    BM::Lexer lexer(v);
-    auto t = lexer.get();
-    std::cout << t.s << std::endl;
-    while (t.t != BM::Lexer::PROGRAM_END) {
-        t = lexer.get();
-        std::cout << t.s << std::endl;
+    while (true) {
+        string tmp;
+        cout << ">> ";
+        getline(cin, tmp);
+        if (tmp == ".exit") break;
+        UL BBC = 0;
+        UL MBC = 0;
+        UL SBC = 0;
+        bool trans = false;
+        bool inString = false;
+        for (UL i = 0; i < tmp.length(); i++) {
+            if ((tmp[i] == '"' || tmp[i] == '\'') && !trans) {
+                inString = !inString;
+            }
+            if (tmp[i] == '\\') {
+                trans = !trans;
+            } else {
+                trans = false;
+            }
+            if (!inString) {
+                switch (tmp[i]) {
+                    case '{': BBC++;break;
+                    case '}': BBC--;break;
+                    case '[': MBC++;break;
+                    case ']': MBC--;break;
+                    case '(': SBC++;break;
+                    case ')': SBC--;break;
+                }
+            }
+        }
+        if (BBC || MBC || SBC) {// 未输入完
+            string s(tmp);
+            while (true) {
+                cout << ">> ";
+                getline(cin, tmp);
+                BBC = 0;
+                MBC = 0;
+                SBC = 0;
+                for (UL i = 0; i < tmp.length(); i++) {
+                    switch (tmp[i]) {
+                        case '{': BBC++;break;
+                        case '}': BBC--;break;
+                        case '[': MBC++;break;
+                        case ']': MBC--;break;
+                        case '(': SBC++;break;
+                        case ')': SBC--;break;
+                    }
+                }
+                cout << BBC << ", " << MBC << ", " << SBC << endl;
+                if (!(BBC || MBC || SBC)) break;
+            }
+            script += ";" + s;
+            cout << script << endl;
+            BM::Interpreter ip(script, "terminal");
+            auto e = ip.run();
+            auto ret = e->get(PASS_RETURN);
+            if (ret) cout << ret->toString() << endl;
+            if (e->get(PASS_ERROR)) {
+                script.erase(script.end() - 1 - s.length());
+            }
+            delete e;
+        } else {
+            script += ";" + tmp;
+            cout << script << endl;
+            BM::Interpreter ip(script, "terminal");
+            auto e = ip.run();
+            auto ret = e->get(PASS_RETURN);
+            if (e->get(PASS_ERROR)) {
+                script.erase(script.length() - 1 - tmp.length());
+            }
+            if (ret) cout << ret->toString() << endl;
+            delete e;
+        }
     }
+    cout << "bye" << endl;
+    exit(0);
 }
-void TEST3() {
-    BM::AST ast("a(\"123\", 3, \"hello\" * (23 + 4));a += 1;");
-    ast.parse();
 
-    ast.parse();
-
-}
-void TEST4() {
-    BM::AST ast("if (a == 0) {\nprintln(\"eq 0\");\n} elif (a == 2) {\nprintln(\"eq 2\");\n} elif (a == 3) {\nprintln(\"eq 3\");\n} else {\nprintln(\"none\");\n}");
-    ast.parse();
-
-}
-void TEST5() {
-    BM::AST ast(
-            "switch (a) {\n"
-            "case 1:\n"
-            "case 2:\n"
-            "\tprintln(\"#1\");\n"
-            "\tbreak;\n"
-            "default:\n"
-            "\tprintln(\"#2\");\n"
-            "}"
-    );
-    ast.parse();
-
-}
-void TEST6() {
-    BM::AST ast("while (a > 0) { println(\"Hello!\");a++; }");
-    ast.parse();
-
-}
-void TEST7() {
-    BM::AST ast("do {println(a);a++;} while (a > 10);");
-    ast.parse();
-
-}
-void TEST8() {
-    BM::AST ast("for (let i = 0; i < 15; i += 1) { println(i); }");
-    ast.parse();
-
-}
-void TEST9() {
-    BM::AST ast("def a(b = 34 * (1 + 4), public c = b(123), private d = 3, private e) {\nprintln(b, c, d, e);\n}");
-    ast.parse();
-
-}
-void TEST10() {
-    BM::AST ast("(++a)");
-    ast.parse();
-
-}
-void TEST11() {
-    BM::Dylib dylib("libadd");
-    dllFun add = (dllFun)dylib.resolve("add");
-    std::cout << add(1, 2) << std::endl;
-}
-void TEST12() {
-    BM::AST ast("continue;");
-    ast.parse();
-
-}
-void TEST13() {
-    BM::AST ast("a[\"123\" + \"Hello\"][123 + 123 * 2]");
-    ast.parse();
-
-}
-void TEST14() {
-    BM::AST ast("import \"Hello-\" + name as Hello;");
-    ast.parse();
-
-}
-void TEST15() {
-    BM::AST ast("(-a);");
-    ast.parse();
-
-}
-void TEST16() {
-    BM::Scope scope;
-    scope.set("bat", new BM::Number(123));
-    std::cout << scope.get("bar")->value()->toString() << std::endl;
-
-}
-void TEST17() {
-    BM::AST ast("delete a;");
-    ast.parse();
-
-}
-void TEST18() {
-    BM::AST ast("let n = sys.type.number(sys.io.input(\"N: \", sp = \"\"));// 接受输入, 并将其转为数字\n"
-                        "\n"
-                        "    if (n == 0) {\n"
-                        "        println(\"n == 0\");\n"
-                        "    } elif (n == 1) {\n"
-                        "        println(\"n == 1\");\n"
-                        "    } else {\n"
-                        "        println(\"another\");\n"
-                        "    }");
-    ast.parse();
-    ast.Export("test.bmast");
-}
-void TEST19() {
-    BM::AST ast;
-    ast.import("test.bmast");
-    ast.parse();
-
-}
-void TEST20() {
-    BM::Interpreter interpreter("import \"sys\" as sys;\nlet a = 2 * (7 + 1);\na++;\nsys.print(\"Hello world \\\"123\\\"\", 123, a, a * 4);\nlet print = sys.print;\nsys.print(\"Hello world\", 123, a, a * 4);", "main.bm");
-    auto e = interpreter.run();
-    e->get("__RETURN__");
-    delete e;
-}
-void TEST21() {
-    std::ifstream file("index.bm");
-    string script, tmpLine;
-    while (getline(file, tmpLine)) {
-        script += tmpLine + "\n";
+int main(int argc, char* argv[]) {
+    if (argc == 1) terminal();
+    string opt(argv[1]);
+    if (opt == "--version" || opt == "-v") {
+        cout << BMVersion << endl;
+    } else if (opt == "--help" || opt == "-h") {
+        cout << "See https://github.com/BerryMathDevelopmentTeam/BerryMath" << endl;
+    } else {
+        fstream file;
+        string& filename = opt;
+        file.open(filename);
+        if (!file) {
+            std::cerr << "SystemError: Cannot open src file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
+            file.close();
+            exit(1);
+        }
+        string line;
+        string script;
+        while (getline(file, line)) {
+            script += line + "\n";
+        }
+        BM::Interpreter ip(script, filename);
+        delete ip.run();
+//        ip.compile();
+        file.close();
     }
-    BM::Interpreter interpreter(script, "index.bm");
-    auto e = interpreter.run();
-    delete e;
-}
-
-int main() {
-//    TEST1();
-//    TEST2();
-//    TEST3();
-//    TEST4();
-//    TEST5();
-//    TEST6();
-//    TEST7();
-//    TEST8();
-//    TEST9();
-//    TEST10();
-//    TEST11();
-//    TEST12();
-//    TEST13();
-//    TEST14();
-//    TEST15();
-//    TEST16();
-//    TEST17();
-//    TEST18();
-//    TEST19();
-//    TEST20();
-    TEST21();
-
-    // Get speed
-    /*auto start = clock();
-    for (int i = 0; i < 10000; i++) TEST21();
-    std::cout << "used " << (clock() - start) / (double)CLOCKS_PER_SEC * (double)1000 << "ms." << std::endl;*/
     return 0;
 }
