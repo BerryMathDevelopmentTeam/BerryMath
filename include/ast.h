@@ -5,6 +5,7 @@
 #include <regex>
 #include <vector>
 #include "lex.h"
+#include "types.h"
 using std::string;
 using std::vector;
 

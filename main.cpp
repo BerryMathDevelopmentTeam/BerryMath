@@ -97,11 +97,32 @@ void terminal() {
 int main(int argc, char* argv[]) {
     if (argc == 1) terminal();
     string opt(argv[1]);
-    if (opt == "--version" || opt == "-v") {
+    if (opt == "--version" || opt == "-v") {// 版本
         cout << BMVersion << endl;
-    } else if (opt == "--help" || opt == "-h") {
+    } else if (opt == "--help" || opt == "-h") {// 帮助
         cout << "See https://github.com/BerryMathDevelopmentTeam/BerryMath" << endl;
-    } else {
+    } else if (opt == "--bc" || opt == "-b") {// 运行字节码
+        if (argc < 3) {
+            std::cerr << "SystemError: Filename not found at <null:\033[33msystem\033[0m>:0" << endl;
+            exit(1);
+        }
+        fstream file;
+        string filename(argv[2]);
+        file.open(filename);
+        if (!file) {
+            std::cerr << "SystemError: Cannot open bytecode file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
+            file.close();
+            exit(1);
+        }
+        string line;
+        string bytecode;
+        while (getline(file, line)) {
+            bytecode += line;
+        }
+        BM::VM vm(bytecode);
+        vm.run();
+        file.close();
+    } else {// 运行源码
         fstream file;
         string& filename = opt;
         file.open(filename);

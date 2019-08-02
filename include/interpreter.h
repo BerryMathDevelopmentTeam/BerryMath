@@ -5,6 +5,7 @@
 #include <sstream>
 #include "value.h"
 #include "ast.h"
+#include "types.h"
 
 using std::string;
 

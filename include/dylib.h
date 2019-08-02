@@ -9,6 +9,8 @@
 #include <dlfcn.h>
 #endif
 #include <string>
+#include "types.h"
+
 using std::string;
 
 namespace BM {

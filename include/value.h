@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <sstream>
+#include "types.h"
 using std::string;
 using std::map;
 using std::vector;
