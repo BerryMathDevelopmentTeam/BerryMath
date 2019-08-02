@@ -4,13 +4,9 @@
 #include <string>
 #include <map>
 #include <regex>
+#include "types.h"
 using std::string;
 using std::map;
-#define ULL unsigned long long
-#define UL unsigned long
-#define U unsigned
-#define LL long long
-#define L long
 
 namespace BM {
     class Lexer {
