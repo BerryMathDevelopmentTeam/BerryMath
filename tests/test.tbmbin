@@ -1,0 +1,10 @@
+ac de 68 65 6c 6c 6f 00 00 01 00 02 00 03 00 00 11 04 00 01 00 11 09 00 02 00 13 04 09 00 10 04
+finish
+
+.DATA
+.DEFINES
+.CODE
+mov al $1
+mov bl $2
+add al bl
+push al

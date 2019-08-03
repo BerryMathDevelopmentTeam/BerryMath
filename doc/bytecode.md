@@ -8,8 +8,9 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 ## Bytecode&ASM table
 | Bytecode | ASM | describe | note | usage |
 |---|---|---|---|---|
-| 00 00 | .DATA | Declare static datas | / | `.DATA` |
-| 00 01 | .TEXT | Program start | / | `.TEXT` |
+| 00 01 | .DATA | Declare static datas | / | `.DATA` |
+| 00 02 | .DEFINES | Functions define start | / | `.DEFINES` |
+| 00 03 | .CODE | Program start | / | `.CODE` |
 | 00 10 | push | Push value into stack | / | `push <reg64>` `push <mem>` `push <con32>` |
 | 00 11 | mov | Mov value into register | / | `mov <reg>,<reg>` `mov <reg>,<mem>` `mov <mem>,<reg>` `mov <reg>,<const>` `mov <mem>,<const>` |
 | 00 12 | pop | Pop the top element of the stack into a register or a memory | / | `pop <reg>` `pop <mem>` |
@@ -29,6 +30,7 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 | 00 20 | je | Jump when equal | Conditional saves in register al (The notes for the following instruction jump are the same as here) | `je <label>` |
 | 00 21 | jne | Jump when not equal | / | `jne <label>` |
 | 00 22 | jz | Jump when the result was zero | / | `jz <label>` |
+| 00 23 | call | Call a function | / | `call <label>` |
 
 
 ## Register table
@@ -60,10 +62,11 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 | 17 | ds | Static data point | 8 bytes |
 
 ## Static data saved flag
-| Bytecode Name | name | describe |
-|---|---|---|
-| 00 | DB | 1 byte |
-| 01 | DW | 2 bytes |
-| 02 | DD | 4 bytes |
-| 03 | DQ | 8 bytes |
-| 04 | DUP | Declare array or string |
+| Bytecode Name | name | describe | note |
+|---|---|---|---|
+| 00 | DB | 1 byte | constant |
+| 01 | DW | 2 bytes | constant |
+| 02 | DD | 4 bytes | constant |
+| 03 | DQ | 8 bytes | constant |
+| 04 | DUP | Declare array or string | constant |
+| 05 | MEM | Memory flag | memory |

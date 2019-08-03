@@ -12,11 +12,11 @@ namespace BM {
         Register(const Register& reg) : data(reg.data), child(reg.child) {}
         byte* value(byte offset = 0) { return data + offset; }
         void value(byte v, byte offset) { *(data + offset) = v; }
-        ~Register() { if (!child) delete[] data; }
+        ~Register() { if (!child && data)delete[] data; }
         Register& operator=(const Register& reg) = default;
         byte* operator+(short);
     private:
-        byte* data;
+        unsigned char* data;
         bool child;
     };
 }

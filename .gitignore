@@ -44,3 +44,5 @@ CMakeCache.txt
 
 # 忽略release文件
 /BerryMath
+
+build*

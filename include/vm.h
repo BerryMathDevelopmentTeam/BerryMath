@@ -18,6 +18,7 @@ namespace BM {
         string bytecode;
     };
     void Throw(const string&, const string&);
+    void ThrowExit(const string&, const string&);
 }
 
 

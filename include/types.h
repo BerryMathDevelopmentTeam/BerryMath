@@ -7,5 +7,6 @@
 #define LL long long
 #define L long
 typedef unsigned char byte;
+typedef unsigned short dbyte;
 
 #endif //BERRYMATH_TYPES_H
