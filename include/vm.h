@@ -21,7 +21,7 @@ namespace BM {
     };
     void Throw(const string&, const string&);
     void ThrowExit(const string&, const string&);
-    typedef void (*VMOP)(ULL, string&, vector<ebyte>&, vector<byte*>&);
+    typedef void (*VMOP)(ULL, string&, vector<ebyte>&, vector<byte*>&, VM*);
     VMOP vmops[36];
 }
 

@@ -86,6 +86,7 @@ void BM::VM::run() {
 
     while (true) {
         GETOP;
+        vmops[opId](i, bytecode, stk, static_pool, this);
     }
 }
 
