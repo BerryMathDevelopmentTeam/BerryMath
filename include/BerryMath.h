@@ -1,6 +1,7 @@
 #ifndef BERRYMATH_BERRYMATH_H
 #define BERRYMATH_BERRYMATH_H
 
+#include "../OSPlatformUtil/src/osplatformutil.h"
 #include "types.h"
 #include "interpreter.h"
 #include "value.h"

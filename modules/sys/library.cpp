@@ -11,7 +11,7 @@ using BM::Scope;
 
 Object* print(BM::Scope* scope, vector<Object*> unknowns) {
     auto sp = scope->get("sp")->value()->toString(true, false);
-    if (unknowns.size() > 0) {
+    if (!unknowns.empty()) {
         UL i = 0;
         for (; i < unknowns.size() - 1; i++) {
             std::cout << unknowns[i]->toString(true, false) << sp;
@@ -22,7 +22,7 @@ Object* print(BM::Scope* scope, vector<Object*> unknowns) {
 }
 Object* input(BM::Scope* scope, vector<Object*> unknowns) {
     auto sp = scope->get("sp")->value()->toString(true, false);
-    if (unknowns.size() > 0) {
+    if (!unknowns.empty()) {
         UL i = 0;
         for (; i < unknowns.size() - 1; i++) {
             std::cout << unknowns[i]->toString(true, false) << sp;
@@ -55,10 +55,12 @@ BM::Object* initModule() {
     // 设置模块分区
     exports->set("io", new BM::Object);
     exports->set("type", new BM::Object);
+    exports->set("platform", new BM::Object);
+    exports->set("BM", new BM::Object);
 
     // 为io分区添加函数
-    auto printP = new BM::NativeFunction(print);// 创建拓展函数
-    auto inputP = new BM::NativeFunction(input);// 创建拓展函数
+    auto printP = new BM::NativeFunction("print", print);// 创建拓展函数
+    auto inputP = new BM::NativeFunction("input", input);// 创建拓展函数
     // 为printP设置默认值
     printP->defaultValue("end", new BM::String("\n"));
     printP->defaultValue("sp", new BM::String(" "));
@@ -68,11 +70,36 @@ BM::Object* initModule() {
     exports->get("io")->set("input", inputP);
 
     // 为type分区添加函数
-    auto numberP = new BM::NativeFunction(number);// 创建拓展函数
-    auto stringP = new BM::NativeFunction(String);// 创建拓展函数
+    auto numberP = new BM::NativeFunction("number", number);// 创建拓展函数
+    auto stringP = new BM::NativeFunction("string", String);// 创建拓展函数
     numberP->addDesc("value");
     stringP->addDesc("value");
     exports->get("type")->set("number", numberP);
     exports->get("type")->set("string", stringP);
+
+#if defined(I_OS_DARWIN)
+    exports->get("platform")->set("osName", new BM::String("darwin"));
+#if defined(I_OS_DARWIN64)
+    exports->get("platform")->set("bit", new BM::Number(64));
+#else
+    exports->get("platform")->set("bit", new BM::Number(32));
+#endif
+#elif defined(I_OS_WIN)
+    exports->get("platform")->set("osName", new BM::String("windows"));
+#if defined(I_OS_WIN64)
+    exports->get("platform")->set("bit", new BM::Number(64));
+#else
+    exports->get("platform")->set("bit", new BM::Number(32));
+#endif
+#elif defined(I_OS_LINUX)
+    exports->get("platform")->set("osName", new BM::String("linux"));
+    exports->get("platform")->set("bit", new BM::Number(32));
+#elif defined(I_OS_UNIX)
+    exports->get("platform")->set("osName", new BM::String("unix"));
+    exports->get("platform")->set("bit", new BM::Number(32));
+#endif
+
+    exports->get("BM")->set("version", new BM::String(BMVersion));
+    exports->get("BM")->set("author", new BM::String("BerryMathDevelopmentTeam"));
     return exports;// 导出模块
 }

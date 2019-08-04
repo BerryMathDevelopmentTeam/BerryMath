@@ -9,10 +9,10 @@ using std::map;
 using BM::Object;
 using BM::Scope;
 
-Object* print(Scope* scope, vector<Object*>);
-Object* input(Scope* scope, vector<Object*>);
-Object* number(Scope* scope, vector<Object*>);
-Object* String(Scope* scope, vector<Object*>);
+Object* print(Scope*, vector<Object*>);
+Object* input(Scope*, vector<Object*>);
+Object* number(Scope*, vector<Object*>);
+Object* String(Scope*, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif
