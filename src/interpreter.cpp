@@ -2,7 +2,6 @@
 #include <cmath>
 #include <fstream>
 #include <cstdlib>
-#include <dlfcn.h>
 #include "value.h"
 #include "dylib.h"
 #include "ast.h"

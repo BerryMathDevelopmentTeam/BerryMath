@@ -34,5 +34,9 @@ Use `BM::AST` to build BerryMath script Abstract Syntax Tree(AST).
 Use `BM::Interpreter` to run the BM script or compile the BM script into a .bmast file.
 ...
 
+## Supports
+Operating System Platform Judgment Based on [OSPlatformUtil](https://github.com/itas109/OSPlatformUtil)
+
+
 ## License
 [Apache 2.0 License](LICENSE)

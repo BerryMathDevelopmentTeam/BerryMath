@@ -1,6 +1,8 @@
 #ifndef BERRYMATH_DYLIB_H
 #define BERRYMATH_DYLIB_H
-#ifdef Windows95
+
+#include "../OSPlatformUtil/src/osplatformutil.h"
+#ifdef I_OS_WIN32
 // windows
 #include<wtypes.h>
 #include <winbase.h>
@@ -25,7 +27,7 @@ namespace BM {
         bool load() { return status; }
     private:
         string name;
-#ifdef Windows95
+#ifdef I_OS_WIN32
         // windows
         HINSTANCE dyhandle;
 #else

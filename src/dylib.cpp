@@ -1,4 +1,4 @@
-#ifdef Windows95
+#ifdef I_OS_WIN32
 // windows
 #include<wtypes.h>
 #include <winbase.h>
@@ -9,7 +9,7 @@
 #include "dylib.h"
 
 bool BM::Dylib::open() {
-#ifdef Windows95
+#ifdef I_OS_WIN32
     // windows
     dyhandle = LoadLibrary((name + ".dll").c_str());
 #else
@@ -23,7 +23,7 @@ bool BM::Dylib::open() {
     return (status = (bool)dyhandle);
 }
 void* BM::Dylib::resolve(const string& sym) {
-#ifdef Windows95
+#ifdef I_OS_WIN32
     // windows
     return (void*)GetProcAddress(dyhandle, sym.c_str());
 #else
@@ -32,7 +32,7 @@ void* BM::Dylib::resolve(const string& sym) {
 #endif
 }
 void BM::Dylib::close() {
-#ifdef Windows95
+#ifdef I_OS_WIN32
     // windows
     FreeLibrary(dyhandle);
 #else

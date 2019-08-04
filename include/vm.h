@@ -6,8 +6,7 @@
 using std::string;
 
 namespace BM {
-    const byte MAGIC_CODEA = 0xac;
-    const byte MAGIC_CODEB = 0xde;
+    const qbyte MAGIC_CODE = 0xacde07fd;
     class VM {
     public:
         VM(const string& bc = "") : bytecode(bc) {  }

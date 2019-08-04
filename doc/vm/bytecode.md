@@ -8,9 +8,8 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 ## Bytecode&ASM table
 | Bytecode | ASM | describe | note | usage |
 |---|---|---|---|---|
-| 00 01 | .DATA | Declare static datas | / | `.DATA` |
-| 00 02 | .DEFINES | Functions define start | / | `.DEFINES` |
-| 00 03 | .CODE | Program start | / | `.CODE` |
+| ff 01 | .DATA | Declare static datas | / | `.DATA` |
+| ff 02 | .CODE | Program start | / | `.CODE` |
 | 00 10 | push | Push value into stack | / | `push <reg64>` `push <mem>` `push <con32>` |
 | 00 11 | mov | Mov value into register | / | `mov <reg>,<reg>` `mov <reg>,<mem>` `mov <mem>,<reg>` `mov <reg>,<const>` `mov <mem>,<const>` |
 | 00 12 | pop | Pop the top element of the stack into a register or a memory | / | `pop <reg>` `pop <mem>` |
@@ -31,6 +30,7 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 | 00 21 | jne | Jump when not equal | / | `jne <label>` |
 | 00 22 | jz | Jump when the result was zero | / | `jz <label>` |
 | 00 23 | call | Call a function | / | `call <label>` |
+| 00 24 | load | Load a .bmlib module | Module path saves in the top element of the stack, when system got the module path, system'll delete this value and load module values into stack | `load` |
 
 
 ## Register table
@@ -70,3 +70,4 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 | 03 | DQ | 8 bytes | constant |
 | 04 | DUP | Declare array or string | constant |
 | 05 | MEM | Memory flag | memory |
+| 06 | STC | Static data flag | static data |
