@@ -7,12 +7,14 @@ using std::vector;
 void BM::VM::run() {
 #define GET(n) n = bytecode[i++];
 #define GETD(n) n = (byte)(bytecode[i++]) * 0x100 + (byte)bytecode[i++];
+#define GETQ(n) n = (byte)(bytecode[i++]) * 0x1000000 + (byte)(bytecode[i++]) * 0x10000 + (byte)(bytecode[i++]) * 0x100 + (byte)bytecode[i++];
+#define GETE(n) n = (byte)(bytecode[i++]) * 0x1000000000000 + (byte)(bytecode[i++]) * 0x10000000000 + (byte)(bytecode[i++]) * 0x100000000 + (byte)bytecode[i++] * 0x1000000 + (byte)(bytecode[i++]) * 0x1000000 + (byte)(bytecode[i++]) * 0x10000 + (byte)(bytecode[i++]) * 0x100 + (byte)bytecode[i++];
 #define GETOP GETD(opId);
 
-    UL i(0);
+    ULL i(0);
+    vector<ebyte> stk;
 
     // 创建寄存器，关于这一部分可以查看doc/bytecode.md的Register table的部分
-    Register regs[24];
     for (byte t = 0; t < 4; t++) {
         regs[5 * t] = Register(new byte[8]);// 64位
         regs[5 * t + 1] = Register(regs[0] + 4);// 32位
@@ -79,6 +81,11 @@ void BM::VM::run() {
                 ThrowExit("Bytecode", "Wrong bytecode: Wrong static data flag.");
                 break;
         }
+    }
+    GETE(i);
+
+    while (true) {
+        GETOP;
     }
 }
 

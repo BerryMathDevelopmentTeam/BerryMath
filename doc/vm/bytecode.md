@@ -3,14 +3,15 @@
 BMVM(BerryMath Virtual Machine) bytecode syntax based with x86 cpu ASM.
 
 ## Bytecode header
-ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
+ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)  
+...ff 02[->ASM: .CODE] 00 00 00 00 04 df 00 af (index program start label)
 
 ## Bytecode&ASM table
 | Bytecode | ASM | describe | note | usage |
 |---|---|---|---|---|
 | ff 01 | .DATA | Declare static datas | / | `.DATA` |
 | ff 02 | .CODE | Program start | / | `.CODE` |
-| 00 10 | push | Push value into stack | / | `push <reg64>` `push <mem>` `push <con32>` |
+| 00 10 | push | Push value into stack | / | `push <reg64>` `push <mem>` `push <con64>` |
 | 00 11 | mov | Mov value into register | / | `mov <reg>,<reg>` `mov <reg>,<mem>` `mov <mem>,<reg>` `mov <reg>,<const>` `mov <mem>,<const>` |
 | 00 12 | pop | Pop the top element of the stack into a register or a memory | / | `pop <reg>` `pop <mem>` |
 | 00 13 | add | Add numbers | / | `add <reg>,<reg>` `add <reg>,<mem>` `add <mem>,<reg>` `add <reg>,<con>` `add <mem>,<con>` |
@@ -61,6 +62,9 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 | 16 | cs | Bytecode point | 8 bytes |
 | 17 | ds | Static data point | 8 bytes |
 
+## Stack
+In BMBIN, stack index is increasing.
+
 ## Static data saved flag
 | Bytecode Name | name | describe | note |
 |---|---|---|---|
@@ -69,5 +73,6 @@ ac de (magic code) 68 65 6c 6c 6f (entry source filename) 00 (filename end)
 | 02 | DD | 4 bytes | constant |
 | 03 | DQ | 8 bytes | constant |
 | 04 | DUP | Declare array or string | constant |
-| 05 | MEM | Memory flag | memory |
+| 05 | STK | Stack flag | stack data |
 | 06 | STC | Static data flag | static data |
+| 07 | REG | Register flag | register data |
