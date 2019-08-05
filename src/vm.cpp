@@ -13,6 +13,8 @@ void BM::VM::run() {
 
     ULL i(0);
     vector<ebyte> stk;
+    vector<VMOP> vmops;
+    initops(vmops);
 
     // 创建寄存器，关于这一部分可以查看doc/bytecode.md的Register table的部分
     for (byte t = 0; t < 4; t++) {
@@ -86,6 +88,9 @@ void BM::VM::run() {
 
     while (true) {
         GETOP;
+        if (opId >= vmops.size()) {
+            ThrowExit("Bytecode", "Wrong bytecode: Wrong operator id.");
+        }
         vmops[opId](i, bytecode, stk, static_pool, this);
     }
 }
@@ -96,4 +101,7 @@ void BM::Throw(const string& name, const string& txt) {
 void BM::ThrowExit(const string& name, const string& txt) {
     std::cerr << name << "Error: " << txt << std::endl;
     exit(1);
+}
+
+void BM::VM::initops(vector<VMOP> &) {
 }
