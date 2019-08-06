@@ -141,11 +141,11 @@ BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *
         s->set(iter->first, iter->second);
     }
     for (UL i = 0; i < args.size(); i++) {
-        if (i < desc.size()) s->set(desc[i], args[i]->copy());
-        else unknowns.push_back(args[i]->copy());
+        if (i < desc.size()) s->set(desc[i], args[i]);
+        else unknowns.push_back(args[i]);
     }
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
-        s->set(iter->first, iter->second->copy());
+        s->set(iter->first, iter->second);
     }
     return native(s, unknowns);
 }

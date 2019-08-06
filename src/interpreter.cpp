@@ -407,6 +407,18 @@ BM::Object *BM::Interpreter::run() {
                     }
                     exports->set(PASS_RETURN, value);
                 } WRONG("ReferenceError", startV + " is not defined");
+            } else if (ast->value() == "o-value") {
+                auto object = new Object;
+                for (L i = 0; i < ast->rValue()->length(); i++) {
+                    string key(ast->rValue()->get(i)->value());
+                    auto valueNode = ast->rValue()->get(i)->get(0);
+                    string valueStr(valueNode->value());
+                    Interpreter ip(valueStr, filename, this);
+                    auto e = ip.run();
+                    CHECKITER(e, valueNode);
+                    object->set(key, e->get(PASS_RETURN));
+                }
+                exports->set(PASS_RETURN, object);
             } else if (len < 1) {
                 if (isNumber(ast->value())) {
                     exports->set(PASS_RETURN, new Number(transSD(ast->value())));

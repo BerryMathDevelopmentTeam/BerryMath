@@ -1163,6 +1163,84 @@ void BM::AST::parse() {
             root = new node("PROGRAM-END", lexer.l + baseLine);
             break;
         }
+        case Lexer::BIG_BRACKETS_LEFT_TOKEN:
+        {
+            auto upLine = lexer.line();
+            auto upIndex = lexer.index();
+            GET;
+            GET;
+            lexer.i = upIndex;
+            lexer.l = upLine;
+            if (token.t == Lexer::COLON_TOKEN) {
+                root = new node("o-value", upLine + baseLine);
+                // 是一个Object value
+                ULL bbc(1);
+                while (true) {
+                    GET;
+                    if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) break;
+                    if (token.t > Lexer::STRING_TOKEN) {
+                        delete root;
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("SyntaxError: Wrong object key: '" + token.s + "'", lexer.l + baseLine);
+                        return;
+                    }
+                    string key(token.s);
+                    if (token.t == Lexer::STRING_TOKEN) {
+                        key.erase(key.begin(), key.begin() + 1);
+                        key.erase(key.end() - 1, key.end());
+                    }
+                    root->insert(key, lexer.l + baseLine);
+                    GET;
+                    if (token.t != Lexer::COLON_TOKEN) {
+                        delete root;
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("SyntaxError: Unexpected token: '" + token.s + "'", lexer.l + baseLine);
+                        return;
+                    }
+                    bool finish = false;
+                    string valueStr;
+                    while (true) {
+                        GET;
+                        if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                        else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
+                        if (token.t == Lexer::COMMA_TOKEN && bbc == 1) {
+                            break;
+                        }
+                        if (!bbc) {
+                            finish = true;
+                            break;
+                        }
+                        if (token.t == Lexer::PROGRAM_END) {
+                            delete root;
+                            root = new node("bad-tree", lexer.l + baseLine);
+                            root->insert("SyntaxError: Lack of commas", lexer.l + baseLine);
+                            return;
+                        }
+                        valueStr += token.s;
+                    }
+                    root->get(-1)->insert(valueStr, lexer.l + baseLine);
+                    if (finish) break;
+                }
+            } else {
+                // 是局部作用域开始
+                ULL bbc(1);
+                string script;
+                while (true) {
+                    GET;
+                    if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                    else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
+                        bbc--;
+                        if (!bbc) break;
+                    }
+                    script += token.s + " ";
+                }
+                root = new node("if", lexer.l + baseLine);// 就是将{...}这样的局部作用域声明改为if (1) {...}这样的ast
+                root->insert("1", lexer.l + baseLine);
+                root->insert(script, lexer.l + baseLine);
+                root->insert("els", lexer.l + baseLine);
+            }
+            break;
+        }
     }
     if (!root) root = new node("pass", lexer.l + baseLine);
 }
