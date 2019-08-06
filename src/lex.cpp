@@ -55,6 +55,7 @@ BM::Lexer::Token BM::Lexer::get() {
                         }
                     }
                     if (script[i] == '\\') trans = !trans;
+                    else if (trans) trans = false;
                 }
                 t.t = STRING_TOKEN;
                 break;

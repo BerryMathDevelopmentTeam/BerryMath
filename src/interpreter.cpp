@@ -360,24 +360,31 @@ BM::Object *BM::Interpreter::run() {
                     THROW;
                 }
             } else if (ast->value() == "get") {
-                string name(ast->rValue()->get(0)->value());
-                auto v = scope->get(name);
-                NOTDEFINED(v, name);
-                BM::Object* value = v->value();
-                for (UL i = 1; i < ast->rValue()->length(); i++) {// 下标为0的是v的名字
-                    Interpreter ip("", filename, this);
-                    ip.ast->root = ast->rValue()->get(i);
-                    ip.child = true;
-                    auto e = ip.run();
-                    CHECKITER(e, ast);
-                    value = value->get(e->get(PASS_RETURN)->toString(false, false));
-                    if (!value) {
-                        std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << " is not defined at <" << filename << ":" << upscope << ">:"
-                                  << ast->line() << std::endl;
-                        THROW;
+                if (ast->rValue()->length() < 1) {
+                    auto name = ast->value();
+                    auto var = scope->get(name);
+                    NOTDEFINED(var, name);
+                    exports->set(PASS_RETURN, var->value());
+                } else {
+                    string name(ast->rValue()->get(0)->value());
+                    auto v = scope->get(name);
+                    NOTDEFINED(v, name);
+                    BM::Object* value = v->value();
+                    for (UL i = 1; i < ast->rValue()->length(); i++) {// 下标为0的是v的名字
+                        Interpreter ip("", filename, this);
+                        ip.ast->root = ast->rValue()->get(i);
+                        ip.child = true;
+                        auto e = ip.run();
+                        CHECKITER(e, ast);
+                        value = value->get(e->get(PASS_RETURN)->toString(false, false));
+                        if (!value) {
+                            std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << " is not defined at <" << filename << ":" << upscope << ">:"
+                                      << ast->line() << std::endl;
+                            THROW;
+                        }
                     }
+                    exports->set(PASS_RETURN, value);
                 }
-                exports->set(PASS_RETURN, value);
             } else if (ast->value() == ".") {
                 string startV(ast->rValue()->get(0)->value());
                 vector<string> keys;
@@ -407,7 +414,7 @@ BM::Object *BM::Interpreter::run() {
                     auto s = ast->value();
                     s.erase(0, 1);
                     s.erase(s.length() - 1, 1);
-                    exports->set(PASS_RETURN, new String(s));
+                    exports->set(PASS_RETURN, (new String(s))->trans());
                 } else {
                     auto name = ast->value();
                     auto var = scope->get(name);
@@ -478,7 +485,7 @@ BM::Object *BM::Interpreter::run() {
                     } else if (left->type() == STRING && right->type() == STRING) {
                         auto leftV = ((String *) (left))->value();
                         auto rightV = ((String *) (right))->value();
-                        exports->set(PASS_RETURN, new String(leftV + rightV));
+                        exports->set(PASS_RETURN, (new String(leftV + rightV))->trans());
                     } WRONGEXPRTYPE(op);
                 } else if (
                         op == "=" || op == "+=" || op == "-=" || op == "*=" || op == "/=" || op == "**=" ||
@@ -505,6 +512,7 @@ BM::Object *BM::Interpreter::run() {
                                 if (right->type() == STRING) {
                                     String *value = (String *) value_;
                                     value->value() += ((String *) right)->value();
+                                    value->trans();
                                 } WRONGEXPRTYPE(op);
                             } WRONGEXPRTYPE(op);
                         } else if (op == "-=") {

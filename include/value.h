@@ -109,9 +109,44 @@ namespace BM {
         }
         ValueType type() { return STRING; }
         string& value() { return v; }
-        Object* copy() {
-            return new String(v);
+        String* trans() {
+            for (UL i = 0; i < v.length(); i++) {
+                if (v[i] == '\\') {
+                    if (i == v.length() - 1) break;
+                    char flag = v[++i];
+                    string s;
+                    switch (flag) {
+                        case 'n':
+                            s = '\n';
+                            break;
+                        case '\\':
+                            s = '\\';
+                            break;
+                        case 'r':
+                            s = '\r';
+                            break;
+                        case 't':
+                            s = '\t';
+                            break;
+                        case '/':
+                            s = '/';
+                            break;
+                        case '"':
+                            s = '\"';
+                            break;
+                        case '\'':
+                            s = '\'';
+                            break;
+                        default:
+                            s = ' ';
+                            break;
+                    }
+                    v.replace(i - 1, 2, s);
+                }
+            }
+            return this;
         }
+        Object* copy() { return new String(v); }
         ~String() { }
     private:
         string v;

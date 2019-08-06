@@ -1,34 +1,55 @@
+#include <iostream>
+#include <curl/curl.h>
+#include <curl/easy.h>
 #include <BerryMath.h>
-#include <HTTPRequest.hpp>
 #include "library.h"
 
-Object* request(BM::Scope* scope, vector<Object*> unknowns) {
-    string& type = ((String*)scope->get("type"))->value();
-    http::Request request(((String*)scope->get("url"))->value());
-    std::transform(type.begin(), type.end(), type.begin(), toupper);
-    http::Response response;
-    if (type == "POST") {
-        response = request.send(type, ((String*)scope->get("data"))->value(), {
-                "Content-Type: application/x-www-form-urlencoded"
-        });
-    } else {
-        response = request.send(type, ((String*)scope->get("data"))->value());
+Object* get(BM::Scope* scope, vector<Object*> unknowns) {
+    string url(((String*)scope->get("url"))->value());
+
+    auto curlcode = curl_global_init(CURL_GLOBAL_ALL);
+    if (curlcode != CURLE_OK) {
+        std::cerr << "Init libcurl failed." << std::endl;
+        return new BM::String("");
     }
-    return new String(string(response.body.begin(), response.body.end()));
+
+    auto handle = curl_easy_init();
+
+    if (!handle) {
+        std::cerr << "Init libcurl handle failed." << std::endl;
+        curl_global_cleanup();
+        return new BM::String("");
+    }
+
+    string content;
+
+    curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(handle, CURLOPT_NOBODY, 1);
+    curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)&content);
+    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, [&](void *buffer, size_t size, size_t nmemb, void *userp) {
+        auto d = (char*)buffer;
+        string& str = *((string*)userp);
+        str.append((char*)buffer, size * nmemb);
+        return size * nmemb;
+    });
+
+    curl_easy_perform(handle);
+
+    curl_easy_cleanup(handle);
+
+    std::cout << content << std::endl;
+
+    return new BM::String(content);
 }
 
 Object* initModule() {
     auto exports = new Object;
 
-    auto requestP = new BM::NativeFunction("request", request);
+    auto getP = new BM::NativeFunction("get", get);
 
-    requestP->addDesc("url");
-    requestP->addDesc("type");
-    requestP->addDesc("data");
-    requestP->defaultValue("type", new String("GET"));
-    requestP->defaultValue("data", new String(""));
+    getP->addDesc("url");
 
-    exports->set("request", requestP);
+    exports->set("get", getP);
 
     return exports;
 }

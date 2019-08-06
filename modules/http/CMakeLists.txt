@@ -4,11 +4,11 @@ project(http)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(
-        /usr/local/BM/dev/include
+        /usr/local/BM/dev/include/
         /usr/local/BM/dev/
         /usr/local/BM/dev/OSPlatformUtil/src/osplatformutil.h
-        HTTPRequest/include/
+        /usr/local/curl/include/
 )
-LINK_DIRECTORIES(/usr/local/BM/dev/lib/)
+LINK_DIRECTORIES(/usr/local/BM/dev/lib/ /usr/local/curl/lib)
 add_library(http SHARED library.cpp library.h)
-TARGET_LINK_LIBRARIES(http BerryMath)
+TARGET_LINK_LIBRARIES(http BerryMath curl)

@@ -66,6 +66,7 @@ namespace BM {
             inline void line(UL t) { l = t; }
             inline node* get(long index) {
                 if (index < 0) index += children.size();
+                if (children.empty()) return nullptr;
                 return children[index % children.size()];
             }
             inline UL length() { return children.size(); }

@@ -8,7 +8,7 @@ using BM::Number;
 using BM::NativeFunction;
 using BM::Scope;
 
-Object* request(Scope*, vector<Object*>);
+Object* get(Scope*, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif
