@@ -116,6 +116,7 @@ namespace BM {
         // 模块库path
 #define BMLMPATH "/usr/local/BM/modules/"
 #endif
+#define DEFAULT_IMPORT_NAME "bmlang"
 
         friend class NativeFunction;
 

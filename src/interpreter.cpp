@@ -20,6 +20,7 @@ string BM::Interpreter::compile() {
 BM::Object *BM::Interpreter::run() {
     Object *exports = new Object;
     scope->set(SCOPE_D_NAME, new Object);
+
     while (true) {
         if (!child) ast->parse();
 //        if (!ast->rValue()) continue;
@@ -303,6 +304,7 @@ BM::Object *BM::Interpreter::run() {
                 fun->defaultValue(argname, tmpe->get(PASS_RETURN));
             }
             set(funname, fun);
+            exports->set(PASS_RETURN, fun);
         }
         else { //为表达式
             auto len = ast->rValue()->length();

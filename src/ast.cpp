@@ -1060,7 +1060,7 @@ void BM::AST::parse() {
             string expr;
             GET;
             while (token.t != Lexer::END_TOKEN) {
-                expr += token.s;
+                expr += token.s + " ";
                 GET;
             }
             root = new node("using", usingLine);
@@ -1078,7 +1078,7 @@ void BM::AST::parse() {
             string expr;
             GET;
             while (token.t != Lexer::END_TOKEN) {
-                expr += token.s;
+                expr += token.s + " ";
                 GET;
             }
             root = new node("break", breakLine);
@@ -1216,7 +1216,7 @@ void BM::AST::parse() {
                             root->insert("SyntaxError: Lack of commas", lexer.l + baseLine);
                             return;
                         }
-                        valueStr += token.s;
+                        valueStr += token.s + " ";
                     }
                     root->get(-1)->insert(valueStr, lexer.l + baseLine);
                     if (finish) break;
@@ -1238,6 +1238,27 @@ void BM::AST::parse() {
                 root->insert("1", lexer.l + baseLine);
                 root->insert(script, lexer.l + baseLine);
                 root->insert("els", lexer.l + baseLine);
+            }
+            break;
+        }
+        case Lexer::MIDDLE_BRACKETS_LEFT_TOKEN:
+        {
+            ULL mbc(1);
+            string strValue;
+            root = new node("a-value", lexer.l + baseLine);
+            while (true) {
+                GET;
+                if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) if (!(--mbc)) break;
+                if (token.t == Lexer::COMMA_TOKEN && mbc == 1) {
+                    root->insert(strValue, lexer.l + baseLine);
+                    strValue = "";
+                } else {
+                    strValue += token.s + " ";
+                }
+            }
+            if (!strValue.empty()) {
+                root->insert(strValue, lexer.l + baseLine);
             }
             break;
         }
