@@ -35,8 +35,8 @@ Use `BM::Interpreter` to run the BM script or compile the BM script into a .bmas
 ...
 
 ## Supports
-Operating System Platform Judgment Based on [OSPlatformUtil](https://github.com/itas109/OSPlatformUtil)
-Http Request in module http Based on [HTTPRequest](https://github.com/elnormous/HTTPRequest)
+Operating System Platform Judgment based on [OSPlatformUtil](https://github.com/itas109/OSPlatformUtil)
+Http Request in module http based on [curl](https://github.com/curl/curl)
 
 ## License
 [Apache 2.0 License](LICENSE)
