@@ -142,6 +142,7 @@ namespace BM {
                             break;
                     }
                     v.replace(i - 1, 2, s);
+                    i--;
                 }
             }
             return this;
