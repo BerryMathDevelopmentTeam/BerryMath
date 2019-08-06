@@ -44,6 +44,8 @@ namespace BM {
         Variable *get(const string &name, Scope::Flag flag = Scope::ALL_MIGHT) { return scope->get(name, flag); }
         void del(const string &name) { scope->del(name); }
         string upscope;
+        void import(Object*, const string&, const string&);
+        void Using(Object*, AST::node*);
     private:
         string script;
         string filename;
@@ -105,7 +107,7 @@ namespace BM {
         << ast->line()  << std::endl; \
         THROW; \
     }
-#ifdef Windows95
+#ifdef I_OS_WIN32
         // 拓展库path
 #define BMMPATH "C:\\BM\\libraries\\lib"
         // 模块库path

@@ -47,80 +47,7 @@ BM::Object *BM::Interpreter::run() {
                 // 基础信息
                 string name(((String *) nameRaw)->value());
                 string asName(ast->rValue()->get(1)->get(0)->value());
-                UL nameLen = name.length();
-                bool finish = false;
-                string tmpLine;
-                string script;
-
-                std::ifstream file;
-                // 为本地文件
-                if (name[nameLen - 3] == '.' && name[nameLen - 2] == 'b' && name[nameLen - 1] == 'm') {
-                    file.open(name);
-                    if (file.is_open()) {
-                        finish = true;
-                        while (getline(file, tmpLine)) {
-                            script += tmpLine + "\n";
-                        }
-                        Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
-                        auto moduleExports = ip.run();
-                        if (moduleExports->get(PASS_ERROR)) {
-                            std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
-                            THROW;
-                        }
-                        moduleExports->del(PASS_RETURN);
-                        scope->set(asName, moduleExports);
-                    }
-                }
-                // 为本地模块
-                if (!finish) {
-                    string path(name + (name[nameLen - 1] == '/' ? "init.bm" : "/init.bm"));
-                    file.open(path);
-                    if (file.is_open()) {
-                        finish = true;
-                        while (getline(file, tmpLine)) {
-                            script += tmpLine + "\n";
-                        }
-                        Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
-                        auto moduleExports = ip.run();
-                        if (moduleExports->get(PASS_ERROR)) {
-                            std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
-                            THROW;
-                        }
-                        moduleExports->del(PASS_RETURN);
-                        scope->set(asName, moduleExports);
-                    }
-                }
-                // 为全局模块
-                if (!finish) {
-                    string path(BMLMPATH + name + (name[nameLen - 1] == '/' ? "init.bm" : "/init.bm"));
-                    file.open(name);
-                    if (file) {
-                        finish = true;
-                        while (getline(file, tmpLine)) {
-                            script += tmpLine + "\n";
-                        }
-                        Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
-                        auto moduleExports = ip.run();
-                        if (moduleExports->get(PASS_ERROR)) {
-                            std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
-                            THROW;
-                        }
-                        moduleExports->del(PASS_RETURN);
-                        scope->set(asName, moduleExports);
-                    }
-                }
-
-                // 为拓展库
-                if (!finish) {
-                    string path(BMMPATH + name);
-                    Dylib dylib(path);
-                    if (dylib.load()) {
-                        auto initModule = (initModuleFun) dylib.resolve("initModule");
-                        Object *moduleExports = initModule();
-                        scope->set(asName, moduleExports);
-                    } WRONG("ImportError", "No module named " + name);
-                    dylib.close();
-                }
+                import(exports, name, asName);
             } WRONGSCRIPT("import");
         } else if (ast->value() == "let") {
             auto name = ast->rValue()->get(0)->value();
@@ -278,16 +205,7 @@ BM::Object *BM::Interpreter::run() {
             break;
         } else if (ast->value() == "using") {
             auto objAst = ast->rValue()->get(0);
-            Interpreter ip("", filename, this);
-            ip.ast->root = objAst;
-            ip.child = true;
-            auto e = ip.run();
-            CHECKITER(e, objAst);
-            auto obj = e->get(PASS_RETURN);
-            Object::Iterator iter(obj);
-            for (; !iter.end(); iter.next()) {
-                set(iter.key(), iter.value());
-            }
+            Using(exports, objAst);
         } else if (ast->value() == "def") {
             string funname(ast->rValue()->get(0)->value());
             string script(ast->rValue()->get(2)->value());
@@ -686,4 +604,93 @@ BM::Object *BM::Interpreter::run() {
 BM::Object *BM::Interpreter::runCC() {
     ast->importByString(script);
     return run();
+}
+
+void BM::Interpreter::import(Object* exports, const string& name, const string& asName) {
+    UL nameLen = name.length();
+    bool finish = false;
+    string tmpLine;
+    string script;
+
+    std::ifstream file;
+    // 为本地文件
+    if (name[nameLen - 3] == '.' && name[nameLen - 2] == 'b' && name[nameLen - 1] == 'm') {
+        file.open(name);
+        if (file.is_open()) {
+            finish = true;
+            while (getline(file, tmpLine)) {
+                script += tmpLine + "\n";
+            }
+            Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
+            auto moduleExports = ip.run();
+            if (moduleExports->get(PASS_ERROR)) {
+                std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
+                exports->set(PASS_ERROR, new Number(1));
+            }
+            moduleExports->del(PASS_RETURN);
+            scope->set(asName, moduleExports);
+        }
+    }
+    // 为本地模块
+    if (!finish) {
+        string path(name + (name[nameLen - 1] == '/' ? "init.bm" : "/init.bm"));
+        file.open(path);
+        if (file.is_open()) {
+            finish = true;
+            while (getline(file, tmpLine)) {
+                script += tmpLine + "\n";
+            }
+            Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
+            auto moduleExports = ip.run();
+            if (moduleExports->get(PASS_ERROR)) {
+                std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
+                exports->set(PASS_ERROR, new Number(1));
+            }
+            moduleExports->del(PASS_RETURN);
+            scope->set(asName, moduleExports);
+        }
+    }
+    // 为全局模块
+    if (!finish) {
+        string path(BMLMPATH + name + (name[nameLen - 1] == '/' ? "init.bm" : "/init.bm"));
+        file.open(name);
+        if (file) {
+            finish = true;
+            while (getline(file, tmpLine)) {
+                script += tmpLine + "\n";
+            }
+            Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
+            auto moduleExports = ip.run();
+            if (moduleExports->get(PASS_ERROR)) {
+                std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
+                exports->set(PASS_ERROR, new Number(1));
+            }
+            moduleExports->del(PASS_RETURN);
+            scope->set(asName, moduleExports);
+        }
+    }
+
+    // 为拓展库
+    if (!finish) {
+        string path(BMMPATH + name);
+        Dylib dylib(path);
+        if (dylib.load()) {
+            auto initModule = (initModuleFun) dylib.resolve("initModule");
+            Object *moduleExports = initModule();
+            scope->set(asName, moduleExports);
+        } else std::cerr << "ImportError" << ": No module named " << name << " at <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
+        dylib.close();
+    }
+}
+void BM::Interpreter::Using(Object* exports, AST::node* objAst) {
+    Interpreter ip("", filename, this);
+    ip.ast->root = objAst;
+    ip.child = true;
+    auto e = ip.run();
+    if (!e || e->get(PASS_ERROR)) std::cerr << "at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+    auto obj = e->get(PASS_RETURN);
+    Object::Iterator iter(obj);
+    for (; !iter.end(); iter.next()) {
+        set(iter.key(), iter.value());
+    }
 }
