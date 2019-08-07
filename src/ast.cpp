@@ -106,10 +106,21 @@ void BM::AST::parse() {
                 return;
             }
             string expression("");
+            UL sbc(0);
+            UL mbc(0);
+            UL bbc(0);
             do {
                 GET;
+                if (token.t == Lexer::PROGRAM_END) break;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
+                else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
+                else if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
                 expression += " " + token.s;
-            } while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END);
+                if (token.t == Lexer::END_TOKEN && sbc == 0 && mbc == 0 && bbc == 0) break;
+            } while (true);
             auto ast = new AST(expression, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);

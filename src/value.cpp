@@ -130,7 +130,10 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
         ip.set(iter->first, iter->second);
     }
     ip.upscope = "\033[34mfunction " + funname + "\033[0m";
-    return ip.run()->get(PASS_RETURN);
+    auto retD = ip.run()->get(PASS_RETURN);
+    auto ret = retD->copy();
+    delete retD;
+    return ret;
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {
     auto s = new Scope(parent ? parent->scope : nullptr);
@@ -147,7 +150,10 @@ BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
         s->set(iter->first, iter->second);
     }
-    return native(s, unknowns);
+    auto retD = native(s, unknowns);
+    auto ret = retD->copy();
+    delete retD;
+    return ret;
 }
 bool BM::isTrue(Object* o) {
     if (o->type() == OBJECT || o->type() == FUNCTION || o->type() == NATIVE_FUNCTION || o->type() == STRING) return true;
