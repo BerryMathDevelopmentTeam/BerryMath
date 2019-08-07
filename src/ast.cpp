@@ -408,7 +408,7 @@ void BM::AST::parse() {
                         root->value(minOp.op);
                     else root->insert("0", minOp.line);
                 } else {
-                    if (minOp.op == "++" || minOp.op == "--") root->insert(leftAst->root->value(), minOp.line);
+                    if (minOp.op == "++" || minOp.op == "--") root->insert(leftAst->root);
                     else root->insert(leftAst->root);
                 }
                 replace(right, " ");
@@ -430,8 +430,14 @@ void BM::AST::parse() {
         {
             string op(token.s);
             root = new node(op, lexer.l + baseLine);
-            GET;
-            root->insert(token.s, lexer.l + baseLine);
+            string expr;
+            while (token.t != Lexer::END_TOKEN) {
+                GET;
+                expr += token.s;
+            }
+            auto ast = new AST(expr, lexer.l + baseLine);
+            ast->parse();
+            root->insert(ast->root);
             break;
         }
         case Lexer::MNOT_TOKEN:
@@ -1237,22 +1243,30 @@ void BM::AST::parse() {
                     if (finish) break;
                 }
             } else {
-                // 是局部作用域开始
-                ULL bbc(1);
-                string script;
-                while (true) {
-                    GET;
-                    if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
-                    else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
-                        bbc--;
-                        if (!bbc) break;
+                GET;
+                if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
+                    // 是对象
+                    root = new node("o-value", upLine + baseLine);
+                } else {
+                    lexer.i = upIndex;
+                    lexer.l = upLine;
+                    // 是局部作用域声明
+                    ULL bbc(1);
+                    string script;
+                    while (true) {
+                        GET;
+                        if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                        else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
+                            bbc--;
+                            if (!bbc) break;
+                        }
+                        script += token.s + " ";
                     }
-                    script += token.s + " ";
+                    root = new node("if", lexer.l + baseLine);// 就是将{...}这样的局部作用域声明改为if (1) {...}这样的ast
+                    root->insert("1", lexer.l + baseLine);
+                    root->insert(script, lexer.l + baseLine);
+                    root->insert("els", lexer.l + baseLine);
                 }
-                root = new node("if", lexer.l + baseLine);// 就是将{...}这样的局部作用域声明改为if (1) {...}这样的ast
-                root->insert("1", lexer.l + baseLine);
-                root->insert(script, lexer.l + baseLine);
-                root->insert("els", lexer.l + baseLine);
             }
             break;
         }

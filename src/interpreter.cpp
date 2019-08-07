@@ -292,20 +292,28 @@ BM::Object *BM::Interpreter::run() {
                     auto v = scope->get(name);
                     NOTDEFINED(v, name);
                     BM::Object* value = v->value();
+                    BM::Object* up = nullptr;
+                    string key;
                     for (UL i = 1; i < ast->rValue()->length(); i++) {// 下标为0的是v的名字
                         Interpreter ip("", filename, this);
                         ip.ast->root = ast->rValue()->get(i);
                         ip.child = true;
                         auto e = ip.run();
                         CHECKITER(e, ast);
-                        value = value->get(e->get(PASS_RETURN)->toString(false, false));
+                        key = e->get(PASS_RETURN)->toString(false, false);
+                        up = value;
+                        value = value->get(key);
                         if (!value) {
-                            std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << " is not defined at <" << filename << ":" << upscope << ">:"
-                                      << ast->line() << std::endl;
-                            THROW;
+//                            std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined at <" << filename << ":" << upscope << ">:"
+//                                      << ast->line() << std::endl;
+//                            THROW;
+                            value = new Undefined;
+                            up->set(key, value);
                         }
                     }
                     exports->set(PASS_RETURN, value);
+                    exports->set(PASS_UPVALUE, up);
+                    exports->set(PASS_LASTKEY, new String(key));
                 }
             } else if (ast->value() == ".") {
                 string startV(ast->rValue()->get(0)->value());
@@ -322,12 +330,21 @@ BM::Object *BM::Interpreter::run() {
                 }
                 auto var = scope->get(startV);
                 if (var) {
+                    Object* up = nullptr;
                     auto value = var->value();
                     for (UL i = 0; i < keys.size(); i++) {
+                        auto last = value;
+                        up = value;
                         value = value->get(keys[i]);
-                         if (value) { } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
+//                         if (value) { } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
+                        if (!value) {
+                            last->set(keys[i], new Undefined);
+                            value = last->get(keys[i]);
+                        }
                     }
                     exports->set(PASS_RETURN, value);
+                    exports->set(PASS_UPVALUE, up);
+                    exports->set(PASS_LASTKEY, new String(keys[keys.size() - 1]));
                 } WRONG("ReferenceError", startV + " is not defined");
             } else if (ast->value() == "o-value") {
                 auto object = new Object;
@@ -427,15 +444,31 @@ BM::Object *BM::Interpreter::run() {
                         ) {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
-                    if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
+                    Object* up;
+                    string key;
+                    if (name == "." || (name == "get" && leftNode->length() > 0)) {
+                        Interpreter ip("", filename, this);
+                        ip.child = true;
+                        ip.ast->root = leftNode;
+                        auto e = ip.run();
+                        CHECKITER(e, leftNode);
+                        up = e->get(PASS_UPVALUE);
+                        key = ((String*)e->get(PASS_LASTKEY))->value();
+                        if (op == "=") up->set(key, right);
+                    } else if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
                         std::cerr << "ReferenceError: Invalid left-hand side in assignment at <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
-                    if (op == "=") scope->set(name, right);
+                    if (op == "=" && !(name == "." || (name == "get" && leftNode->length() > 0))) scope->set(name, right);
                     else {
-                        auto var = scope->get(name);
-                        auto value_ = var->value();
+                        Object* value_ = nullptr;
+                        if (name == "." || (name == "get" && leftNode->length() > 0)) {
+                            value_ = up->get(key);
+                        } else {
+                            auto var = scope->get(name);
+                            value_ = var->value();
+                        }
                         if (op == "+=") {
                             if (value_->type() == NUMBER) {
                                 if (right->type() == NUMBER) {

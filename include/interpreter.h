@@ -81,6 +81,9 @@ namespace BM {
 
 #define PASS_ERROR "__ERROR__"
 #define PASS_RETURN "__RETURN__"
+#define PASS_THIS "__THIS__"
+#define PASS_UPVALUE "__UPVALUE__"
+#define PASS_LASTKEY "__LASTKEY__"
 #define PASS_BREAK "__BREAK__"
 #define PASS_CONTINUE "__CONTINUE__"
 #define THROW exports->set(PASS_ERROR, new Number(1));return exports;
