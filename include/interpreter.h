@@ -86,7 +86,7 @@ namespace BM {
 #define THROW exports->set(PASS_ERROR, new Number(1));return exports;
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR)) { \
-        std::cerr << "at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
+        std::cerr << "\t at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)

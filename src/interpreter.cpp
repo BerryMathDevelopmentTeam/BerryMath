@@ -20,6 +20,8 @@ string BM::Interpreter::compile() {
 BM::Object *BM::Interpreter::run() {
     Object *exports = new Object;
     scope->set(SCOPE_D_NAME, new Object);
+    set("undefined", new Undefined);
+    set("null", new Null);
 
     while (true) {
         if (!child) ast->parse();

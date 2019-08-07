@@ -100,27 +100,31 @@ void BM::AST::parse() {
             }
             root->insert(token.s, lexer.l + baseLine);
             GET;
-            if (token.t != Lexer::SET_TOKEN) {
+            if (token.t != Lexer::SET_TOKEN && token.t != Lexer::END_TOKEN) {
                 root->value("bad-tree");
                 root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine);
                 return;
             }
             string expression("");
-            UL sbc(0);
-            UL mbc(0);
-            UL bbc(0);
-            do {
-                GET;
-                if (token.t == Lexer::PROGRAM_END) break;
-                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
-                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
-                else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
-                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
-                else if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
-                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
-                expression += " " + token.s;
-                if (token.t == Lexer::END_TOKEN && sbc == 0 && mbc == 0 && bbc == 0) break;
-            } while (true);
+            if (token.t == Lexer::END_TOKEN) {
+                expression = "undefined";
+            } else {
+                UL sbc(0);
+                UL mbc(0);
+                UL bbc(0);
+                do {
+                    GET;
+                    if (token.t == Lexer::PROGRAM_END) break;
+                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
+                    else if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                    else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
+                    expression += " " + token.s;
+                    if (token.t == Lexer::END_TOKEN && sbc == 0 && mbc == 0 && bbc == 0) break;
+                } while (true);
+            }
             auto ast = new AST(expression, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
