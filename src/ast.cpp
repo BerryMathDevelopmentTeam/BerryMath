@@ -934,7 +934,11 @@ void BM::AST::parse() {
 
             GET;
             string funcName(token.s);
-            GET;
+            if (token.t != Lexer::UNKNOWN_TOKEN) {
+                funcName = "";
+            } else {
+                GET;
+            }
 
             enum ArgType {
                 PUBLIC, PRIVATE
