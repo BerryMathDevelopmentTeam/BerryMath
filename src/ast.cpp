@@ -1309,8 +1309,9 @@ void BM::AST::parse() {
             root = new node("class", lexer.l + baseLine);
             GET;
             string className(token.s);
+            root->insert(className, lexer.l + baseLine);
             GET;
-            bool pflag(false);
+            bool pflag(false);// private flag
 
             ULL bbc(1);
             while (true) {
@@ -1368,19 +1369,19 @@ void BM::AST::parse() {
                         auto ast = new AST(defScript, lexer.l + baseLine);
                         ast->parse();
                         CHECK(ast);
-                        root->insert(ast->root->get(0)->value(), lexer.l + baseLine);
+                        root->get(0)->insert(ast->root->get(0)->value(), lexer.l + baseLine);
                         if (pflag) {
-                            root->get(-1)->insert("private", lexer.l + baseLine);
+                            root->get(0)->get(-1)->insert("private", lexer.l + baseLine);
                         } else {
-                            root->get(-1)->insert("public", lexer.l + baseLine);
+                            root->get(0)->get(-1)->insert("public", lexer.l + baseLine);
                         }
-                        root->get(-1)->insert(ast->root);
+                        root->get(0)->get(-1)->insert(ast->root);
                     } else {
-                        root->insert(token.s, lexer.l + baseLine);
+                        root->get(0)->insert(token.s, lexer.l + baseLine);
                         if (pflag) {
-                            root->get(-1)->insert("private", lexer.l + baseLine);
+                            root->get(0)->get(-1)->insert("private", lexer.l + baseLine);
                         } else {
-                            root->get(-1)->insert("public", lexer.l + baseLine);
+                            root->get(0)->get(-1)->insert("public", lexer.l + baseLine);
                         }
                         GET;
                         if (token.t == Lexer::SET_TOKEN) {
@@ -1403,13 +1404,38 @@ void BM::AST::parse() {
                             auto ast = new AST(expression, lexer.l + baseLine);
                             ast->parse();
                             CHECK(ast);
-                            root->get(-1)->insert(ast->root);
+                            root->get(0)->get(-1)->insert(ast->root);
                         } else {
-                            root->get(-1)->insert("undefined", lexer.l + baseLine);
+                            root->get(0)->get(-1)->insert("undefined", lexer.l + baseLine);
                         }
                     }
                 }
             }
+            break;
+        }
+        case Lexer::NEW_TOKEN:
+        {
+            GET;
+            string expression(token.s + " ");
+            UL sbc(0);
+            UL mbc(0);
+            UL bbc(0);
+            do {
+                GET;
+                if (token.t == Lexer::PROGRAM_END) break;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
+                else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
+                else if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
+                expression += " " + token.s;
+                if (token.t == Lexer::END_TOKEN && sbc == 0 && mbc == 0 && bbc == 0) break;
+            } while (true);
+            auto ast = new AST(expression, lexer.l + baseLine);
+            ast->parse();
+            root = ast->root;
+            root->value("new");
             break;
         }
     }

@@ -225,6 +225,32 @@ BM::Object *BM::Interpreter::run() {
             }
             set(funname, fun);
             exports->set(PASS_RETURN, fun);
+        } else if (ast->value() == "class") {
+            string className(ast->rValue()->get(0)->value());
+            set(className, new Object);
+            auto prototype = new Object;
+            get(className)->value()->set("prototype", prototype);
+            auto prototypes = ast->rValue()->get(0);
+            for (UL i = 0; i < prototypes->length(); i++) {
+                auto prototypeNode = prototypes->get(i);
+                string name(prototypeNode->value());
+                bool pflag(true);// private flag
+                if (prototypeNode->get(0)->value() == "public") pflag = false;
+                Interpreter ip("", filename, this);
+                ip.ast->root = prototypeNode->get(1);
+                ip.child = true;
+                auto e = ip.run();
+                CHECKITER(e, prototypeNode->get(1));
+                prototype->set(name, e->get(PASS_RETURN));
+            }
+        } else if (ast->value() == "new") {
+            auto line = ast->rValue()->get(0)->line();
+            string name(ast->rValue()->get(0)->value());
+            ast->rValue()->get(0)->value(".");
+            ast->rValue()->get(0)->insert(name, line);
+            ast->rValue()->get(0)->insert("ctor", line);
+            ast->rValue()->value("call");
+            ast;
         }
         else { //为表达式
             auto len = ast->rValue()->length();
