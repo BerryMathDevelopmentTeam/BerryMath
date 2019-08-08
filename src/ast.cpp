@@ -1304,6 +1304,114 @@ void BM::AST::parse() {
             }
             break;
         }
+        case Lexer::CLASS_TOKEN:
+        {
+            root = new node("class", lexer.l + baseLine);
+            GET;
+            string className(token.s);
+            GET;
+            bool pflag(false);
+
+            ULL bbc(1);
+            while (true) {
+                GET;
+                if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
+                    bbc--;
+                    if (bbc < 1) break;
+                }
+                if (token.t == Lexer::PRIVATE_TOKEN) {
+                    GET;
+                    if (token.t != Lexer::COLON_TOKEN) {
+                        delete root;
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("SyntaxError: Unexpected token '" + token.s + "'", lexer.l + baseLine);
+                    }
+                    pflag = true;
+                } else if (token.t == Lexer::PUBLIC_TOKEN) {
+                    GET;
+                    if (token.t != Lexer::COLON_TOKEN) {
+                        delete root;
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("SyntaxError: Unexpected token '" + token.s + "'", lexer.l + baseLine);
+                    }
+                    pflag = false;
+                } else {
+                    if (token.t == Lexer::DEF_TOKEN) {
+                        string defScript("def ");
+                        GET;
+                        defScript += token.s;
+                        GET;
+                        defScript += token.s;
+                        UL sbc(1);
+                        while (true) {
+                            GET;
+                            defScript += token.s;
+                            if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                            else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
+                                sbc--;
+                                if (sbc < 1) break;
+                            }
+                        }
+                        GET;
+                        defScript += token.s;
+                        UL bbc(1);
+                        while (true) {
+                            GET;
+                            defScript += token.s;
+                            if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                            else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
+                                bbc--;
+                                if (bbc < 1) break;
+                            }
+                        }
+                        auto ast = new AST(defScript, lexer.l + baseLine);
+                        ast->parse();
+                        CHECK(ast);
+                        root->insert(ast->root->get(0)->value(), lexer.l + baseLine);
+                        if (pflag) {
+                            root->get(-1)->insert("private", lexer.l + baseLine);
+                        } else {
+                            root->get(-1)->insert("public", lexer.l + baseLine);
+                        }
+                        root->get(-1)->insert(ast->root);
+                    } else {
+                        root->insert(token.s, lexer.l + baseLine);
+                        if (pflag) {
+                            root->get(-1)->insert("private", lexer.l + baseLine);
+                        } else {
+                            root->get(-1)->insert("public", lexer.l + baseLine);
+                        }
+                        GET;
+                        if (token.t == Lexer::SET_TOKEN) {
+                            string expression("");
+                            UL sbc(0);
+                            UL mbc(0);
+                            UL bbc(0);
+                            do {
+                                GET;
+                                if (token.t == Lexer::PROGRAM_END) break;
+                                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                                else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
+                                else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
+                                else if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                                else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
+                                expression += " " + token.s;
+                                if (token.t == Lexer::END_TOKEN && sbc == 0 && mbc == 0 && bbc == 0) break;
+                            } while (true);
+                            auto ast = new AST(expression, lexer.l + baseLine);
+                            ast->parse();
+                            CHECK(ast);
+                            root->get(-1)->insert(ast->root);
+                        } else {
+                            root->get(-1)->insert("undefined", lexer.l + baseLine);
+                        }
+                    }
+                }
+            }
+            break;
+        }
     }
     if (!root) root = new node("pass", lexer.l + baseLine);
 }
