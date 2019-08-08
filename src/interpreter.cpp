@@ -211,7 +211,7 @@ BM::Object *BM::Interpreter::run() {
         } else if (ast->value() == "def") {
             string funname(ast->rValue()->get(0)->value());
             string script(ast->rValue()->get(2)->value());
-            auto fun = new Function(funname, script, this);
+            auto fun = new Function(funname, script);
             auto args = ast->rValue()->get(1);
             for (UL i = 0; i < args->length(); i++) {
                 auto arg = args->get(i);
@@ -265,6 +265,12 @@ BM::Object *BM::Interpreter::run() {
                 getIp.ast->root = r->get(0);
                 auto e = getIp.run();
                 auto fun_ = e->get(PASS_RETURN);
+                auto up = e->get(PASS_UPVALUE);
+                bool clean = false;
+                if (!up) {
+                    up = new Undefined;
+                    clean = true;
+                }
                 if (!fun_) {
                     std::cerr << "TypeError: The value for getting is not defined at <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
@@ -272,15 +278,22 @@ BM::Object *BM::Interpreter::run() {
                 }
                 if (fun_->type() == FUNCTION) {
                     auto fun = (Function *) fun_;
+                    fun->setParent(this);
+                    fun->getParent()->set("this", up);
                     exports->set(PASS_RETURN, fun->run(args, hashArg));
                 } else if (fun_->type() == NATIVE_FUNCTION) {
                     auto fun = (NativeFunction *) fun_;
+                    fun->setParent(this);
+                    fun->getParent()->set("this", up);
                     exports->set(PASS_RETURN, fun->run(args, hashArg));
                 } else {
+                    if (clean) delete up;
                     std::cerr << "TypeError: The value for getting is not a function at <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     THROW;
                 }
+                if (clean) delete up;
+                del("this");
             } else if (ast->value() == "get") {
                 if (ast->rValue()->length() < 1) {
                     auto name = ast->value();
@@ -304,11 +317,16 @@ BM::Object *BM::Interpreter::run() {
                         up = value;
                         value = value->get(key);
                         if (!value) {
-//                            std::cerr << "ReferenceError: Cannot get property " << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined at <" << filename << ":" << upscope << ">:"
-//                                      << ast->line() << std::endl;
-//                            THROW;
-                            value = new Undefined;
-                            up->set(key, value);
+                            if (i == ast->rValue()->length() - 1) {
+                                value = new Undefined;
+                                up->set(key, value);
+                            } else {
+                                std::cerr << "ReferenceError: Cannot get property "
+                                          << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined at <"
+                                          << filename << ":" << upscope << ">:"
+                                          << ast->line() << std::endl;
+                                THROW;
+                            }
                         }
                     }
                     exports->set(PASS_RETURN, value);
@@ -336,10 +354,11 @@ BM::Object *BM::Interpreter::run() {
                         auto last = value;
                         up = value;
                         value = value->get(keys[i]);
-//                         if (value) { } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
                         if (!value) {
-                            last->set(keys[i], new Undefined);
-                            value = last->get(keys[i]);
+                            if (i == keys.size() - 1) {
+                                last->set(keys[i], new Undefined);
+                                value = last->get(keys[i]);
+                            } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
                         }
                     }
                     exports->set(PASS_RETURN, value);
@@ -694,7 +713,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             while (getline(file, tmpLine)) {
                 script += tmpLine + "\n";
             }
-            Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
+            Interpreter ip(script, name);// import的文件是独立运行的，不与import它的脚本连接
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
                 std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;

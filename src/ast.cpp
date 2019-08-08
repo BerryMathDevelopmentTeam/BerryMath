@@ -357,7 +357,16 @@ void BM::AST::parse() {
                 left += " " + token.s;
                 GET;
                 GET;
-                while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END) {
+                ULL sbc(0);
+                ULL mbc(0);
+                ULL bbc(0);
+                while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END || sbc > 0 || mbc > 0 || bbc > 0) {
+                    if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                    else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
+                    else if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
+                    else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
                     right += " " + token.s;
                     GET;
                 }

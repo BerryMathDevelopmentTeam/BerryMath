@@ -47,12 +47,12 @@ void BM::Object::print(std::ostream &o, bool hl) {
     o << toString(true, hl) << std::endl;
 }
 void BM::Object::set(const string &key, Object *value) {
-    if (proto.count(key) == 0) {
-        insert(key, value);
-    } else {
+    if (proto.count(key)) {
         proto[key] = value;
         if (this != value) value->linked++;
         value->parent = this;
+    } else {
+        insert(key, value);
     }
 }
 BM::Object* BM::Object::get(const string &key) {
@@ -69,9 +69,11 @@ void BM::Object::del(const string &key) {
     auto iter = proto.find(key);
     if (iter == proto.end()) return;
     proto.erase(iter);
-    Object* v = iter->second;
-    v->linked--;
-    if (v->linked < 1) delete v;
+//    Object* v = iter->second;
+//    if (v) {
+//        v->linked--;
+//        if (v->linked < 1) delete v;
+//    }
 }
 BM::Object::~Object() {
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
@@ -98,8 +100,8 @@ BM::Variable* BM::Scope::get(const string& name, Flag flag) {
     return iter->second;
 }
 void BM::Scope::del(const string& name) {
-    auto v = get(name);
-    if (v) delete v;
+//    auto v = get(name);
+//    if (v) delete v;
     variables.erase(name);
     get(SCOPE_D_NAME, SELF)->value()->del(name);
 }
@@ -130,10 +132,7 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
         ip.set(iter->first, iter->second);
     }
     ip.upscope = "\033[34mfunction " + funname + "\033[0m";
-    auto retD = ip.run()->get(PASS_RETURN);
-    auto ret = retD->copy();
-    delete retD;
-    return ret;
+    return ip.run()->get(PASS_RETURN);
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {
     auto s = new Scope(parent ? parent->scope : nullptr);

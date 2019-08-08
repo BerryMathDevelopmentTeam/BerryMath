@@ -209,6 +209,8 @@ namespace BM {
         }
         void addDesc(string d) { desc.push_back(d); }
         void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
+        void setParent(Interpreter* ip) { parent = ip; }
+        Interpreter* getParent() { return parent; }
         virtual Object* run(vector<Object*>, map<string, Object*>);
         string functionName() {
             return funname;
@@ -283,6 +285,8 @@ namespace BM {
         string functionName() {
             return funname;
         }
+        Interpreter* getParent() { return parent; }
+        void setParent(Interpreter* p) { parent = p; }
         void addDesc(string d) { desc.push_back(d); }
         void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         ValueType type() { return NATIVE_FUNCTION; }
