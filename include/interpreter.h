@@ -122,6 +122,7 @@ namespace BM {
 #define BMLMPATH "/usr/local/BM/modules/"
 #endif
 #define DEFAULT_IMPORT_NAME "bmlang"
+#define PASS_MODULE_NAME "__THIS_MODULE_NAME__"
 
         friend class NativeFunction;
 

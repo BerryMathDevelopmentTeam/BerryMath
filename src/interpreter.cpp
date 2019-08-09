@@ -23,6 +23,10 @@ BM::Object *BM::Interpreter::run() {
     set("undefined", new Undefined);
     set("null", new Null);
 
+    if (!child && !(get(PASS_MODULE_NAME) && get(PASS_MODULE_NAME)->value()->type() == STRING && ((String*)get(PASS_MODULE_NAME)->value())->value() == DEFAULT_IMPORT_NAME)) {
+        if (!get(DEFAULT_IMPORT_NAME)) import(exports, DEFAULT_IMPORT_NAME, DEFAULT_IMPORT_NAME);
+        Using(get(DEFAULT_IMPORT_NAME)->value(), new AST::node("bmlang", 0));
+    }
     while (true) {
         if (!child) ast->parse();
 //        if (!ast->rValue()) continue;
@@ -724,6 +728,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
                 script += tmpLine + "\n";
             }
             Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
+            ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
                 std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
@@ -743,6 +748,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
                 script += tmpLine + "\n";
             }
             Interpreter ip(script, name);// import的文件是独立运行的，与import它的脚本连接
+            ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
                 std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
@@ -755,13 +761,14 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
     // 为全局模块
     if (!finish) {
         string path(BMLMPATH + name + (name[nameLen - 1] == '/' ? "init.bm" : "/init.bm"));
-        file.open(name);
+        file.open(path);
         if (file) {
             finish = true;
             while (getline(file, tmpLine)) {
                 script += tmpLine + "\n";
             }
             Interpreter ip(script, name);// import的文件是独立运行的，不与import它的脚本连接
+            ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
                 std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
