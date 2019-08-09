@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
             script += line + "\n";
         }
         BM::Interpreter ip(script, filename);
-        delete ip.run();
+        ip.run();
 //        ip.compile();
         file.close();
     }

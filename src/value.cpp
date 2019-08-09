@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <map>
 #include <vector>
 #include "interpreter.h"
@@ -21,26 +22,65 @@ string BM::Object::toString(bool indent, bool hl, string tab) {
     }
     auto iter = proto.begin();
     auto end = proto.end();
-    for (; iter != end; iter++) {
-        const string& key = iter->first;
-        if (key[0] == '_' && key[1] == '_') continue;// 双下划线开头的属性不显示
-        o += tab;
-        if (hl) {
-            o += "\033[32m\"" + key + "\"\033[0m";
-        } else {
-            o += "\"" + key + "\"";
+    auto systemType = get(OBJECT_PASS_SYSTEM_TYPE);
+    SystemStructureType t = NONE;
+    if (systemType) {
+        string typeStr(((String*)systemType)->value());
+        if (typeStr == "Array") t = ARRAY;
+    }
+    switch (t) {
+        case ARRAY:
+        {
+            o = "[";
+            ULL i = 0;
+            string key(std::to_string(i));
+            auto v = get(key);
+            if (v) {
+                if (has(v)) {
+                    o += "...(value)...";
+                } else {
+                    o += v->toString(indent, hl, tab);
+                }
+            }
+            i++;
+            for (; ; i++) {
+                string key(std::to_string(i));
+                auto v = get(key);
+                if (!v) break;
+                if (has(v)) {
+                    o += ", ...(value)...";
+                } else {
+                    o += ", " + v->toString(indent, hl, tab);
+                }
+            }
+            o += "]";
+            break;
         }
-        o += ": ";
-        if (has(iter->second)) o += "...";
-        else o += iter->second->toString(indent, hl, tab);
-        o += ",";
-        if (indent) o += '\n';
+        case NONE:
+        {
+            for (; iter != end; iter++) {
+                const string& key = iter->first;
+                if (key[0] == '_' && key[1] == '_') continue;// 双下划线开头的属性不显示
+                o += tab;
+                if (hl) {
+                    o += "\033[32m\"" + key + "\"\033[0m";
+                } else {
+                    o += "\"" + key + "\"";
+                }
+                o += ": ";
+                if (has(iter->second)) o += "...";
+                else o += iter->second->toString(indent, hl, tab);
+                o += ",";
+                if (indent) o += '\n';
+            }
+            if (indent) {
+                tab.pop_back();
+                o += tab;
+            }
+            o += "}";
+            break;
+        }
     }
-    if (indent) {
-        tab.pop_back();
-        o += tab;
-    }
-    o += "}";
     return o;
 }
 void BM::Object::print(std::ostream &o, bool hl) {
@@ -95,7 +135,13 @@ BM::Variable* BM::Scope::get(const string& name, Flag flag) {
         if (flag == ALL_MIGHT && parent) {
             return parent->get(name, flag);
         }
-        return nullptr;
+        if (name == "this") {
+            auto ret = new Object;
+            set(name, ret);
+            return get(name);
+        } else {
+            return nullptr;
+        }
     }
     return iter->second;
 }
@@ -132,7 +178,9 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
         ip.set(iter->first, iter->second);
     }
     ip.upscope = "\033[34mfunction " + funname + "\033[0m";
-    return ip.run()->get(PASS_RETURN);
+    auto exports = ip.run();
+    if (exports->get(PASS_ERROR)) THROW;
+    return exports->get(PASS_RETURN);
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {
     auto s = new Scope(parent ? parent->scope : nullptr);
@@ -149,10 +197,7 @@ BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
         s->set(iter->first, iter->second);
     }
-    auto retD = native(s, unknowns);
-    auto ret = retD->copy();
-    delete retD;
-    return ret;
+    return native(s, unknowns);
 }
 bool BM::isTrue(Object* o) {
     if (o->type() == OBJECT || o->type() == FUNCTION || o->type() == NATIVE_FUNCTION || o->type() == STRING) return true;
@@ -164,4 +209,14 @@ void BM::Scope::load(Scope* p) {
     for (auto iter = p->variables.begin(); iter != p->variables.end(); iter++) {
         set(iter->first, iter->second->value());
     }
+}
+BM::Object* BM::Function::copy() {
+    auto fun = new Function(funname, script, parent);
+    for (auto iter = desc.begin(); iter != desc.end(); iter++) {
+        fun->addDesc(*iter);
+    }
+    for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
+        fun->defaultValue(iter->first, iter->second);
+    }
+    return fun;
 }

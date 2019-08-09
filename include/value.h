@@ -16,6 +16,9 @@ namespace BM {
     enum ValueType {
         OBJECT, NUMBER, STRING, NULL_, UNDEFINED, FUNCTION, NATIVE_FUNCTION
     };
+    enum SystemStructureType {
+        NONE, ARRAY
+    };
     class Object;
     using forEachCB = void(*)(const string&, Object*);
     class Object {
@@ -38,6 +41,13 @@ namespace BM {
                 object->set(iter->first, iter->second->copy());
             }
             return object;
+        }
+        virtual vector<string> memberNames() {
+            vector<string> ret;
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                ret.push_back(iter->first);
+            }
+            return ret;
         }
         virtual ~Object();
         friend std::ostream& operator<<(std::ostream& o, Object& v) {
@@ -198,7 +208,7 @@ namespace BM {
         virtual ValueType type() { return FUNCTION; }
         Interpreter* interpreter() { return parent; }
         void interpreter(Interpreter* p) { parent = p; }
-        Object* copy() { return new Function(funname, script, parent); }
+        Object* copy();
         string value() { return "Function..."; }
         string toString(bool = true, bool hl = true, string tab = "") {
             string o("");
@@ -301,6 +311,8 @@ namespace BM {
     };
     string toString(Object*);
     bool isTrue(Object*);
+
+#define OBJECT_PASS_SYSTEM_TYPE "__SYSTEM_TYPE__"
 }
 
 

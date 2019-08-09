@@ -236,6 +236,9 @@ BM::Object *BM::Interpreter::run() {
                 string name(prototypeNode->value());
                 bool pflag(true);// private flag
                 if (prototypeNode->get(0)->value() == "public") pflag = false;
+                if (name == "ctor") {
+                    prototypeNode->get(1)->get(2)->value("let this = { };" + prototypeNode->get(1)->get(2)->value() + ";return this;");
+                }
                 Interpreter ip("", filename, this);
                 ip.ast->root = prototypeNode->get(1);
                 ip.child = true;
@@ -248,9 +251,23 @@ BM::Object *BM::Interpreter::run() {
             string name(ast->rValue()->get(0)->value());
             ast->rValue()->get(0)->value(".");
             ast->rValue()->get(0)->insert(name, line);
-            ast->rValue()->get(0)->insert("ctor", line);
+            ast->rValue()->get(0)->insert(".", line);
+            ast->rValue()->get(0)->get(1)->insert("prototype", line);
+            ast->rValue()->get(0)->get(1)->insert("ctor", line);
             ast->rValue()->value("call");
-            ast;
+            Interpreter ip("", filename, this);
+            ip.ast->root = ast->rValue();
+            ip.child = true;
+            auto e = ip.run();
+            CHECKITER(e, ast->rValue());
+            auto classValue = get(name);
+            auto ret = e->get(PASS_RETURN);
+            auto keys = classValue->value()->get("prototype")->memberNames();
+            for (auto iter = keys.begin(); iter != keys.end(); iter++) {
+                auto proto = classValue->value()->get("prototype")->get(*iter)->copy();
+                ret->set(*iter, proto);
+            }
+            exports->set(PASS_RETURN, ret);
         }
         else { //为表达式
             auto len = ast->rValue()->length();
@@ -306,7 +323,9 @@ BM::Object *BM::Interpreter::run() {
                     auto fun = (Function *) fun_;
                     fun->setParent(this);
                     fun->getParent()->set("this", up);
-                    exports->set(PASS_RETURN, fun->run(args, hashArg));
+                    auto fune = fun->run(args, hashArg);
+                    CHECKITER(fune, ast->rValue());
+                    exports->set(PASS_RETURN, fune->get(PASS_RETURN));
                 } else if (fun_->type() == NATIVE_FUNCTION) {
                     auto fun = (NativeFunction *) fun_;
                     fun->setParent(this);
@@ -318,6 +337,9 @@ BM::Object *BM::Interpreter::run() {
                               << ast->line() << std::endl;
                     THROW;
                 }
+//                if (get("this")->value()->type() == OBJECT && fune->type() == UNDEFINED) {
+//                    exports->set(PASS_RETURN, get("this")->value());
+//                }
                 if (clean) delete up;
                 del("this");
             } else if (ast->value() == "get") {
@@ -677,7 +699,7 @@ BM::Object *BM::Interpreter::run() {
         }
         if (child) break;
     }
-    if (!exports->get(PASS_RETURN)) exports->set(string(PASS_RETURN), new Undefined);
+    if (!exports->get(PASS_RETURN)) exports->set(PASS_RETURN, new Undefined);
     return exports;
 }
 
