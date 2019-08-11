@@ -89,24 +89,24 @@ namespace BM {
 #define THROW exports->set(PASS_ERROR, new Number(1));return exports;
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR)) { \
-        std::cerr << "\t at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
+        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)
-#define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations at <" << filename <<  ":" << upscope << ">:" \
+#define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
-#define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << " at <" << filename <<  ":" << upscope << ">:" \
+#define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
-#define WRONG(name, s)  else { std::cerr << name << ": " << s << " at <" << filename <<  ":" << upscope << ">:" \
+#define WRONG(name, s)  else { std::cerr << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
 #define NOTDEFINED(v, name) if (!v) { \
-        std::cerr << "ReferenceError: " << name << " is not defined at <" << filename << ":" << upscope << ">:" \
+        std::cerr << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
         << ast->line()  << std::endl; \
         THROW; \
     }

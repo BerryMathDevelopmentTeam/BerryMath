@@ -48,10 +48,10 @@ RM = /Applications/CLion.app/Contents/bin/cmake/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/zhengyuanhao/Documents/BerryMath/modules/sys
+CMAKE_SOURCE_DIR = /Users/zhengyuanhao/Documents/BerryMath/modules/os
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/zhengyuanhao/Documents/BerryMath/modules/sys
+CMAKE_BINARY_DIR = /Users/zhengyuanhao/Documents/BerryMath/modules/os/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/zhengyuanhao/Documents/BerryMath/modules/sys/CMakeFiles /Users/zhengyuanhao/Documents/BerryMath/modules/sys/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/zhengyuanhao/Documents/BerryMath/modules/os/cmake-build-debug/CMakeFiles /Users/zhengyuanhao/Documents/BerryMath/modules/os/cmake-build-debug/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/zhengyuanhao/Documents/BerryMath/modules/sys/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/zhengyuanhao/Documents/BerryMath/modules/os/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named sys
+# Target rules for targets named os
 
 # Build rule for target.
-sys: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 sys
-.PHONY : sys
+os: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 os
+.PHONY : os
 
 # fast build rule for target.
-sys/fast:
-	$(MAKE) -f CMakeFiles/sys.dir/build.make CMakeFiles/sys.dir/build
-.PHONY : sys/fast
+os/fast:
+	$(MAKE) -f CMakeFiles/os.dir/build.make CMakeFiles/os.dir/build
+.PHONY : os/fast
 
 library.o: library.cpp.o
 
@@ -129,7 +129,7 @@ library.o: library.cpp.o
 
 # target to build an object file
 library.cpp.o:
-	$(MAKE) -f CMakeFiles/sys.dir/build.make CMakeFiles/sys.dir/library.cpp.o
+	$(MAKE) -f CMakeFiles/os.dir/build.make CMakeFiles/os.dir/library.cpp.o
 .PHONY : library.cpp.o
 
 library.i: library.cpp.i
@@ -138,7 +138,7 @@ library.i: library.cpp.i
 
 # target to preprocess a source file
 library.cpp.i:
-	$(MAKE) -f CMakeFiles/sys.dir/build.make CMakeFiles/sys.dir/library.cpp.i
+	$(MAKE) -f CMakeFiles/os.dir/build.make CMakeFiles/os.dir/library.cpp.i
 .PHONY : library.cpp.i
 
 library.s: library.cpp.s
@@ -147,7 +147,7 @@ library.s: library.cpp.s
 
 # target to generate assembly for a file
 library.cpp.s:
-	$(MAKE) -f CMakeFiles/sys.dir/build.make CMakeFiles/sys.dir/library.cpp.s
+	$(MAKE) -f CMakeFiles/os.dir/build.make CMakeFiles/os.dir/library.cpp.s
 .PHONY : library.cpp.s
 
 # Help Target
@@ -158,7 +158,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... sys"
+	@echo "... os"
 	@echo "... library.o"
 	@echo "... library.i"
 	@echo "... library.s"

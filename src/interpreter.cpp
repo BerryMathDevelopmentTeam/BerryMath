@@ -32,7 +32,7 @@ BM::Object *BM::Interpreter::run() {
 //        if (!ast->rValue()) continue;
         if (ast->value() == "PROGRAM-END") break;
         if (ast->value() == "bad-tree") {
-            std::cerr << ast->rValue()->get(0)->value() << " at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+            std::cerr << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
             THROW;
         } else if (ast->value() == "export") {
             auto name = ast->rValue()->get(0)->value();
@@ -285,7 +285,7 @@ BM::Object *BM::Interpreter::run() {
                     if (node->value() == "=") {
                         auto argName = node->get(0)->value();
                         if (node->get(0)->length() > 0) {
-                            std::cerr << "ReferenceError: Invalid setting with " << argName << " at <" << filename
+                            std::cerr << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
                                       << ":" << upscope << ">:"
                                       << ast->line() << std::endl;
                             THROW;
@@ -319,7 +319,7 @@ BM::Object *BM::Interpreter::run() {
                     clean = true;
                 }
                 if (!fun_) {
-                    std::cerr << "TypeError: The value for getting is not defined at <" << filename << ":" << upscope << ">:"
+                    std::cerr << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     THROW;
                 }
@@ -337,7 +337,7 @@ BM::Object *BM::Interpreter::run() {
                     exports->set(PASS_RETURN, fun->run(args, hashArg));
                 } else {
                     if (clean) delete up;
-                    std::cerr << "TypeError: The value for getting is not a function at <" << filename << ":" << upscope << ">:"
+                    std::cerr << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     THROW;
                 }
@@ -374,7 +374,7 @@ BM::Object *BM::Interpreter::run() {
                                 up->set(key, value);
                             } else {
                                 std::cerr << "ReferenceError: Cannot get property "
-                                          << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined at <"
+                                          << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
                                 THROW;
@@ -527,7 +527,7 @@ BM::Object *BM::Interpreter::run() {
                         key = ((String*)e->get(PASS_LASTKEY))->value();
                         if (op == "=") up->set(key, right);
                     } else if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
-                        std::cerr << "ReferenceError: Invalid left-hand side in assignment at <" << filename << ":" << upscope << ">:"
+                        std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
@@ -629,7 +629,7 @@ BM::Object *BM::Interpreter::run() {
                         op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="
                         ) {
                     if (left->type() != right->type()) {
-                        std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << " at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+                        std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
                         THROW;
                     }
                     switch (left->type()) {
@@ -731,7 +731,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
+                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
             }
             moduleExports->del(PASS_RETURN);
@@ -751,7 +751,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
+                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
             }
             moduleExports->del(PASS_RETURN);
@@ -771,7 +771,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::cerr << "ImportError: Module script wrong at <" << filename << ">:" << ast->line() << std::endl;
+                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
             }
             moduleExports->del(PASS_RETURN);
@@ -787,7 +787,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             auto initModule = (initModuleFun) dylib.resolve("initModule");
             Object *moduleExports = initModule();
             scope->set(asName, moduleExports);
-        } else std::cerr << "ImportError" << ": No module named " << name << " at <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
+        } else std::cerr << "ImportError" << ": No module named " << name << "\n\tat <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
         dylib.close();
     }
 }

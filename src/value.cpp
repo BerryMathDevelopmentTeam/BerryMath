@@ -68,8 +68,14 @@ string BM::Object::toString(bool indent, bool hl, string tab) {
                     o += "\"" + key + "\"";
                 }
                 o += ": ";
+                auto value = iter->second;
+                string valueStr(value->toString(indent, hl, tab));
+                if (value->type() == STRING) {
+                    valueStr.insert(0, "\"");
+                    valueStr += "\"";
+                }
                 if (has(iter->second)) o += "...";
-                else o += iter->second->toString(indent, hl, tab);
+                else o += valueStr;
                 o += ",";
                 if (indent) o += '\n';
             }
