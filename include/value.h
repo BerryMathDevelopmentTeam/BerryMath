@@ -283,7 +283,7 @@ namespace BM {
         Object* run(vector<Object*>, map<string, Object*>);
         Interpreter* interpreter() { return parent; }
         void interpreter(Interpreter* p) { parent = p; }
-        Object* copy() { return new NativeFunction(funname, native, parent); }
+        Object* copy();
         string value() { return "Function..."; }
         string toString(bool = true, bool hl = true, string tab = "") {
             string o("");
@@ -297,8 +297,8 @@ namespace BM {
         }
         Interpreter* getParent() { return parent; }
         void setParent(Interpreter* p) { parent = p; }
-        void addDesc(string d) { desc.push_back(d); }
-        void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
+        void addDesc(const string& d) { desc.push_back(d); }
+        void defaultValue(const string& name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         ValueType type() { return NATIVE_FUNCTION; }
         ~NativeFunction() { }
     private:

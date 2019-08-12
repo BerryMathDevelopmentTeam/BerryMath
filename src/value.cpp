@@ -226,3 +226,13 @@ BM::Object* BM::Function::copy() {
     }
     return fun;
 }
+BM::Object* BM::NativeFunction::copy() {
+    auto fun = new NativeFunction(funname, native, parent);
+    for (auto iter = desc.begin(); iter != desc.end(); iter++) {
+        fun->addDesc(*iter);
+    }
+    for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
+        fun->defaultValue(iter->first, iter->second);
+    }
+    return fun;
+}

@@ -12,8 +12,13 @@ using BM::String;
 using BM::Number;
 using BM::NativeFunction;
 using BM::Function;
+using BM::NativeValue;
 
 Object* FileCtor(Scope*, vector<Object*>);
+Object* FileWrite(Scope*, vector<Object*>);
+Object* FileRead(Scope*, vector<Object*>);
+Object* FileReset(Scope*, vector<Object*>);
+Object* FileClose(Scope*, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif

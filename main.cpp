@@ -8,7 +8,7 @@ using std::fstream;
 
 void terminal() {
     cout << "BerryMath Terminal" << endl;
-    cout << "v0.0.1-beta" << endl;
+    cout << BMVersion << endl;
     cout << "        \033[32m_____\033[0m" << endl;
     cout << "         \033[32m/\\\033[0m" << endl;
     cout << "        \033[32m/  |\033[0m" << endl;
