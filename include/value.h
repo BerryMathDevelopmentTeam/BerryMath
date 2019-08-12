@@ -14,7 +14,7 @@ typedef unsigned long UL;
 namespace BM {
     extern class Interpreter;
     enum ValueType {
-        OBJECT, NUMBER, STRING, NULL_, UNDEFINED, FUNCTION, NATIVE_FUNCTION
+        OBJECT, NUMBER, STRING, NULL_, UNDEFINED, FUNCTION, NATIVE_FUNCTION, NATIVE_VALUE
     };
     enum SystemStructureType {
         NONE, ARRAY
@@ -308,6 +308,24 @@ namespace BM {
         map<string, Object*> defaultValues;
         vector<string> desc;
         string funname;
+    };
+    typedef void* nativeValueType;
+    class NativeValue : public Object {
+    public:
+        NativeValue(nativeValueType t = nullptr) : nv(t) { }
+        Object* copy() { return new NativeValue(nv); }
+        ValueType type() { return NATIVE_VALUE; }
+        nativeValueType& value() { return nv; }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o("");
+            if (hl) o += "\033[36m";
+            o += "NativeValue...";
+            if (hl) o += "\033[0m";
+            return o;
+        }
+        ~NativeValue() { }
+    private:
+        nativeValueType nv;
     };
     string toString(Object*);
     bool isTrue(Object*);
