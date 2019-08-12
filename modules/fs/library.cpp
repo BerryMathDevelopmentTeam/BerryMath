@@ -3,10 +3,10 @@
 #include <fstream>
 #include "library.h"
 
-Object* FileCtor(BM::Scope* scope, vector<Object*> unknowns) {
+Object *FileCtor(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = new Object;
 
-    auto path = (String*)scope->get("path")->value();
+    auto path = (String *) scope->get("path")->value();
     self->set("path", path);
 
     auto file = new std::fstream();
@@ -17,31 +17,34 @@ Object* FileCtor(BM::Scope* scope, vector<Object*> unknowns) {
 
     self->set("file", new NativeValue(file));
     self->set("is_open", new Number(file->is_open()));
+    self->set("next", new Number(file->is_open()));
 
     return self;
 }
-Object* FileWrite(BM::Scope* scope, vector<Object*> unknowns) {
+
+Object *FileWrite(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
 
-    auto fileBMO = (NativeValue*)self->get("file");
+    auto fileBMO = (NativeValue *) self->get("file");
     auto valueV = scope->get("value");
     if (valueV) {
-        auto value = (String*)valueV->value();
+        auto value = (String *) valueV->value();
         if (fileBMO && self->get("file") && value) {
-            auto file = (std::fstream*)((NativeValue*)self->get("file"))->value();
+            auto file = (std::fstream *) ((NativeValue *) self->get("file"))->value();
             (*file) << value->value();
         }
     }
 
     return new BM::Undefined;
 }
-Object* FileRead(BM::Scope* scope, vector<Object*> unknowns) {
+
+Object *FileRead(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
     auto content = new String;
 
-    auto fileBMO = (NativeValue*)self->get("file");
+    auto fileBMO = (NativeValue *) self->get("file");
     if (fileBMO && self->get("file")) {
-        auto file = (std::fstream*)((NativeValue*)self->get("file"))->value();
+        auto file = (std::fstream *) ((NativeValue *) self->get("file"))->value();
         string line;
         while (getline(*file, line)) {
             std::cout << line << std::endl;
@@ -52,29 +55,41 @@ Object* FileRead(BM::Scope* scope, vector<Object*> unknowns) {
     return content;
 }
 
-Object* FileReset(BM::Scope* scope, vector<Object*> unknowns) {
+Object *FileReadline(BM::Scope *scope, vector<Object *> unknowns) {
+    auto self = scope->get("this")->value();
+    auto content = new String;
+
+    auto fileBMO = (NativeValue *) self->get("file");
+    if (fileBMO && self->get("file"))
+        if (getline(*((std::fstream *) ((NativeValue *) self->get("file"))->value()), content->value())) self->set("next", new Number(1));
+        else self->set("next", new Number(0));
+    return content;
+}
+
+Object *FileReset(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
 
-    auto fileBMO = (NativeValue*)self->get("file");
+    auto fileBMO = (NativeValue *) self->get("file");
     if (fileBMO && self->get("file")) {
-        auto file = (std::fstream*)((NativeValue*)self->get("file"))->value();
+        auto file = (std::fstream *) ((NativeValue *) self->get("file"))->value();
         (*file).seekg(std::ios_base::beg);
     }
 
     return new BM::Undefined;
 }
-Object* FileClose(BM::Scope* scope, vector<Object*> unknowns) {
+
+Object *FileClose(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
 
-    auto fileBMO = (NativeValue*)self->get("file");
+    auto fileBMO = (NativeValue *) self->get("file");
     if (fileBMO && self->get("file")) {
-        ((std::fstream*)((NativeValue*)self->get("file"))->value())->close();
+        ((std::fstream *) ((NativeValue *) self->get("file"))->value())->close();
     }
 
     return new BM::Undefined;
 }
 
-Object* initModule() {
+Object *initModule() {
     auto exports = new Object;
 
     auto FileClass = new Object;
@@ -95,6 +110,10 @@ Object* initModule() {
 
     auto FileCloseP = new NativeFunction("close", FileClose);
     prototype->set("close", FileCloseP);
+
+    auto FileReadlineP = new NativeFunction("readline", FileReadline);
+    prototype->set("readline", FileReadlineP);
+
     auto FileResetP = new NativeFunction("reset", FileReset);
     prototype->set("reset", FileResetP);
 
