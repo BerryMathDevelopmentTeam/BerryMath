@@ -1,7 +1,7 @@
 class Array {
 public:
-    ctor() { }
-    push(n) {
+    def ctor() { }
+    def push(n) {
         this[this.__len] = n;
         this.__len++;
     }

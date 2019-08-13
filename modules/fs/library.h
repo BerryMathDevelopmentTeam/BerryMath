@@ -18,6 +18,7 @@ Object* FileCtor(Scope*, vector<Object*>);
 Object* FileWrite(Scope*, vector<Object*>);
 Object* FileRead(Scope*, vector<Object*>);
 Object* FileReadline(Scope*, vector<Object*>);
+Object* FileReadlines(Scope*, vector<Object*>);
 Object* FileReset(Scope*, vector<Object*>);
 Object* FileClose(Scope*, vector<Object*>);
 extern "C" Object* initModule();

@@ -65,6 +65,32 @@ Object *FileReadline(BM::Scope *scope, vector<Object *> unknowns) {
         else self->set("next", new Number(0));
     return content;
 }
+Object *FileReadlines(BM::Scope *scope, vector<Object *> unknowns) {
+    auto self = scope->get("this")->value();
+    auto lines = new Object;
+    lines->set("ctor", new Function("ctor", "let this = {};return this;"));
+    auto pushFun = new Function("push", "this[this.__len] = n;this.__len++;");
+    pushFun->addDesc("n");
+    lines->set("push", pushFun);
+    lines->set("__len", new Number(0));
+    lines->set("__SYSTEM_TYPE__", new String("Array"));
+
+    auto fileBMO = (NativeValue *) self->get("file");
+    auto file = ((std::fstream *) ((NativeValue *) self->get("file"))->value());
+    auto virtualIp = new BM::Interpreter("", "fs");
+    virtualIp->set("this", lines);
+    pushFun->setParent(virtualIp);
+    if (fileBMO && self->get("file")) {
+        string line;
+        while (getline(*file, line)) {
+            vector<Object*> args;
+            map<string, Object*> hash;
+            args.push_back(new String(line));
+            pushFun->run(args, hash);
+        }
+    }
+    return lines;
+}
 
 Object *FileReset(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
@@ -113,6 +139,9 @@ Object *initModule() {
 
     auto FileReadlineP = new NativeFunction("readline", FileReadline);
     prototype->set("readline", FileReadlineP);
+
+    auto FileReadlinesP = new NativeFunction("readlines", FileReadlines);
+    prototype->set("readlines", FileReadlinesP);
 
     auto FileResetP = new NativeFunction("reset", FileReset);
     prototype->set("reset", FileResetP);

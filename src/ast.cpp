@@ -83,7 +83,7 @@ void BM::AST::parse() {
     }
 
     // 解析script内容
-    if (root) delete root;
+//    if (root) delete root;
     root = nullptr;
     auto tmpIndex = lexer.i;
     auto token = lexer.get();
@@ -312,9 +312,9 @@ void BM::AST::parse() {
                     CHECK(ast);
                     CHANGELINES(ast);
                     root->get(1)->insert(ast->root);
-                    delete ast;
+//                    delete ast;
                 }
-                delete funNameAst;
+//                delete funNameAst;
             } else if (minOp.op == "get") {
                 lexer.i = minOp.index;
                 auto tmpGetNameIndex = lexer.i;
@@ -351,7 +351,7 @@ void BM::AST::parse() {
                     CHANGELINES(ast);
                     root->insert(ast->root);
                     expr = "";
-                    delete ast;
+//                    delete ast;
                 }
             } else {
                 left += " " + token.s;
@@ -399,16 +399,16 @@ void BM::AST::parse() {
                 if (leftAst->root && leftAst->root->value() == "bad-tree") {
                     delete root;
                     root = leftAst->root;
-                    delete leftAst;
-                    delete rightAst;
+//                    delete leftAst;
+//                    delete rightAst;
                     return;
                 }
                 rightAst->parse();
                 if (rightAst->root && rightAst->root->value() == "bad-tree") {
                     delete root;
                     root = rightAst->root;
-                    delete leftAst;
-                    delete rightAst;
+//                    delete leftAst;
+//                    delete rightAst;
                     return;
                 }
                 root = new node(minOp.op, minOp.line);
@@ -429,8 +429,8 @@ void BM::AST::parse() {
                 } else {
                     root->insert(rightAst->root);
                 }
-                delete leftAst;
-                delete rightAst;
+//                delete leftAst;
+//                delete rightAst;
             }
             break;
         }
@@ -532,7 +532,7 @@ void BM::AST::parse() {
             root->insert(ifExprAst->root);
             root->insert(ifScript, ifScriptLine);
             root->insert("els", lexer.l + baseLine);
-            delete ifExprAst;
+//            delete ifExprAst;
 
             // elif, else等的解析
             UL tmpIndex;
@@ -590,7 +590,7 @@ void BM::AST::parse() {
                     root->get(2)->insert(new node("elif", elifScriptLine));
                     root->get(2)->get(-1)->insert(elIfAst->root);
                     root->get(2)->get(-1)->insert(elifScript, elifScriptLine);
-                    delete elIfAst;
+//                    delete elIfAst;
                 } else if (token.t == Lexer::ELSE_TOKEN) {
                     GET;
                     UL elBcCount = 1;
@@ -704,7 +704,7 @@ void BM::AST::parse() {
                     CHANGELINES(ast);
                     root->get(-1)->insert(ast->root);
                     root->get(-1)->insert(script, lexer.l + baseLine);
-                    delete ast;
+//                    delete ast;
 
                     lexer.i = lastI;
                 } else if (token.t == Lexer::DEFAULT_TOKEN) {
@@ -792,7 +792,7 @@ void BM::AST::parse() {
             root->insert(exprAst->root);
             root->insert(whileScript, whileScriptLine);
 
-            delete exprAst;
+//            delete exprAst;
             break;
         }
         case Lexer::DO_TOKEN:
@@ -925,7 +925,7 @@ void BM::AST::parse() {
             }
             root->insert(forScript, forScriptLine);
 
-            delete ast;
+//            delete ast;
             break;
         }
         case Lexer::DEF_TOKEN:
@@ -1083,7 +1083,7 @@ void BM::AST::parse() {
                 CHECK(ast);
                 CHANGELINES(ast);
                 root->get(1)->get(-1)->insert(ast->root);
-                delete ast;
+//                delete ast;
             }
             root->insert(funcScript, funcScriptLine);
             break;
@@ -1103,7 +1103,7 @@ void BM::AST::parse() {
             CHECK(ast);
             CHANGELINES(ast);
             root->insert(ast->root);
-            delete ast;
+//            delete ast;
             break;
         }
         case Lexer::BREAK_TOKEN:
@@ -1123,9 +1123,9 @@ void BM::AST::parse() {
             if (ast->root->value() != "undefined") root->insert(ast->root);
             else {
                 root->insert(new node("1", lexer.l + baseLine));
-                delete ast->root;
+//                delete ast->root;
             }
-            delete ast;
+//            delete ast;
             break;
         }
         case Lexer::CONTINUE_TOKEN:
@@ -1160,7 +1160,7 @@ void BM::AST::parse() {
             root->insert(ast->root);
             root->insert("as", lexer.l + baseLine);
             root->get(-1)->insert(asName, lexer.l + baseLine);
-            delete ast;
+//            delete ast;
             break;
         }
         case Lexer::EXPORT_TOKEN:
@@ -1184,7 +1184,7 @@ void BM::AST::parse() {
             CHECK(ast);
             CHANGELINES(ast);
             root->insert(ast->root);
-            delete ast;
+//            delete ast;
             break;
         }
         case Lexer::PASS_TOKEN:
