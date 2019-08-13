@@ -103,6 +103,38 @@ Object *FileReset(BM::Scope *scope, vector<Object *> unknowns) {
 
     return new BM::Undefined;
 }
+Object *FileSeek(BM::Scope *scope, vector<Object *> unknowns) {
+    auto self = scope->get("this")->value();
+
+    auto fileBMO = (NativeValue *) self->get("file");
+    auto offsetBMV = scope->get("offset");
+    auto whenceBMV = scope->get("whence");
+    if (!offsetBMV || !whenceBMV) return new BM::Undefined;
+    long long offset = ((Number*)offsetBMV->value())->value();
+    short whence = ((Number*)whenceBMV->value())->value();
+    if (fileBMO && self->get("file")) {
+        auto file = (std::fstream *) ((NativeValue *) self->get("file"))->value();
+        switch (whence) {
+            case 0:
+            {
+                (*file).seekg(offset, std::ios_base::beg);
+                break;
+            }
+            case 1:
+            {
+                (*file).seekg(offset, std::ios_base::cur);
+                break;
+            }
+            case 2:
+            {
+                (*file).seekg(offset, std::ios_base::end);
+                break;
+            }
+        }
+    }
+
+    return new BM::Undefined;
+}
 
 Object *FileClose(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
@@ -130,6 +162,11 @@ Object *initModule() {
     auto FileWriteP = new NativeFunction("write", FileWrite);
     FileWriteP->addDesc("value");
     prototype->set("write", FileWriteP);
+
+    auto FileSeekP = new NativeFunction("seek", FileSeek);
+    FileSeekP->addDesc("offset");
+    FileSeekP->addDesc("whence");
+    prototype->set("seek", FileSeekP);
 
     auto FileReadP = new NativeFunction("read", FileRead);
     prototype->set("read", FileReadP);
