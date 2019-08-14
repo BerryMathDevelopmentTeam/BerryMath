@@ -47,7 +47,6 @@ Object *FileRead(BM::Scope *scope, vector<Object *> unknowns) {
         auto file = (std::fstream *) ((NativeValue *) self->get("file"))->value();
         string line;
         while (getline(*file, line)) {
-            std::cout << line << std::endl;
             content->value() += line + "\n";
         }
     }
@@ -136,12 +135,26 @@ Object *FileSeek(BM::Scope *scope, vector<Object *> unknowns) {
     return new BM::Undefined;
 }
 
+Object *FileRemove(BM::Scope *scope, vector<Object *> unknowns) {
+    auto self = scope->get("this")->value();
+
+    auto pathBMO = (String*) self->get("path");
+    if (pathBMO) {
+        auto fileBMO = (NativeValue *) self->get("file");
+        remove(pathBMO->value().c_str());
+        ((std::fstream *) fileBMO->value())->close();
+    } else return new BM::Number(0);
+
+    return new BM::Number(1);
+}
+
+
 Object *FileClose(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
 
     auto fileBMO = (NativeValue *) self->get("file");
-    if (fileBMO && self->get("file")) {
-        ((std::fstream *) ((NativeValue *) self->get("file"))->value())->close();
+    if (fileBMO) {
+        ((std::fstream *) fileBMO->value())->close();
     }
 
     return new BM::Undefined;
@@ -173,6 +186,9 @@ Object *initModule() {
 
     auto FileCloseP = new NativeFunction("close", FileClose);
     prototype->set("close", FileCloseP);
+
+    auto FileRemoveP = new NativeFunction("remove", FileRemove);
+    prototype->set("remove", FileRemoveP);
 
     auto FileReadlineP = new NativeFunction("readline", FileReadline);
     prototype->set("readline", FileReadlineP);
