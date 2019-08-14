@@ -12,6 +12,9 @@ bool BM::Object::has(Object *v, Object* root = nullptr) {
     if (this == v || parent == v) return true;
     if (parent == root) return false;
     if (parent && parent != this) return parent->has(v, root);
+    for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+        if (iter->second == this || iter->second->has(this)) return true;
+    }
     return false;
 }
 string BM::Object::toString(bool indent, bool hl, string tab) {
@@ -161,7 +164,7 @@ void BM::Scope::set(const string& name, Object* v) {
     auto iter = variables.find(name);
     if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, new Variable(name, v)));
     else {
-        if (variables[name]->value()->unbind() < 1) delete variables[name]->value();
+        if (iter->second->value()->unbind() < 1) delete variables[name]->value();
         variables[name]->value(v);
         v->bind();
     }

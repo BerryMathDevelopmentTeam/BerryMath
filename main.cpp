@@ -17,7 +17,7 @@ void terminal() {
     cout << "  \033[41m   \033[35mB\033[0m\033[41m    \033[45m  \033[31mM\033[0m\033[45m  \033[0m" << endl;
     cout << "   \033[41m      \033[45m     \033[0m" << endl;
     cout << "     \033[41m    \033[45m    \033[0m" << endl;
-    string script;
+    BM::Interpreter ip("", "terminal");
 
     while (true) {
         string tmp;
@@ -69,23 +69,15 @@ void terminal() {
                 }
                 if (!(BBC || MBC || SBC)) break;
             }
-            script += ";" + s;
-            BM::Interpreter ip(script, "terminal");
+            ip.open(s, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
             if (ret) cout << ret->toString() << endl;
-            if (e->get(PASS_ERROR)) {
-                script.erase(script.end() - 1 - s.length());
-            }
             delete e;
         } else {
-            script += ";" + tmp;
-            BM::Interpreter ip(script, "terminal");
+            ip.open(tmp, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
-            if (e->get(PASS_ERROR)) {
-                script.erase(script.length() - 1 - tmp.length());
-            }
             if (ret) cout << ret->toString() << endl;
             delete e;
         }
@@ -137,8 +129,8 @@ int main(int argc, char* argv[]) {
             script += line + "\n";
         }
         BM::Interpreter ip(script, filename);
-        ip.run();
-//        ip.compile();
+        auto e = ip.run();
+        delete e;
         file.close();
     }
     return 0;
