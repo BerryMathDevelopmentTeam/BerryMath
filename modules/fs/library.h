@@ -23,6 +23,9 @@ Object* FileReset(Scope*, vector<Object*>);
 Object* FileClose(Scope*, vector<Object*>);
 Object* FileRemove(Scope*, vector<Object*>);
 Object* mkdir(Scope*, vector<Object*>);
+Object* copy(Scope*, vector<Object*>);
+Object* move(Scope*, vector<Object*>);
+Object* remove(Scope*, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif

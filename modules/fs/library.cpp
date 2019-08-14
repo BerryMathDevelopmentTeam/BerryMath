@@ -171,6 +171,52 @@ Object *mkdir(BM::Scope *scope, vector<Object *> unknowns) {
 
     return new BM::Undefined;
 }
+Object *copy(BM::Scope *scope, vector<Object *> unknowns) {
+    auto pathaBMV = (BM::Variable*) scope->get("patha");
+    auto pathbBMV = (BM::Variable*) scope->get("pathb");
+
+    if (pathaBMV && pathbBMV) {
+        auto pathaBMO = (String*) pathaBMV->value();
+        auto pathbBMO = (String*) pathbBMV->value();
+#ifdef I_OS_WIN32
+        system(("xcopy " + pathaBMO->value() + " " + pathbBMO->value()).c_str());
+#else
+        system(("cp -r " + pathaBMO->value() + " " + pathbBMO->value()).c_str());
+#endif
+    }
+
+    return new BM::Undefined;
+}
+Object *move(BM::Scope *scope, vector<Object *> unknowns) {
+    auto pathaBMV = (BM::Variable*) scope->get("patha");
+    auto pathbBMV = (BM::Variable*) scope->get("pathb");
+
+    if (pathaBMV && pathbBMV) {
+        auto pathaBMO = (String*) pathaBMV->value();
+        auto pathbBMO = (String*) pathbBMV->value();
+#ifdef I_OS_WIN32
+        system(("move " + pathaBMO->value() + " " + pathbBMO->value()).c_str());
+#else
+        system(("mv " + pathaBMO->value() + " " + pathbBMO->value()).c_str());
+#endif
+    }
+
+    return new BM::Undefined;
+}
+Object *remove(BM::Scope *scope, vector<Object *> unknowns) {
+    auto pathBMV = (BM::Variable*) scope->get("path");
+
+    if (pathBMV) {
+        auto pathBMO = (String*) pathBMV->value();
+#ifdef I_OS_WIN32
+        system(("del " + pathBMO->value()).c_str());
+#else
+        system(("rm -r " + pathBMO->value()).c_str());
+#endif
+    }
+
+    return new BM::Undefined;
+}
 
 Object *initModule() {
     auto exports = new Object;
@@ -216,5 +262,20 @@ Object *initModule() {
     auto mkdirP = new NativeFunction("mkdir", mkdir);
     mkdirP->addDesc("path");
     exports->set("mkdir", mkdirP);
+
+    auto removeP = new NativeFunction("remove", remove);
+    removeP->addDesc("path");
+    exports->set("remove", removeP);
+
+    auto copyP = new NativeFunction("copy", copy);
+    copyP->addDesc("patha");
+    copyP->addDesc("pathb");
+    exports->set("copy", copyP);
+
+    auto moveP = new NativeFunction("move", move);
+    moveP->addDesc("patha");
+    moveP->addDesc("pathb");
+    exports->set("move", moveP);
+
     return exports;
 }
