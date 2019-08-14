@@ -7,11 +7,11 @@ using std::string;
 using std::map;
 using std::vector;
 
-bool BM::Object::has(Object *v, Object* root = nullptr) {
+bool BM::Object::has(Object *v, Object* root = nullptr, bool flag) {
     if (!root) root = this;
-    if (this == v || parent == v) return true;
+    if (this == v || (parent == v && !flag)) return true;
     if (parent == root) return false;
-    if (parent && parent != this) return parent->has(v, root);
+    if (parent && parent != this && !flag) return parent->has(v, root);
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
         if (iter->second == this || iter->second->has(this)) return true;
     }
@@ -47,8 +47,8 @@ string BM::Object::toString(bool indent, bool hl, string tab) {
             }
             i++;
             for (; ; i++) {
-                string key(std::to_string(i));
-                auto v = get(key);
+                key = std::to_string(i);
+                v = get(key);
                 if (!v) break;
                 if (has(v)) {
                     o += ", ...(value)...";
@@ -73,10 +73,10 @@ string BM::Object::toString(bool indent, bool hl, string tab) {
                 o += ": ";
                 auto value = iter->second;
                 string valueStr(value->toString(indent, hl, tab));
-                if (value->type() == STRING) {
-                    valueStr.insert(0, "\"");
-                    valueStr += "\"";
-                }
+//                if (value->type() == STRING && !hl) {
+//                    valueStr.insert(0, "\"");
+//                    valueStr += "\"";
+//                }
                 if (has(iter->second)) o += "...";
                 else o += valueStr;
                 o += ",";
@@ -164,8 +164,8 @@ void BM::Scope::set(const string& name, Object* v) {
     auto iter = variables.find(name);
     if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, new Variable(name, v)));
     else {
-        if (iter->second->value()->unbind() < 1) delete variables[name]->value();
-        variables[name]->value(v);
+        if (iter->second->value()->links() < 1 || iter->second->value()->unbind() < 1) iter->second->value();
+        iter->second->value(v);
         v->bind();
     }
     if (name != SCOPE_D_NAME) {

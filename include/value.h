@@ -24,7 +24,7 @@ namespace BM {
     class Object {
     public:
         Object() : linked(0), parent(nullptr) { }
-        bool has(Object*, Object*);
+        bool has(Object*, Object*, bool = true);
         void set(const string &key, Object *value);
         void insert(const string&, Object*);
         Object* get(const string &key);

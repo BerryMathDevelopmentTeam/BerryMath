@@ -429,6 +429,24 @@ BM::Object *BM::Interpreter::run() {
                     object->set(key, e->get(PASS_RETURN));
                 }
                 exports->set(PASS_RETURN, object);
+            } else if (ast->value() == "a-value") {
+                auto ret = new Object;
+                ret->set("ctor", new Function("ctor", "let this = {};return this;"));
+                auto pushFun = new Function("push", "this[this.__len] = n;this.__len++;");
+                pushFun->addDesc("n");
+                ret->set("push", pushFun);
+                L arrlen = 0;
+                ret->set("__SYSTEM_TYPE__", new String("Array"));
+                for (L i = 0; i < ast->rValue()->length(); i++) {
+                    auto valueNode = ast->rValue()->get(i);
+                    string valueStr(ast->rValue()->get(i)->value());
+                    Interpreter ip(valueStr, filename, this);
+                    auto e = ip.run();
+                    CHECKITER(e, valueNode);
+                    ret->set(std::to_string(arrlen++), e->get(PASS_RETURN));
+                }
+                ret->set("__len", new Number(arrlen));
+                exports->set(PASS_RETURN, ret);
             } else if (len < 1) {
                 if (isNumber(ast->value())) {
                     exports->set(PASS_RETURN, new Number(transSD(ast->value())));
@@ -526,13 +544,16 @@ BM::Object *BM::Interpreter::run() {
                         up = e->get(PASS_UPVALUE);
                         key = ((String*)e->get(PASS_LASTKEY))->value();
                         if (op == "=") up->set(key, right);
+                        exports->set(PASS_RETURN, right);
                     } else if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
                         std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         THROW;
                     }
-                    if (op == "=" && !(name == "." || (name == "get" && leftNode->length() > 0))) scope->set(name, right);
-                    else {
+                    if (op == "=" && !(name == "." || (name == "get" && leftNode->length() > 0))) {
+                        scope->set(name, right);
+                        exports->set(PASS_RETURN, right);
+                    } else {
                         Object* value_ = nullptr;
                         if (name == "." || (name == "get" && leftNode->length() > 0)) {
                             value_ = up->get(key);
@@ -624,6 +645,7 @@ BM::Object *BM::Interpreter::run() {
                                 } WRONGEXPRTYPE(op);
                             } WRONGEXPRTYPE(op);
                         }
+                        exports->set(PASS_RETURN, value_);
                     }
                 } else if (
                         op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="

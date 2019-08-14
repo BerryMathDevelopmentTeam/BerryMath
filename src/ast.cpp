@@ -1208,6 +1208,8 @@ void BM::AST::parse() {
             if (token.t == Lexer::COLON_TOKEN) {
                 root = new node("o-value", upLine + baseLine);
                 // 是一个Object value
+                ULL sbc(0);
+                ULL mbc(0);
                 ULL bbc(1);
                 while (true) {
                     GET;
@@ -1237,10 +1239,14 @@ void BM::AST::parse() {
                         GET;
                         if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
                         else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) bbc--;
-                        if (token.t == Lexer::COMMA_TOKEN && bbc == 1) {
+                        else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
+                        else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
+                        else if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                        else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
+                        if (token.t == Lexer::COMMA_TOKEN && bbc == 1 && !mbc && !sbc) {
                             break;
                         }
-                        if (!bbc) {
+                        if (!bbc && !mbc && !sbc) {
                             finish = true;
                             break;
                         }
@@ -1291,10 +1297,14 @@ void BM::AST::parse() {
             while (true) {
                 GET;
                 if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
-                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) if (!(--mbc)) break;
+                else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN)if (!(--mbc)) break;
                 if (token.t == Lexer::COMMA_TOKEN && mbc == 1) {
                     root->insert(strValue, lexer.l + baseLine);
                     strValue = "";
+                } else if (token.t == Lexer::PROGRAM_END) {
+                    if (mbc > 0) {
+                        root->insert("SyntaxError: Lack of middle brackets", lexer.l + baseLine);
+                    }
                 } else {
                     strValue += token.s + " ";
                 }

@@ -72,13 +72,13 @@ void terminal() {
             ip.open(s, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
-            if (ret) cout << ret->toString() << endl;
+            if (ret) cout << (*ret) << endl;
             delete e;
         } else {
             ip.open(tmp, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
-            if (ret) cout << ret->toString() << endl;
+            if (ret) cout << (*ret) << endl;
             delete e;
         }
     }
