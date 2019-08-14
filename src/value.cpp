@@ -11,9 +11,9 @@ bool BM::Object::has(Object *v, Object* root = nullptr, bool flag) {
     if (!root) root = this;
     if (this == v || (parent == v && !flag)) return true;
     if (parent == root) return false;
-    if (parent && parent != this && !flag) return parent->has(v, root);
+    if (parent && parent != this && !flag) return parent->has(v, root, flag);
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
-        if (iter->second == this || iter->second->has(this)) return true;
+        if (iter->second && (iter->second == this || iter->second->has(this, root, flag))) return true;
     }
     return false;
 }
