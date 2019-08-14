@@ -1,5 +1,7 @@
 #include <string>
 #include <cstdlib>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <fstream>
 #include "library.h"
 
@@ -148,13 +150,23 @@ Object *FileRemove(BM::Scope *scope, vector<Object *> unknowns) {
     return new BM::Number(1);
 }
 
-
 Object *FileClose(BM::Scope *scope, vector<Object *> unknowns) {
     auto self = scope->get("this")->value();
 
     auto fileBMO = (NativeValue *) self->get("file");
     if (fileBMO) {
         ((std::fstream *) fileBMO->value())->close();
+    }
+
+    return new BM::Undefined;
+}
+
+Object *mkdir(BM::Scope *scope, vector<Object *> unknowns) {
+    auto pathBMV = (BM::Variable*) scope->get("path");
+
+    if (pathBMV) {
+        auto pathBMO = (String*) pathBMV->value();
+        ::mkdir(pathBMO->value().c_str(), 0755);
     }
 
     return new BM::Undefined;
@@ -200,5 +212,9 @@ Object *initModule() {
     prototype->set("reset", FileResetP);
 
     exports->set("File", FileClass);
+
+    auto mkdirP = new NativeFunction("mkdir", mkdir);
+    mkdirP->addDesc("path");
+    exports->set("mkdir", mkdirP);
     return exports;
 }

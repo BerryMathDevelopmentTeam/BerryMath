@@ -22,6 +22,7 @@ Object* FileReadlines(Scope*, vector<Object*>);
 Object* FileReset(Scope*, vector<Object*>);
 Object* FileClose(Scope*, vector<Object*>);
 Object* FileRemove(Scope*, vector<Object*>);
+Object* mkdir(Scope*, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif
