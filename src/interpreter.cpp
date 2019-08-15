@@ -533,6 +533,11 @@ BM::Object *BM::Interpreter::run() {
                         ) {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
+                    if (leftNode->length() > 0 || isNumber(name) || isString(name) || name == "o-value" || name == "a-value") {
+                        std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
+                                  << ast->line() << std::endl;
+                        THROW;
+                    }
                     Object* up;
                     string key;
                     if (name == "." || (name == "get" && leftNode->length() > 0)) {
@@ -545,10 +550,6 @@ BM::Object *BM::Interpreter::run() {
                         key = ((String*)e->get(PASS_LASTKEY))->value();
                         if (op == "=") up->set(key, right);
                         exports->set(PASS_RETURN, right);
-                    } else if (leftNode->length() > 0 || isNumber(name) || isString(name)) {
-                        std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
-                                  << ast->line() << std::endl;
-                        THROW;
                     }
                     if (op == "=" && !(name == "." || (name == "get" && leftNode->length() > 0))) {
                         scope->set(name, right);

@@ -1,9 +1,0 @@
-ac de 07 fd 68 65 6c 6c 6f 00 ff 01 ff 02 00 00 00 00 00 00 00 16 00 11 04 00 01 00 11 09 00 02 00 13 04 09 00 10 04
-finish
-
-.DATA
-.CODE
-mov al $1
-mov bl $2
-add al bl
-push al
