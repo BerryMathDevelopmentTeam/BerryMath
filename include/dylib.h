@@ -11,6 +11,7 @@
 #include <dlfcn.h>
 #endif
 #include <string>
+#include <vector>
 #include "types.h"
 
 using std::string;
@@ -21,7 +22,11 @@ namespace BM {
         Dylib() : name(""), status(false) { }
         Dylib(const string& n) : name(n), status(false) { open(); }
         void close();
-        bool open(const string& n);
+        bool open(const string& n) {
+            name = n;
+            status = false;
+            return open();
+        }
         void* resolve(const string&);
         ~Dylib() { if (dyhandle) close(); }
         bool load() { return status; }
@@ -36,6 +41,18 @@ namespace BM {
 #endif
         bool status;
         bool open();
+    private:
+        static
+        inline
+#ifdef I_OS_WIN32
+        // windows
+std::vector<HINSTANCE> dyhandlePool;
+#else
+// linux, mac, unix等
+        std::vector<void*> dyhandlePool;
+#endif
+    public:
+        static void clear();
     };
 }
 

@@ -24,7 +24,17 @@ namespace BM {
             script = std::regex_replace(script, pattern, "\n");
             script += "\n;pass";
         }
-        void open(const string& s) { script = s;lexer.open(script);byCache = false; }
+        void open(const string& s) {
+            script = s;
+            if (!child) {
+                script += "\n";
+                std::regex pattern("//.*[$\n]", std::regex::icase);
+                script = std::regex_replace(script, pattern, "\n");
+                script += "\n;pass";
+            }
+            lexer.open(script);
+            byCache = false;
+        }
         void parse();
         void clear() {
             if (root) delete root;
@@ -34,8 +44,8 @@ namespace BM {
         bool Export(string filename = "script.bmast");
         void import(string filename = "script.bmast");
         void importByString(string);
-        string value() { return root->value(); }
-        ~AST() { if (!child) delete root; }
+        string value() { if (root) return root->value(); return ""; }
+        ~AST();
     private:
         static void trim(string& s) {
             s.erase(0, 1);
@@ -48,18 +58,13 @@ namespace BM {
                 s = s.replace(pos, alen, "");
             }
         }
-        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) {
-            script += "\n";
-            std::regex pattern("//.*[$\n]", std::regex::icase);
-            script = std::regex_replace(script, pattern, "\n");
-            script += "\n;pass";
-        }
+        AST(const string& s, UL l) : root(nullptr), script(s), baseLine(l), child(true), lexer(script), byCache(false) { }
     public:
         class node {
         public:
             node() : v(""), l(0) { }
-            node(string t) : v(t), l(0) { }
-            node(string t, UL i) : v(t), l(i) { }
+            node(const string& t) : v(t), l(0) { }
+            node(const string& t, UL i) : v(t), l(i) { }
             inline string value() { return v; }
             inline void value(string c) { v = c; }
             inline UL line() { return l; }
@@ -72,11 +77,13 @@ namespace BM {
             inline UL length() { return children.size(); }
             node& operator[](long index) { return *get(index); }
             void insert(node* n) { if (n) children.push_back(n); }
-            void insert(string v, UL l) { children.push_back(new node(v, l)); }
+            void insert(const string& v, UL l) { children.push_back(new node(v, l)); }
             string exportByString();
             ~node() {
-                for (auto iter = children.begin(); iter != children.end(); iter++) {
-                    if (*iter) delete (*iter);
+                LL sz = children.size();
+                if (sz <= 0) return;
+                for (auto i = 0; i < sz; i++) {
+                    if (children[i]) delete children[i];
                 }
             }
         private:

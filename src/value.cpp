@@ -2,7 +2,8 @@
 #include <map>
 #include <vector>
 #include "interpreter.h"
-#include "../include/value.h"
+#include "dylib.h"
+#include "value.h"
 using std::string;
 using std::map;
 using std::vector;
@@ -14,6 +15,13 @@ bool BM::Object::has(Object *v, Object* root = nullptr, bool flag) {
     if (parent && parent != this && !flag) return parent->has(v, root, flag);
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
         if (iter->second && (iter->second == this || iter->second->has(this, root, flag))) return true;
+    }
+    return false;
+}
+bool BM::Object::delhas(Object* v) {
+    if (v == this) return true;
+    for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+        if (iter->second != this && iter->second != v && iter->second->delhas(v)) return true;
     }
     return false;
 }
@@ -127,10 +135,8 @@ void BM::Object::del(const string &key) {
 BM::Object::~Object() {
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
         Object* v = iter->second;
-        if (!v || v->linked < 1 || has(v)) continue;
-        v->linked--;
-        if (v->linked < 1)
-            delete v;
+        if (!v || v->linked < 1) continue;
+        if (!delhas(v) && v->unbind() < 1) delete v;
     }
     proto.clear();
 }

@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include "types.h"
+#include "dylib.h"
 using std::string;
 using std::map;
 using std::vector;
@@ -25,6 +26,7 @@ namespace BM {
     public:
         Object() : linked(0), parent(nullptr) { }
         bool has(Object*, Object*, bool = true);
+        bool delhas(Object*);
         void set(const string &key, Object *value);
         void insert(const string&, Object*);
         Object* get(const string &key);

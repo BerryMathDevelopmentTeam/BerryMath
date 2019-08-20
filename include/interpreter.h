@@ -38,7 +38,7 @@ namespace BM {
         Object *run();
         Object *runCC();
         string fn() { return filename; }
-        ~Interpreter() { }
+        ~Interpreter() { if (!child && ast) delete ast; }
         Variable &operator[](const string &s) { return *scope->get(s); }
         void set(const string &name, Object *v) { scope->set(name, v); }
         Variable *get(const string &name, Scope::Flag flag = Scope::ALL_MIGHT) { return scope->get(name, flag); }
@@ -86,6 +86,7 @@ namespace BM {
 #define PASS_LASTKEY "__LASTKEY__"
 #define PASS_BREAK "__BREAK__"
 #define PASS_CONTINUE "__CONTINUE__"
+#define PASS_NEXTOP "__NEXTOPERATOR__"
 #define THROW exports->set(PASS_ERROR, new Number(1));return exports;
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR)) { \
@@ -110,6 +111,14 @@ namespace BM {
         << ast->line()  << std::endl; \
         THROW; \
     }
+#define CHECKPASSNEXTOP(e) auto v = e->get(PASS_NEXTOP);if (v) { auto value = (Number*)e->get(PASS_RETURN);if (value->type() == NUMBER) { value->value() += ((Number*)v)->value(); } WRONGEXPRTYPE("self increment or decrement"); }
+#define OPERPASSNEXTOP(conE, con) { auto ret = conE->get(PASS_RETURN); \
+        if (ret->type() == OBJECT) { \
+            con = ret; \
+        } else { \
+            con = ret->copy(); \
+            CHECKPASSNEXTOP(conE); \
+        } }
 #ifdef I_OS_WIN32
         // 拓展库path
 #define BMMPATH "C:\\BM\\libraries\\lib"

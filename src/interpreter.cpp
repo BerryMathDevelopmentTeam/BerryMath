@@ -62,7 +62,13 @@ BM::Object *BM::Interpreter::run() {
             ip.child = true;
             auto e = ip.run();
             CHECKITER(e, ip.ast);
-            scope->set(name, e->get(PASS_RETURN));
+            auto ret = e->get(PASS_RETURN);
+            if (ret->type() == OBJECT) {
+                scope->set(name, ret);
+            } else {
+                scope->set(name, ret->copy());
+                CHECKPASSNEXTOP(e);
+            }
         } else if (ast->value() == "if") {
             auto conAst = ast->rValue()->get(0);
             Interpreter conIp("", filename, this);
@@ -70,12 +76,14 @@ BM::Object *BM::Interpreter::run() {
             conIp.ast->root = conAst;
             auto conE = conIp.run();
             CHECKITER(conE, conIp.ast);
-            auto con = conE->get(PASS_RETURN);
+            Object* con;
+            OPERPASSNEXTOP(conE, con);
             if (isTrue(con)) {
-                string script(ast->rValue()->get(1)->value());
-                Interpreter scriptIp(script, filename, this);
+                string conscript(ast->rValue()->get(1)->value());
+                Interpreter scriptIp(conscript, filename, this);
                 auto e = scriptIp.run();
                 CHECKITER(e, scriptIp.ast);
+                CHECKPASSNEXTOP(e);
                 auto pb = (Number*) e->get(PASS_BREAK);
                 if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                 delete e;
@@ -88,23 +96,26 @@ BM::Object *BM::Interpreter::run() {
                         elconIp.child = true;
                         elconIp.ast->root = elconAst->get(0);
                         auto elconE = elconIp.run();
-                        CHECKITER(conE, conIp.ast);
-                        auto elcon = elconE->get(PASS_RETURN);
+                        CHECKITER(elconE, elconIp.ast);
+                        Object* elcon;
+                        OPERPASSNEXTOP(elconE, elcon);
                         if (isTrue(elcon)) {
-                            string script(elconAst->get(1)->value());
-                            Interpreter scriptIp(script, filename, this);
+                            string conscript(elconAst->get(1)->value());
+                            Interpreter scriptIp(conscript, filename, this);
                             auto e = scriptIp.run();
                             CHECKITER(e, scriptIp.ast);
+                            CHECKPASSNEXTOP(e);
                             auto pb = (Number*) e->get(PASS_BREAK);
                             if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                             delete e;
                             break;
                         }
                     } else {
-                        string script(elconAst->get(0)->value());
-                        Interpreter scriptIp(script, filename, this);
+                        string elscript(elconAst->get(0)->value());
+                        Interpreter scriptIp(elscript, filename, this);
                         auto e = scriptIp.run();
                         CHECKITER(e, scriptIp.ast);
+                        CHECKPASSNEXTOP(e);
                         auto pb = (Number*) e->get(PASS_BREAK);
                         if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                         delete e;
@@ -121,12 +132,13 @@ BM::Object *BM::Interpreter::run() {
             initIp.child = true;
             auto initE = initIp.run();
             CHECKITER(initE, initAst);
+            CHECKPASSNEXTOP(initE);
             scope->load(initIp.scope);
 
             // 获取条件
             auto conAst = ast->rValue()->get(1);
             auto nxtAst = ast->rValue()->get(2);
-            string script(ast->rValue()->get(3)->value());// 获取for循环代码块
+            string forscript(ast->rValue()->get(3)->value());// 获取for循环代码块
             while (true) {
                 // 条件判断
                 Interpreter conIp("", filename, this);
@@ -134,13 +146,15 @@ BM::Object *BM::Interpreter::run() {
                 conIp.child = true;
                 auto conE = conIp.run();
                 CHECKITER(conE, conAst);
+                CHECKPASSNEXTOP(conE);
                 if (!isTrue(conE->get(PASS_RETURN))) break;
 
                 // 代码块运行
-                Interpreter scriptIp(script, filename, this);
+                Interpreter scriptIp(forscript, filename, this);
                 scriptIp.scope->load(conIp.scope);
-                auto scriptE = scriptIp.run();
+                Object* scriptE = scriptIp.run();
                 CHECKITER(scriptE, scriptIp.ast);
+                { CHECKPASSNEXTOP(scriptE); }
                 auto pb = (Number*) scriptE->get(PASS_BREAK);
                 if (pb) {
                     double v = pb->value() - 1;
@@ -155,21 +169,24 @@ BM::Object *BM::Interpreter::run() {
                 nxtIp.child = true;
                 auto nxtE = nxtIp.run();
                 CHECKITER(nxtE, nxtAst);
+                { CHECKPASSNEXTOP(nxtE); }
             }
         } else if (ast->value() == "while") {
             auto conAst = ast->rValue()->get(0);
-            auto script = ast->rValue()->get(1)->value();
+            auto whscript = ast->rValue()->get(1)->value();
             while (true) {
                 Interpreter conIp("", filename, this);
                 conIp.ast->root = conAst;
                 conIp.child = true;
                 auto conE = conIp.run();
                 CHECKITER(conE, conAst);
+                CHECKPASSNEXTOP(conE);
                 auto con = conE->get(PASS_RETURN);
                 if (isTrue(con)) {
-                    Interpreter ip(script, filename, this);
+                    Interpreter ip(whscript, filename, this);
                     auto e = ip.run();
                     CHECKITER(e, ast->rValue());
+                    CHECKPASSNEXTOP(e);
                     auto pb = (Number*) e->get(PASS_BREAK);
                     if (pb) {
                         double v = pb->value() - 1;
@@ -180,12 +197,13 @@ BM::Object *BM::Interpreter::run() {
                 } else break;
             }
         } else if (ast->value() == "do") {
-            auto script = ast->rValue()->get(0)->value();
+            auto doscript = ast->rValue()->get(0)->value();
             auto conAst = ast->rValue()->get(1);
             while (true) {
-                Interpreter ip(script, filename, this);
+                Interpreter ip(doscript, filename, this);
                 auto e = ip.run();
                 CHECKITER(e, ast->rValue());
+                CHECKPASSNEXTOP(e);
                 auto pb = (Number*) e->get(PASS_BREAK);
                 if (pb) {
                     double v = pb->value() - 1;
@@ -199,6 +217,7 @@ BM::Object *BM::Interpreter::run() {
                 conIp.child = true;
                 auto conE = conIp.run();
                 CHECKITER(conE, conAst);
+                { CHECKPASSNEXTOP(conE); }
                 auto con = conE->get(PASS_RETURN);
                 if (!isTrue(con))
                     break;
@@ -214,8 +233,8 @@ BM::Object *BM::Interpreter::run() {
             Using(exports, objAst);
         } else if (ast->value() == "def") {
             string funname(ast->rValue()->get(0)->value());
-            string script(ast->rValue()->get(2)->value());
-            auto fun = new Function(funname, script);
+            string funscript(ast->rValue()->get(2)->value());
+            auto fun = new Function(funname, funscript);
             auto args = ast->rValue()->get(1);
             for (UL i = 0; i < args->length(); i++) {
                 auto arg = args->get(i);
@@ -225,6 +244,7 @@ BM::Object *BM::Interpreter::run() {
                 Interpreter tmp(defaultValue, filename, this);
                 auto tmpe = tmp.run();
                 CHECKITER(tmpe, arg);
+                CHECKPASSNEXTOP(tmpe);
                 fun->defaultValue(argname, tmpe->get(PASS_RETURN));
             }
             set(funname, fun);
@@ -248,6 +268,7 @@ BM::Object *BM::Interpreter::run() {
                 ip.child = true;
                 auto e = ip.run();
                 CHECKITER(e, prototypeNode->get(1));
+                CHECKPASSNEXTOP(e);
                 prototype->set(name, e->get(PASS_RETURN));
             }
         } else if (ast->value() == "new") {
@@ -264,6 +285,7 @@ BM::Object *BM::Interpreter::run() {
             ip.child = true;
             auto e = ip.run();
             CHECKITER(e, ast->rValue());
+            CHECKPASSNEXTOP(e);
             auto classValue = get(name);
             auto ret = e->get(PASS_RETURN);
             auto keys = classValue->value()->get("prototype")->memberNames();
@@ -295,8 +317,10 @@ BM::Object *BM::Interpreter::run() {
                         ip.child = true;
                         ip.ast->root = valueAst;
                         auto e = ip.run();
+                        Object* argValue;
                         CHECKITER(e, ast);
-                        hashArg.insert(std::pair<string, Object *>(argName, e->get(PASS_RETURN)));
+                        OPERPASSNEXTOP(e, argValue);
+                        hashArg.insert(std::pair<string, Object *>(argName, argValue));
                     } else {
                         auto valueAst = node;
                         Interpreter ip("", filename, this);
@@ -304,13 +328,17 @@ BM::Object *BM::Interpreter::run() {
                         ip.ast->root = valueAst;
                         auto e = ip.run();
                         CHECKITER(e, ast);
-                        args.push_back(e->get(PASS_RETURN));
+                        Object* argValue;
+                        OPERPASSNEXTOP(e, argValue);
+                        args.push_back(argValue);
                     }
                 }
                 Interpreter getIp("", filename, this);
                 getIp.child = true;
                 getIp.ast->root = r->get(0);
                 auto e = getIp.run();
+                CHECKITER(e, r->get(0));
+                CHECKPASSNEXTOP(e);
                 auto fun_ = e->get(PASS_RETURN);
                 auto up = e->get(PASS_UPVALUE);
                 bool clean = false;
@@ -365,7 +393,9 @@ BM::Object *BM::Interpreter::run() {
                         ip.child = true;
                         auto e = ip.run();
                         CHECKITER(e, ast);
-                        key = e->get(PASS_RETURN)->toString(false, false);
+                        Object* keyValue;
+                        OPERPASSNEXTOP(e, keyValue);
+                        key = keyValue->toString(false, false);
                         up = value;
                         value = value->get(key);
                         if (!value) {
@@ -426,6 +456,7 @@ BM::Object *BM::Interpreter::run() {
                     Interpreter ip(valueStr, filename, this);
                     auto e = ip.run();
                     CHECKITER(e, valueNode);
+                    CHECKPASSNEXTOP(e);
                     object->set(key, e->get(PASS_RETURN));
                 }
                 exports->set(PASS_RETURN, object);
@@ -443,6 +474,7 @@ BM::Object *BM::Interpreter::run() {
                     Interpreter ip(valueStr, filename, this);
                     auto e = ip.run();
                     CHECKITER(e, valueNode);
+                    CHECKPASSNEXTOP(e);
                     ret->set(std::to_string(arrlen++), e->get(PASS_RETURN));
                 }
                 ret->set("__len", new Number(arrlen));
@@ -462,20 +494,34 @@ BM::Object *BM::Interpreter::run() {
                     exports->set(PASS_RETURN, var->value());
                 }
             } else if (len == 1) {
-                if (ast->value() == "++" || ast->value() == "--") {
+                if (ast->value() == "++" || ast->value() == "--" || ast->value() == "++-f" || ast->value() == "---f") {
                     Interpreter ip("", filename, this);
                     ip.ast->root = ast->rValue()->get(0);
                     ip.child = true;
                     auto e = ip.run();
                     CHECKITER(e, ast);
+                    CHECKPASSNEXTOP(e);
                     auto n = e->get(PASS_RETURN);
 //                std::cout << n->type() << std::endl;
+                    exports->set(PASS_RETURN, n);
                     if (ast->value() == "++") {
+                        if (n->type() == NUMBER) {
+                            Number *v = (Number *) n;
+                            exports->set(PASS_NEXTOP, new Number(1));
+//                            v->value()++;
+                        } WRONGEXPRTYPE(ast->value());
+                    } else if (ast->value() == "--") {
+                        if (n->type() == NUMBER) {
+                            Number *v = (Number *) n;
+                            exports->set(PASS_NEXTOP, new Number(-1));
+//                            v->value()--;
+                        } WRONGEXPRTYPE(ast->value());
+                    } else if (ast->value() == "++-f") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()++;
                         } WRONGEXPRTYPE(ast->value());
-                    } else if (ast->value() == "--") {
+                    } else if (ast->value() == "---f") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()--;
@@ -546,6 +592,7 @@ BM::Object *BM::Interpreter::run() {
                         ip.ast->root = leftNode;
                         auto e = ip.run();
                         CHECKITER(e, leftNode);
+                        CHECKPASSNEXTOP(e);
                         up = e->get(PASS_UPVALUE);
                         key = ((String*)e->get(PASS_LASTKEY))->value();
                         if (op == "=") up->set(key, right);
@@ -727,6 +774,10 @@ BM::Object *BM::Interpreter::run() {
         if (child) break;
     }
     if (!exports->get(PASS_RETURN)) exports->set(PASS_RETURN, new Undefined);
+    if (!child && ast) {
+        delete ast;
+        ast = nullptr;
+    }
     return exports;
 }
 

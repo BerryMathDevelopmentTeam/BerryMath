@@ -1,10 +1,26 @@
 #include <iostream>
+#include <cstdlib>
+// #define DEBUG
 #include <BerryMath.h>
 #include <fstream>
 using std::cout;
 using std::endl;
 using std::cin;
 using std::fstream;
+
+#ifdef DEBUG
+inline void* operator new(size_t sz) {
+    void* o = malloc(sz);
+//    std::cout << "\033[36m[LOG] \033[32mnew value: " << (long)o << "\033[0m" << std::endl;
+    std::cout << "n: " << o << std::endl;
+    return o;
+}
+inline void operator delete(void *o) {
+//    std::cout << "\033[36m[LOG] \033[31mdelete value: " << (long)o << "\033[0m" << std::endl;
+    std::cout << "d: " << o << std::endl;
+    free(o);
+}
+#endif
 
 void terminal() {
     cout << "BerryMath Terminal" << endl;
@@ -129,9 +145,9 @@ int main(int argc, char* argv[]) {
             script += line + "\n";
         }
         BM::Interpreter ip(script, filename);
-        auto e = ip.run();
-        delete e;
+        ip.run();
         file.close();
     }
+    BM::Dylib::clear();
     return 0;
 }

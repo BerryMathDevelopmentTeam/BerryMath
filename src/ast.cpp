@@ -9,6 +9,7 @@ void BM::AST::parse() {
     // 解析cache内容
     if (byCache) {
         if (root) delete root;
+        root = nullptr;
 #define AGET token = astLexer.get()
         auto AGET;
         if (token.t == Lexer::PROGRAM_END) {
@@ -64,10 +65,10 @@ void BM::AST::parse() {
                 if (indentCount == 1) {
                     childrenContent += " " + token.s;
                     auto ast = new AST("", astLexer.l + baseLine);
-                    CHANGELINES(ast);
                     ast->importByString(childrenContent);
                     ast->parse();
                     CHECK(ast);
+                    CHANGELINES(ast);
                     root->insert(ast->root);
                     delete ast;
                     childrenContent = "";
@@ -128,8 +129,8 @@ void BM::AST::parse() {
             auto ast = new AST(expression, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
-            root->insert(ast->root);
             CHANGELINES(ast);
+            root->insert(ast->root);
             delete ast;
             break;
         }
@@ -312,9 +313,9 @@ void BM::AST::parse() {
                     CHECK(ast);
                     CHANGELINES(ast);
                     root->get(1)->insert(ast->root);
-//                    delete ast;
+                    delete ast;
                 }
-//                delete funNameAst;
+                delete funNameAst;
             } else if (minOp.op == "get") {
                 lexer.i = minOp.index;
                 auto tmpGetNameIndex = lexer.i;
@@ -351,16 +352,16 @@ void BM::AST::parse() {
                     CHANGELINES(ast);
                     root->insert(ast->root);
                     expr = "";
-//                    delete ast;
+                    delete ast;
                 }
             } else {
                 left += " " + token.s;
                 GET;
                 GET;
-                ULL sbc(0);
-                ULL mbc(0);
-                ULL bbc(0);
-                while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END || sbc > 0 || mbc > 0 || bbc > 0) {
+                LL sbc(0);
+                LL mbc(0);
+                LL bbc(0);
+                while (sbc > 0 || mbc > 0 || bbc > 0 || (token.t != Lexer::PROGRAM_END && token.t != Lexer::END_TOKEN && token.t != Lexer::PASS_TOKEN)) {
                     if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
                     else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
@@ -390,34 +391,22 @@ void BM::AST::parse() {
                     for (auto i = 0; i < rightBCC; i++) right = "(" + right;
                 }
                 auto leftAst = new AST(left, leftLine);
+                auto rightAst = new AST(right, rightLine);
+                leftAst->parse();
                 CHECK(leftAst);
                 CHANGELINES(leftAst);
-                auto rightAst = new AST(right, rightLine);
+                rightAst->parse();
                 CHECK(rightAst);
                 CHANGELINES(rightAst);
-                leftAst->parse();
-                if (leftAst->root && leftAst->root->value() == "bad-tree") {
-                    delete root;
-                    root = leftAst->root;
-//                    delete leftAst;
-//                    delete rightAst;
-                    return;
-                }
-                rightAst->parse();
-                if (rightAst->root && rightAst->root->value() == "bad-tree") {
-                    delete root;
-                    root = rightAst->root;
-//                    delete leftAst;
-//                    delete rightAst;
-                    return;
-                }
                 root = new node(minOp.op, minOp.line);
                 if ((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--" || minOp.op == "+" || minOp.op == "-")) {
                     if (minOp.op == "++" || minOp.op == "--")
-                        root->value(minOp.op);
+                        root->value(minOp.op + "-f");
                     else root->insert("0", minOp.line);
                 } else {
-                    if (minOp.op == "++" || minOp.op == "--") root->insert(leftAst->root);
+                    if (minOp.op == "++" || minOp.op == "--") {
+                        root->insert(leftAst->root);
+                    }
                     else root->insert(leftAst->root);
                 }
                 replace(right, " ");
@@ -429,8 +418,8 @@ void BM::AST::parse() {
                 } else {
                     root->insert(rightAst->root);
                 }
-//                delete leftAst;
-//                delete rightAst;
+                delete leftAst;
+                delete rightAst;
             }
             break;
         }
@@ -438,11 +427,11 @@ void BM::AST::parse() {
         case Lexer::DSUB_TOKEN:
         {
             string op(token.s);
-            root = new node(op, lexer.l + baseLine);
+            root = new node(op + "-f", lexer.l + baseLine);
             string expr;
-            while (token.t != Lexer::END_TOKEN) {
+            while (token.t != Lexer::END_TOKEN && token.t != Lexer::PROGRAM_END && token.t != Lexer::PASS_TOKEN) {
                 GET;
-                expr += token.s;
+                expr += token.s + " ";
             }
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
@@ -532,7 +521,7 @@ void BM::AST::parse() {
             root->insert(ifExprAst->root);
             root->insert(ifScript, ifScriptLine);
             root->insert("els", lexer.l + baseLine);
-//            delete ifExprAst;
+            delete ifExprAst;
 
             // elif, else等的解析
             UL tmpIndex;
@@ -590,7 +579,7 @@ void BM::AST::parse() {
                     root->get(2)->insert(new node("elif", elifScriptLine));
                     root->get(2)->get(-1)->insert(elIfAst->root);
                     root->get(2)->get(-1)->insert(elifScript, elifScriptLine);
-//                    delete elIfAst;
+                    delete elIfAst;
                 } else if (token.t == Lexer::ELSE_TOKEN) {
                     GET;
                     UL elBcCount = 1;
@@ -704,7 +693,7 @@ void BM::AST::parse() {
                     CHANGELINES(ast);
                     root->get(-1)->insert(ast->root);
                     root->get(-1)->insert(script, lexer.l + baseLine);
-//                    delete ast;
+                    delete ast;
 
                     lexer.i = lastI;
                 } else if (token.t == Lexer::DEFAULT_TOKEN) {
@@ -792,7 +781,7 @@ void BM::AST::parse() {
             root->insert(exprAst->root);
             root->insert(whileScript, whileScriptLine);
 
-//            delete exprAst;
+            delete exprAst;
             break;
         }
         case Lexer::DO_TOKEN:
@@ -925,7 +914,7 @@ void BM::AST::parse() {
             }
             root->insert(forScript, forScriptLine);
 
-//            delete ast;
+            delete ast;
             break;
         }
         case Lexer::DEF_TOKEN:
@@ -1083,7 +1072,7 @@ void BM::AST::parse() {
                 CHECK(ast);
                 CHANGELINES(ast);
                 root->get(1)->get(-1)->insert(ast->root);
-//                delete ast;
+                delete ast;
             }
             root->insert(funcScript, funcScriptLine);
             break;
@@ -1103,7 +1092,7 @@ void BM::AST::parse() {
             CHECK(ast);
             CHANGELINES(ast);
             root->insert(ast->root);
-//            delete ast;
+            delete ast;
             break;
         }
         case Lexer::BREAK_TOKEN:
@@ -1123,9 +1112,9 @@ void BM::AST::parse() {
             if (ast->root->value() != "undefined") root->insert(ast->root);
             else {
                 root->insert(new node("1", lexer.l + baseLine));
-//                delete ast->root;
+                delete ast->root;
             }
-//            delete ast;
+            delete ast;
             break;
         }
         case Lexer::CONTINUE_TOKEN:
@@ -1160,7 +1149,7 @@ void BM::AST::parse() {
             root->insert(ast->root);
             root->insert("as", lexer.l + baseLine);
             root->get(-1)->insert(asName, lexer.l + baseLine);
-//            delete ast;
+            delete ast;
             break;
         }
         case Lexer::EXPORT_TOKEN:
@@ -1184,7 +1173,7 @@ void BM::AST::parse() {
             CHECK(ast);
             CHANGELINES(ast);
             root->insert(ast->root);
-//            delete ast;
+            delete ast;
             break;
         }
         case Lexer::PASS_TOKEN:
@@ -1208,9 +1197,9 @@ void BM::AST::parse() {
             if (token.t == Lexer::COLON_TOKEN) {
                 root = new node("o-value", upLine + baseLine);
                 // 是一个Object value
-                ULL sbc(0);
-                ULL mbc(0);
-                ULL bbc(1);
+                LL sbc(0);
+                LL mbc(0);
+                LL bbc(1);
                 while (true) {
                     GET;
                     if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) break;
@@ -1270,7 +1259,7 @@ void BM::AST::parse() {
                     lexer.i = upIndex;
                     lexer.l = upLine;
                     // 是局部作用域声明
-                    ULL bbc(1);
+                    LL bbc(1);
                     string script;
                     while (true) {
                         GET;
@@ -1291,7 +1280,7 @@ void BM::AST::parse() {
         }
         case Lexer::MIDDLE_BRACKETS_LEFT_TOKEN:
         {
-            ULL mbc(1);
+            LL mbc(1);
             string strValue;
             root = new node("a-value", lexer.l + baseLine);
             while (true) {
@@ -1323,7 +1312,7 @@ void BM::AST::parse() {
             GET;
             bool pflag(false);// private flag
 
-            ULL bbc(1);
+            LL bbc(1);
             while (true) {
                 GET;
                 if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
@@ -1489,6 +1478,10 @@ void BM::AST::import(string filename) {
     }
     file.close();
     importByString(s);
+}
+BM::AST::~AST() {
+    if (!child && root)
+        delete root;
 }
 
 inline UL BM::AST::priority(const string& op) {
