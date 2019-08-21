@@ -231,6 +231,7 @@ BM::Object *BM::Interpreter::run() {
         } else if (ast->value() == "using") {
             auto objAst = ast->rValue()->get(0);
             Using(exports, objAst);
+            ast->rValue()->clear();
         } else if (ast->value() == "def") {
             string funname(ast->rValue()->get(0)->value());
             string funscript(ast->rValue()->get(2)->value());
@@ -878,4 +879,5 @@ void BM::Interpreter::Using(Object* exports, AST::node* objAst) {
     for (; !iter.end(); iter.next()) {
         set(iter.key(), iter.value());
     }
+    delete objAst;
 }

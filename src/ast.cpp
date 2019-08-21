@@ -84,7 +84,7 @@ void BM::AST::parse() {
     }
 
     // 解析script内容
-//    if (root) delete root;
+    if (root) delete root;
     root = nullptr;
     auto tmpIndex = lexer.i;
     auto token = lexer.get();

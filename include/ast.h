@@ -9,6 +9,8 @@
 using std::string;
 using std::vector;
 
+//#define DEBUG
+
 namespace BM {
     class AST {
     public:
@@ -62,9 +64,21 @@ namespace BM {
     public:
         class node {
         public:
-            node() : v(""), l(0) { }
-            node(const string& t) : v(t), l(0) { }
-            node(const string& t, UL i) : v(t), l(i) { }
+            node() : v(""), l(0) {
+#ifdef DEBUG
+                std::cout << "n: " << this << std::endl;
+#endif
+            }
+            node(const string& t) : v(t), l(0) {
+#ifdef DEBUG
+                std::cout << "n: " << this << std::endl;
+#endif
+            }
+            node(const string& t, UL i) : v(t), l(i) {
+#ifdef DEBUG
+                std::cout << "n: " << this << std::endl;
+#endif
+            }
             inline string value() { return v; }
             inline void value(string c) { v = c; }
             inline UL line() { return l; }
@@ -78,8 +92,12 @@ namespace BM {
             node& operator[](long index) { return *get(index); }
             void insert(node* n) { if (n) children.push_back(n); }
             void insert(const string& v, UL l) { children.push_back(new node(v, l)); }
+            void clear() { children.clear(); }
             string exportByString();
             ~node() {
+#ifdef DEBUG
+                std::cout << "d: " << this << std::endl;
+#endif
                 LL sz = children.size();
                 if (sz <= 0) return;
                 for (auto i = 0; i < sz; i++) {
