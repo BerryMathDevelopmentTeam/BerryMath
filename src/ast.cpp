@@ -266,6 +266,8 @@ void BM::AST::parse() {
                 std::vector<string> args;
                 string arg;
                 bool flag = false;
+                GET;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
                 if (token.t != Lexer::BRACKETS_RIGHT_TOKEN) {
                     while (brCount > 0) {
                         arg += " " + token.s;
@@ -373,7 +375,7 @@ void BM::AST::parse() {
                 }
                 if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
                     right.erase(0, 2);
-                } else {
+                } else if (token.t != Lexer::PASS_TOKEN) {
                     right += " " + token.s;
                 }
                 long long leftBCC = 0, rightBCC = 0;

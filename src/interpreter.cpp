@@ -507,24 +507,26 @@ BM::Object *BM::Interpreter::run() {
                     if (ast->value() == "++") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
-                            exports->set(PASS_NEXTOP, new Number(1));
-//                            v->value()++;
+                            exports->set(PASS_RETURN, v->copy());
+                            v->value()++;
                         } WRONGEXPRTYPE(ast->value());
                     } else if (ast->value() == "--") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
-                            exports->set(PASS_NEXTOP, new Number(-1));
-//                            v->value()--;
+                            exports->set(PASS_RETURN, v->copy());
+                            v->value()--;
                         } WRONGEXPRTYPE(ast->value());
                     } else if (ast->value() == "++-f") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()++;
+                            exports->set(PASS_RETURN, v->copy());
                         } WRONGEXPRTYPE(ast->value());
                     } else if (ast->value() == "---f") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()--;
+                            exports->set(PASS_RETURN, v->copy());
                         } WRONGEXPRTYPE(ast->value());
                     }
                 } else {
