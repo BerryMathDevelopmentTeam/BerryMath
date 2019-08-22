@@ -12,6 +12,8 @@ using std::map;
 using std::vector;
 typedef unsigned long UL;
 
+#define DEBUG
+
 namespace BM {
     extern class Interpreter;
     enum ValueType {
@@ -24,7 +26,11 @@ namespace BM {
     using forEachCB = void(*)(const string&, Object*);
     class Object {
     public:
-        Object() : linked(0), parent(nullptr) { }
+        Object() : linked(0), parent(nullptr) {
+#ifdef DEBUG
+            std::cout << "n: " << this << std::endl;
+#endif
+        }
         bool has(Object*, Object*, bool = true);
         bool delhas(Object*);
         void set(const string &key, Object *value);
@@ -104,7 +110,11 @@ namespace BM {
         Object* copy() {
             return new Number(v);
         }
-        ~Number() { }
+        ~Number() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     private:
         double v;
     };
@@ -160,7 +170,11 @@ namespace BM {
             return this;
         }
         Object* copy() { return new String(v); }
-        ~String() { }
+        ~String() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     private:
         string v;
     };
@@ -181,7 +195,11 @@ namespace BM {
             return "null";
         }
         ValueType type() { return NULL_; }
-        ~Null() { }
+        ~Null() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     };
     class Undefined : public Object {
     public:
@@ -200,7 +218,11 @@ namespace BM {
             return "undefined";
         }
         ValueType type() { return UNDEFINED; }
-        ~Undefined() { }
+        ~Undefined() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     };
     class Function : public Object {
     public:
@@ -227,7 +249,11 @@ namespace BM {
         string functionName() {
             return funname;
         }
-        ~Function() { }
+        ~Function() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     protected:
         friend class Interpreter;
         string script;
@@ -247,7 +273,9 @@ namespace BM {
             if (val && val->unbind() < 1) delete val;
             val = v;
         }
-        ~Variable() { if (val && val->unbind() < 1) delete val; }
+        ~Variable() {
+            if (val && val->unbind() < 1) delete val;
+        }
     private:
         string n;
         Object* val;
@@ -302,7 +330,11 @@ namespace BM {
         void addDesc(const string& d) { desc.push_back(d); }
         void defaultValue(const string& name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         ValueType type() { return NATIVE_FUNCTION; }
-        ~NativeFunction() { }
+        ~NativeFunction() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     private:
         friend class Interpreter;
         NativeFuncDef native;
@@ -314,7 +346,7 @@ namespace BM {
     typedef void* nativeValueType;
     class NativeValue : public Object {
     public:
-        NativeValue(nativeValueType t = nullptr) : nv(t) { }
+        NativeValue(nativeValueType t = nullptr) : Object(), nv(t) { }
         Object* copy() { return new NativeValue(nv); }
         ValueType type() { return NATIVE_VALUE; }
         nativeValueType& value() { return nv; }
@@ -325,7 +357,11 @@ namespace BM {
             if (hl) o += "\033[0m";
             return o;
         }
-        ~NativeValue() { }
+        ~NativeValue() {
+#ifdef DEBUG
+            std::cout << "d: " << this << std::endl;
+#endif
+        }
     private:
         nativeValueType nv;
     };

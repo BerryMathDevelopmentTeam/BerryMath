@@ -19,7 +19,6 @@ string BM::Interpreter::compile() {
 
 BM::Object *BM::Interpreter::run() {
     Object *exports = new Object;
-    scope->set(SCOPE_D_NAME, new Object);
     set("undefined", new Undefined);
     set("null", new Null);
 
@@ -33,6 +32,7 @@ BM::Object *BM::Interpreter::run() {
         if (ast->value() == "PROGRAM-END") break;
         if (ast->value() == "bad-tree") {
             std::cerr << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+            if (ast) delete ast;
             THROW;
         } else if (ast->value() == "export") {
             auto name = ast->rValue()->get(0)->value();
@@ -108,6 +108,7 @@ BM::Object *BM::Interpreter::run() {
                             auto pb = (Number*) e->get(PASS_BREAK);
                             if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
                             delete e;
+                            delete elconE;
                             break;
                         }
                     } else {
@@ -295,6 +296,7 @@ BM::Object *BM::Interpreter::run() {
                 ret->set(*iter, proto);
             }
             exports->set(PASS_RETURN, ret);
+            delete e;
         }
         else { //为表达式
             auto len = ast->rValue()->length();
@@ -311,6 +313,7 @@ BM::Object *BM::Interpreter::run() {
                             std::cerr << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
                                       << ":" << upscope << ">:"
                                       << ast->line() << std::endl;
+                            if (ast) delete ast;
                             THROW;
                         }
                         auto valueAst = node->get(1);
@@ -350,6 +353,7 @@ BM::Object *BM::Interpreter::run() {
                 if (!fun_) {
                     std::cerr << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
+                    if (ast) delete ast;
                     THROW;
                 }
                 if (fun_->type() == FUNCTION) {
@@ -359,21 +363,26 @@ BM::Object *BM::Interpreter::run() {
                     auto fune = fun->run(args, hashArg);
                     CHECKITER(fune, ast->rValue());
                     exports->set(PASS_RETURN, fune->get(PASS_RETURN));
+                    delete fune;
                 } else if (fun_->type() == NATIVE_FUNCTION) {
                     auto fun = (NativeFunction *) fun_;
                     fun->setParent(this);
                     fun->getParent()->set("this", up);
-                    exports->set(PASS_RETURN, fun->run(args, hashArg));
+                    auto fune = fun->run(args, hashArg);
+                    exports->set(PASS_RETURN, fune);
                 } else {
-                    if (clean) delete up;
+                    if (clean && up->unbind() < 1)
+                        delete up;
                     std::cerr << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
+                    if (ast) delete ast;
                     THROW;
                 }
 //                if (get("this")->value()->type() == OBJECT && fune->type() == UNDEFINED) {
 //                    exports->set(PASS_RETURN, get("this")->value());
 //                }
-                if (clean) delete up;
+                if (clean && up->unbind() < 1)
+                    delete up;
                 del("this");
             } else if (ast->value() == "get") {
                 if (ast->rValue()->length() < 1) {
@@ -408,6 +417,7 @@ BM::Object *BM::Interpreter::run() {
                                           << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
+                                if (ast) delete ast;
                                 THROW;
                             }
                         }
@@ -504,7 +514,6 @@ BM::Object *BM::Interpreter::run() {
                     CHECKPASSNEXTOP(e);
                     auto n = e->get(PASS_RETURN);
 //                std::cout << n->type() << std::endl;
-                    exports->set(PASS_RETURN, n);
                     if (ast->value() == "++") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
@@ -535,7 +544,8 @@ BM::Object *BM::Interpreter::run() {
                     auto valueIp = new Interpreter("", filename, this);
                     valueIp->ast->root = valueAst;
                     valueIp->child = true;
-                    auto e_ = valueIp->run()->get(PASS_RETURN);
+                    auto vipe = valueIp->run();
+                    auto e_ = vipe->get(PASS_RETURN);
                     delete valueIp;
 
                     auto op = ast->value();
@@ -548,6 +558,7 @@ BM::Object *BM::Interpreter::run() {
                             s = ~((LL) s);
                         }
                         exports->set(PASS_RETURN, e);
+                        delete vipe;
                     } WRONGEXPRTYPE(op);
                 }
             } else if (len == 2) {
@@ -585,6 +596,7 @@ BM::Object *BM::Interpreter::run() {
                     if (leftNode->length() > 0 || isNumber(name) || isString(name) || name == "o-value" || name == "a-value") {
                         std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
+                        if (ast) delete ast;
                         THROW;
                     }
                     Object* up;
@@ -703,6 +715,7 @@ BM::Object *BM::Interpreter::run() {
                         ) {
                     if (left->type() != right->type()) {
                         std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+                        if (ast) delete ast;
                         THROW;
                     }
                     switch (left->type()) {

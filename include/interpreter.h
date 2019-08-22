@@ -87,28 +87,28 @@ namespace BM {
 #define PASS_BREAK "__BREAK__"
 #define PASS_CONTINUE "__CONTINUE__"
 #define PASS_NEXTOP "__NEXTOPERATOR__"
-#define THROW exports->set(PASS_ERROR, new Number(1));return exports;
+#define THROW { exports->set(PASS_ERROR, new Number(1)); return exports; }
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR)) { \
-        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
+        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; if (ast) delete ast; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)
 #define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
-            << ast->line() << std::endl; \
+            << ast->line() << std::endl; if (ast) delete ast; \
             THROW; \
 }
 #define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
-            << ast->line() << std::endl; \
+            << ast->line() << std::endl; if (ast) delete ast; \
             THROW; \
 }
 #define WRONG(name, s)  else { std::cerr << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
-            << ast->line() << std::endl; \
+            << ast->line() << std::endl; if (ast) delete ast; \
             THROW; \
 }
 #define NOTDEFINED(v, name) if (!v) { \
         std::cerr << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
-        << ast->line()  << std::endl; \
+        << ast->line()  << std::endl; if (ast) delete ast; \
         THROW; \
     }
 #define CHECKPASSNEXTOP(e) auto v = e->get(PASS_NEXTOP);if (v) { auto value = (Number*)e->get(PASS_RETURN);if (value->type() == NUMBER) { value->value() += ((Number*)v)->value(); } WRONGEXPRTYPE("self increment or decrement"); }

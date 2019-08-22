@@ -251,8 +251,8 @@ void BM::AST::parse() {
                         bcCount++;
                     }
                     else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) bcCount--;
-                    else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) bcCount++;
-                    else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) bcCount--;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbcCount++;
+                    else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbcCount--;
                     functionName += token.s;
                     GET;
                 }
@@ -266,7 +266,6 @@ void BM::AST::parse() {
                 std::vector<string> args;
                 string arg;
                 bool flag = false;
-                GET;
                 if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
                 if (token.t != Lexer::BRACKETS_RIGHT_TOKEN) {
                     while (brCount > 0) {
@@ -274,7 +273,21 @@ void BM::AST::parse() {
                         GET;
                         if (token.t == Lexer::BRACKETS_LEFT_TOKEN) brCount++;
                         else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) brCount--;
-                        else if (token.t == Lexer::COMMA_TOKEN && brCount == 1) {
+                        if ((token.t == Lexer::COMMA_TOKEN && brCount == 1) || !brCount) {
+                            while (true) {
+                                char n = arg[0];
+                                if (n == ' ' || n == '\n' || n == '\t') arg.erase(0, 1);
+                                else break;
+                            }
+                            while (true) {
+                                char n = arg[arg.length() - 1];
+                                if (n == ' ' || n == '\n' || n == '\t') arg.erase(arg.length() - 1, 1);
+                                else break;
+                            }
+                            while (true) {
+                                if (arg[0] == '(' && arg[arg.length() - 1] == ')') trim(arg);
+                                else break;
+                            }
                             if (flag) {
                                 arg.erase(0, 2);
                                 args.push_back(arg);
@@ -283,7 +296,8 @@ void BM::AST::parse() {
                                 flag = true;
                             }
                             arg = "";
-                        } else if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                        }
+                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
                             root = new node("bad-tree", lexer.l + baseLine);
                             root->insert("SyntaxError: Lack of parentheses", lexer.l + baseLine);
                             return;

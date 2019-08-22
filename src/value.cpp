@@ -8,6 +8,8 @@ using std::string;
 using std::map;
 using std::vector;
 
+#define DEBUG
+
 bool BM::Object::has(Object *v, Object* root = nullptr, bool flag) {
     if (!root) root = this;
     if (this == v || (parent == v && !flag)) return true;
@@ -105,8 +107,10 @@ void BM::Object::print(std::ostream &o, bool hl) {
 }
 void BM::Object::set(const string &key, Object *value) {
     if (proto.count(key)) {
+        auto v = proto[key];
+        if (v->unbind() < 1) delete v;
         proto[key] = value;
-        if (this != value) value->linked++;
+        value->bind();
         value->parent = this;
     } else {
         insert(key, value);
@@ -125,6 +129,7 @@ void BM::Object::insert(const string& key, Object *value) {
 void BM::Object::del(const string &key) {
     auto iter = proto.find(key);
     if (iter == proto.end()) return;
+    if (iter->second->unbind() < 1) delete iter->second;
     proto.erase(iter);
 //    Object* v = iter->second;
 //    if (v) {
@@ -133,6 +138,9 @@ void BM::Object::del(const string &key) {
 //    }
 }
 BM::Object::~Object() {
+#ifdef DEBUG
+    std::cout << "d: " << this << std::endl;
+#endif
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
         Object* v = iter->second;
         if (!v || v->linked < 1) continue;

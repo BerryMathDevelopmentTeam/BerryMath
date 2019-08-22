@@ -9,7 +9,7 @@
 using std::string;
 using std::vector;
 
-//#define DEBUG
+#undef DEBUG
 
 namespace BM {
     class AST {
@@ -49,7 +49,7 @@ namespace BM {
         string value() { if (root) return root->value(); return ""; }
         ~AST();
     private:
-        static void trim(string& s) {
+        static inline void trim(string& s) {
             s.erase(0, 1);
             s.erase(s.length() - 1, 1);
         }

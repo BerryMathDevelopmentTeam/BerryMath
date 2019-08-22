@@ -130,9 +130,9 @@ int main(int argc, char* argv[]) {
         while (getline(file, line)) {
             script += line + "\n";
         }
-        BM::Interpreter ip(script, filename);
-        ip.run();
         file.close();
+        BM::Interpreter ip(script, filename);
+        delete ip.run();
     }
     BM::Dylib::clear();
     return 0;
