@@ -12,7 +12,7 @@ TEST(BerryMathLexer, open) {
         s += tk.s + " ";
         ts += std::to_string(tk.t);
     }
-    EXPECT_EQ("a = a ++ ; def fun ( a = 9 , b = 10 ) { if ( a == 0 ) return b ; return fun ( a - 1 , b + 1 ) + a * b ; ", s);
+    EXPECT_EQ("a = a ++ ; def fun ( a = 9 , b = 10 ) { if ( a == 0 ) return b ; return fun ( a - 1 , b + 1 ) + a * b ; ; ", s);
     EXPECT_EQ("133175793141133294813329424544113529421517915141157294815629425615817979", ts);
 }
 TEST(BerryMathLexer, index) {
@@ -39,7 +39,7 @@ TEST(BerryMathLexer, get0) {
         s += tk.s + " ";
         ts += std::to_string(tk.t);
     }
-    EXPECT_EQ("( ( ( 4 + 3 > 9 * 10 ) * 7 ) ** 2 ) >> 10 ", s);
+    EXPECT_EQ("( ( ( 4 + 3 > 9 * 10 ) * 7 ) ** 2 ) >> 10 ; ", s);
     EXPECT_EQ("4141412956294029582942582942612942632979", ts);
 }
 TEST(BerryMathLexer, get1) {
@@ -52,6 +52,6 @@ TEST(BerryMathLexer, get1) {
         s += tk.s + " ";
         ts += std::to_string(tk.t);
     }
-    EXPECT_EQ("a = a ++ ; def fun ( a = 9 , b = 10 ) { if ( a == 0 ) return b ; return fun ( a - 1 , b + 1 ) + a * b ; ", s);
+    EXPECT_EQ("a = a ++ ; def fun ( a = 9 , b = 10 ) { if ( a == 0 ) return b ; return fun ( a - 1 , b + 1 ) + a * b ; ; ", s);
     EXPECT_EQ("133175793141133294813329424544113529421517915141157294815629425615817979", ts);
 }
