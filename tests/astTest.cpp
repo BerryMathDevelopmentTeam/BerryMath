@@ -21,7 +21,7 @@ TEST(BerryMathAST, parse1) {
 TEST(BerryMathAST, parse2) {
     BM::AST ast("(a++)+(++a)");
     ast.parse();
-    EXPECT_EQ(ast.exportByString(), "node \"let\" line 0 children node \"a\" line 0 children  end node \"0\" line 2 children  end  end ");
+    EXPECT_EQ(ast.exportByString(), "node \"+\" line 0 children node \"++\" line 0 children node \"a\" line 0 children  end  end node \"++-f\" line 0 children node \"a\" line 0 children  end  end  end ");
 }
 TEST(BerryMathAST, export) {
     BM::AST ast1;

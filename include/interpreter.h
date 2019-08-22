@@ -26,10 +26,7 @@ namespace BM {
             script = s;
             ast->open(script);
             filename = fn;
-            script += ";\n";
-            std::regex pattern("//.*[$\n]", std::regex::icase);
-            script = std::regex_replace(script, pattern, "\n");
-            script += "\npass";
+            script += ";pass";
             if (parent) upscope = parent->upscope;
             else upscope = "\033[32mglobal\033[0m";
         }

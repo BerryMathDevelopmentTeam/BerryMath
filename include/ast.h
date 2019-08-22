@@ -21,10 +21,7 @@ namespace BM {
         void open(const string& s) {
             script = s;
             if (!child) {
-                script += "\n";
-                std::regex pattern("//.*[$\n]", std::regex::icase);
-                script = std::regex_replace(script, pattern, "\n");
-                script += "\n;pass";
+                script += ";pass";
             }
             lexer.open(script);
             byCache = false;
