@@ -240,6 +240,9 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = DELETE_TOKEN;
     } else if (t.s == "//") {
         t.t = NOTE_TOKEN;
+        while (true) {
+            if (script[++i] == '\n') break;
+        }
     } else if (t.s == "pass") {
         t.t = PASS_TOKEN;
     }

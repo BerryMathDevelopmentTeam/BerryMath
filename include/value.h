@@ -12,8 +12,6 @@ using std::map;
 using std::vector;
 typedef unsigned long UL;
 
-#define DEBUG
-
 namespace BM {
     extern class Interpreter;
     enum ValueType {
@@ -26,11 +24,7 @@ namespace BM {
     using forEachCB = void(*)(const string&, Object*);
     class Object {
     public:
-        Object() : linked(0), parent(nullptr) {
-#ifdef DEBUG
-            std::cout << "n: " << this << std::endl;
-#endif
-        }
+        Object() : linked(0), parent(nullptr) {  }
         bool has(Object*, Object*, bool = true);
         bool delhas(Object*);
         void set(const string &key, Object *value);
@@ -111,9 +105,12 @@ namespace BM {
             return new Number(v);
         }
         ~Number() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     private:
         double v;
@@ -170,10 +167,13 @@ namespace BM {
             return this;
         }
         Object* copy() { return new String(v); }
-        ~String() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+        ~String() {  
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     private:
         string v;
@@ -195,10 +195,13 @@ namespace BM {
             return "null";
         }
         ValueType type() { return NULL_; }
-        ~Null() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+        ~Null() {  
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     };
     class Undefined : public Object {
@@ -218,10 +221,13 @@ namespace BM {
             return "undefined";
         }
         ValueType type() { return UNDEFINED; }
-        ~Undefined() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+        ~Undefined() {  
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     };
     class Function : public Object {
@@ -249,10 +255,13 @@ namespace BM {
         string functionName() {
             return funname;
         }
-        ~Function() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+        ~Function() {  
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     protected:
         friend class Interpreter;
@@ -285,6 +294,7 @@ namespace BM {
         enum Flag {
             SELF, ALL_MIGHT
         };
+#define SCOPE_D_NAME "__scope"
         Scope(Scope* p = nullptr);
         void set(const string&, Object*);
         Variable* get(const string& name, Flag flag = ALL_MIGHT);
@@ -294,12 +304,14 @@ namespace BM {
         void load(Scope*);
         Scope* getParent() { return parent; }
         ~Scope() {
+            auto __scope = get(SCOPE_D_NAME);
+            if (__scope) delete __scope;
+            variables.erase(variables.find(SCOPE_D_NAME));
             for (auto iter = variables.begin(); iter != variables.end(); iter++) {
                 if (iter->second) delete iter->second;
             }
             variables.clear();
         }
-#define SCOPE_D_NAME "__scope"
     private:
         map<string, Variable*> variables;
         Scope* parent;
@@ -330,10 +342,13 @@ namespace BM {
         void addDesc(const string& d) { desc.push_back(d); }
         void defaultValue(const string& name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         ValueType type() { return NATIVE_FUNCTION; }
-        ~NativeFunction() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+        ~NativeFunction() {  
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     private:
         friend class Interpreter;
@@ -357,10 +372,13 @@ namespace BM {
             if (hl) o += "\033[0m";
             return o;
         }
-        ~NativeValue() {
-#ifdef DEBUG
-            std::cout << "d: " << this << std::endl;
-#endif
+        ~NativeValue() {  
+            for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            proto.clear();
         }
     private:
         nativeValueType nv;

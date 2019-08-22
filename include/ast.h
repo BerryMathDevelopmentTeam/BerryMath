@@ -9,22 +9,14 @@
 using std::string;
 using std::vector;
 
-#undef DEBUG
-
 namespace BM {
     class AST {
     public:
         AST() : root(nullptr), script(""), child(false), baseLine(0), lexer(script), byCache(false) {
-            script += "\n";
-            std::regex pattern("//.*[$\n]", std::regex::icase);
-            script = std::regex_replace(script, pattern, "\n");
-            script += "\n;pass";
+            script += ";pass";
         }
         AST(const string& s) : root(nullptr), script(s), child(false), baseLine(0), lexer(script), byCache(false) {
-            script += "\n";
-            std::regex pattern("//.*[$\n]", std::regex::icase);
-            script = std::regex_replace(script, pattern, "\n");
-            script += "\n;pass";
+            script += ";pass";
         }
         void open(const string& s) {
             script = s;
@@ -64,21 +56,9 @@ namespace BM {
     public:
         class node {
         public:
-            node() : v(""), l(0) {
-#ifdef DEBUG
-                std::cout << "n: " << this << std::endl;
-#endif
-            }
-            node(const string& t) : v(t), l(0) {
-#ifdef DEBUG
-                std::cout << "n: " << this << std::endl;
-#endif
-            }
-            node(const string& t, UL i) : v(t), l(i) {
-#ifdef DEBUG
-                std::cout << "n: " << this << std::endl;
-#endif
-            }
+            node() : v(""), l(0) {  }
+            node(const string& t) : v(t), l(0) {  }
+            node(const string& t, UL i) : v(t), l(i) {  }
             inline string value() { return v; }
             inline void value(string c) { v = c; }
             inline UL line() { return l; }
@@ -95,9 +75,6 @@ namespace BM {
             void clear() { children.clear(); }
             string exportByString();
             ~node() {
-#ifdef DEBUG
-                std::cout << "d: " << this << std::endl;
-#endif
                 LL sz = children.size();
                 if (sz <= 0) return;
                 for (auto i = 0; i < sz; i++) {

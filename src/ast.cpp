@@ -87,8 +87,9 @@ void BM::AST::parse() {
     if (root) delete root;
     root = nullptr;
     auto tmpIndex = lexer.i;
-    auto token = lexer.get();
 #define GET token = lexer.get()
+    auto GET;
+    if (token.t == Lexer::NOTE_TOKEN) GET;
     switch (token.t) {
         case Lexer::LET_TOKEN:
         {

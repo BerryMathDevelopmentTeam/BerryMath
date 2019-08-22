@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstdlib>
-//#define DEBUG
 #include <BerryMath.h>
 #include <fstream>
 using std::cout;
@@ -130,9 +129,9 @@ int main(int argc, char* argv[]) {
         while (getline(file, line)) {
             script += line + "\n";
         }
-        file.close();
         BM::Interpreter ip(script, filename);
         delete ip.run();
+        file.close();
     }
     BM::Dylib::clear();
     return 0;

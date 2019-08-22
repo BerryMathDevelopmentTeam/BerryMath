@@ -19,12 +19,14 @@ string BM::Interpreter::compile() {
 
 BM::Object *BM::Interpreter::run() {
     Object *exports = new Object;
-    set("undefined", new Undefined);
-    set("null", new Null);
 
     if (!child && !(get(PASS_MODULE_NAME) && get(PASS_MODULE_NAME)->value()->type() == STRING && ((String*)get(PASS_MODULE_NAME)->value())->value() == DEFAULT_IMPORT_NAME)) {
         if (!get(DEFAULT_IMPORT_NAME)) import(exports, DEFAULT_IMPORT_NAME, DEFAULT_IMPORT_NAME);
-        Using(get(DEFAULT_IMPORT_NAME)->value(), new AST::node("bmlang", 0));
+        auto objAst = new AST::node("bmlang", 0);
+        Using(get(DEFAULT_IMPORT_NAME)->value(), objAst);
+        set("undefined", new Undefined);
+        set("null", new Null);
+        delete objAst;
     }
     while (true) {
         if (!child) ast->parse();
@@ -55,6 +57,7 @@ BM::Object *BM::Interpreter::run() {
                 string asName(ast->rValue()->get(1)->get(0)->value());
                 import(exports, name, asName);
             } WRONGSCRIPT("import");
+            FREE(e);
         } else if (ast->value() == "let") {
             auto name = ast->rValue()->get(0)->value();
             Interpreter ip("", filename, this);
@@ -68,6 +71,7 @@ BM::Object *BM::Interpreter::run() {
             } else {
                 scope->set(name, ret->copy());
                 CHECKPASSNEXTOP(e);
+                FREE(ret);
             }
         } else if (ast->value() == "if") {
             auto conAst = ast->rValue()->get(0);
@@ -171,6 +175,8 @@ BM::Object *BM::Interpreter::run() {
                 auto nxtE = nxtIp.run();
                 CHECKITER(nxtE, nxtAst);
                 { CHECKPASSNEXTOP(nxtE); }
+                FREE(conE);
+                FREE(nxtE);
             }
         } else if (ast->value() == "while") {
             auto conAst = ast->rValue()->get(0);
@@ -196,6 +202,7 @@ BM::Object *BM::Interpreter::run() {
                         break;
                     }
                 } else break;
+                FREE(conE);
             }
         } else if (ast->value() == "do") {
             auto doscript = ast->rValue()->get(0)->value();
@@ -222,6 +229,7 @@ BM::Object *BM::Interpreter::run() {
                 auto con = conE->get(PASS_RETURN);
                 if (!isTrue(con))
                     break;
+                FREE(conE);
             }
         } else if (ast->value() == "break") {
             auto count = atoi(ast->rValue()->get(0)->value().c_str());
@@ -248,6 +256,7 @@ BM::Object *BM::Interpreter::run() {
                 CHECKITER(tmpe, arg);
                 CHECKPASSNEXTOP(tmpe);
                 fun->defaultValue(argname, tmpe->get(PASS_RETURN));
+                FREE(tmpe);
             }
             set(funname, fun);
             exports->set(PASS_RETURN, fun);
@@ -272,6 +281,7 @@ BM::Object *BM::Interpreter::run() {
                 CHECKITER(e, prototypeNode->get(1));
                 CHECKPASSNEXTOP(e);
                 prototype->set(name, e->get(PASS_RETURN));
+                FREE(e);
             }
         } else if (ast->value() == "new") {
             auto line = ast->rValue()->get(0)->line();
@@ -296,7 +306,7 @@ BM::Object *BM::Interpreter::run() {
                 ret->set(*iter, proto);
             }
             exports->set(PASS_RETURN, ret);
-            delete e;
+            FREE(e);
         }
         else { //为表达式
             auto len = ast->rValue()->length();
@@ -363,7 +373,7 @@ BM::Object *BM::Interpreter::run() {
                     auto fune = fun->run(args, hashArg);
                     CHECKITER(fune, ast->rValue());
                     exports->set(PASS_RETURN, fune->get(PASS_RETURN));
-                    delete fune;
+                    FREE(fune);
                 } else if (fun_->type() == NATIVE_FUNCTION) {
                     auto fun = (NativeFunction *) fun_;
                     fun->setParent(this);
@@ -469,6 +479,7 @@ BM::Object *BM::Interpreter::run() {
                     CHECKITER(e, valueNode);
                     CHECKPASSNEXTOP(e);
                     object->set(key, e->get(PASS_RETURN));
+                    FREE(e);
                 }
                 exports->set(PASS_RETURN, object);
             } else if (ast->value() == "a-value") {
@@ -487,6 +498,7 @@ BM::Object *BM::Interpreter::run() {
                     CHECKITER(e, valueNode);
                     CHECKPASSNEXTOP(e);
                     ret->set(std::to_string(arrlen++), e->get(PASS_RETURN));
+                    FREE(e);
                 }
                 ret->set("__len", new Number(arrlen));
                 exports->set(PASS_RETURN, ret);
@@ -539,6 +551,7 @@ BM::Object *BM::Interpreter::run() {
                             exports->set(PASS_RETURN, v->copy());
                         } WRONGEXPRTYPE(ast->value());
                     }
+                    FREE(e);
                 } else {
                     auto valueAst = ast->rValue()->get(0);
                     auto valueIp = new Interpreter("", filename, this);
@@ -560,6 +573,7 @@ BM::Object *BM::Interpreter::run() {
                         exports->set(PASS_RETURN, e);
                         delete vipe;
                     } WRONGEXPRTYPE(op);
+                    FREE(e_);
                 }
             } else if (len == 2) {
                 auto leftAst = ast->rValue()->get(0);
@@ -710,6 +724,8 @@ BM::Object *BM::Interpreter::run() {
                         }
                         exports->set(PASS_RETURN, value_);
                     }
+                    FREE(left);
+                    FREE(right);
                 } else if (
                         op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="
                         ) {
@@ -843,6 +859,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             if (moduleExports->get(PASS_ERROR)) {
                 std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
+                return;
             }
             moduleExports->del(PASS_RETURN);
             scope->set(asName, moduleExports);
@@ -858,11 +875,15 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
                 script += tmpLine + "\n";
             }
             Interpreter ip(script, name);// import的文件是独立运行的，不与import它的脚本连接
-            ip.set(PASS_MODULE_NAME, new String(name));
+            auto moduleName = new String(name);
+            ip.set(PASS_MODULE_NAME, moduleName);
+            ip.set("null", new Null);
+            ip.set("undefined", new Undefined);
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
                 std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
+                return;
             }
             moduleExports->del(PASS_RETURN);
             scope->set(asName, moduleExports);
@@ -892,5 +913,4 @@ void BM::Interpreter::Using(Object* exports, AST::node* objAst) {
     for (; !iter.end(); iter.next()) {
         set(iter.key(), iter.value());
     }
-    delete objAst;
 }

@@ -38,7 +38,9 @@ namespace BM {
         Object *run();
         Object *runCC();
         string fn() { return filename; }
-        ~Interpreter() { if (!child && ast) delete ast; }
+        ~Interpreter() {
+            if (!child && ast) delete ast; delete scope;
+        }
         Variable &operator[](const string &s) { return *scope->get(s); }
         void set(const string &name, Object *v) { scope->set(name, v); }
         Variable *get(const string &name, Scope::Flag flag = Scope::ALL_MIGHT) { return scope->get(name, flag); }
@@ -119,6 +121,7 @@ namespace BM {
             con = ret->copy(); \
             CHECKPASSNEXTOP(conE); \
         } }
+#define FREE(v) { if (v->unbind() < 1) delete v; }
 #ifdef I_OS_WIN32
         // 拓展库path
 #define BMMPATH "C:\\BM\\libraries\\lib"
