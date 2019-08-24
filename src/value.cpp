@@ -120,6 +120,11 @@ BM::Object* BM::Object::get(const string &key) {
     return iter->second;
 }
 void BM::Object::insert(const string& key, Object *value) {
+    if (!value) {
+        std::cerr << "SystemError: Insert en empty object(In method BM::Object::insert(const string&, Object*), SystemFile: 'src/value.cpp', line: " << __LINE__ << "), you can open an issue at https://github.com/BerryMathDevelopmentTeam/BerryMath/" << std::endl;
+        proto.insert(std::pair<string, Object*>(key, new Undefined));
+        return;
+    }
     proto.insert(std::pair<string, Object*>(key, value));
     if (this != value) value->linked++;
     value->parent = this;

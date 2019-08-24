@@ -1,11 +1,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <BerryMath.h>
+#include <vector>
 #include <fstream>
 using std::cout;
 using std::endl;
 using std::cin;
 using std::fstream;
+using std::vector;
 
 void terminal() {
     cout << "BerryMath Terminal" << endl;
@@ -19,6 +21,7 @@ void terminal() {
     cout << "   \033[41m      \033[45m     \033[0m" << endl;
     cout << "     \033[41m    \033[45m    \033[0m" << endl;
     BM::Interpreter ip("", "terminal");
+    vector<BM::Object*> gPool;
 
     while (true) {
         string tmp;
@@ -74,14 +77,18 @@ void terminal() {
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
             if (ret) cout << (*ret) << endl;
-            delete e;
+            gPool.push_back(e);
         } else {
             ip.open(tmp, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
             if (ret) cout << (*ret) << endl;
-            delete e;
+            gPool.push_back(e);
         }
+    }
+    ip.clear();
+    for (auto i = gPool.begin(); i != gPool.end(); i++) {
+        delete *i;
     }
     cout << "bye" << endl;
     exit(0);

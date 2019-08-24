@@ -12,19 +12,17 @@ using std::string;
 namespace BM {
     class Interpreter {
     public:
-        Interpreter(string s = "", string fn = "", Interpreter *p = nullptr) : script(s), filename(fn), ast(new AST(s)),
+        Interpreter(const string& s = "", const string& fn = "", Interpreter *p = nullptr) : script(s), filename(fn), ast(new AST(s)),
                                                                                parent(p),
                                                                                scope(new Scope(p ? p->scope : nullptr)),
                                                                                child(false), upscope("\033[32mglobal\033[0m") {
-            script += ";\n";
-            std::regex pattern("//.*[$\n]", std::regex::icase);
-            script = std::regex_replace(script, pattern, "\n");
-            script += "\npass";
+            script += ";pass";
             if (parent) upscope = parent->upscope;
         }
-        void open(string s, string fn = "") {
+        void open(const string& s, const string& fn = "") {
             script = s;
-            ast->open(script);
+            if (ast) ast->open(script);
+            else ast = new AST(s);
             filename = fn;
             script += ";pass";
             if (parent) upscope = parent->upscope;
@@ -36,7 +34,8 @@ namespace BM {
         Object *runCC();
         string fn() { return filename; }
         ~Interpreter() {
-            if (!child && ast) delete ast; delete scope;
+            if (!child && ast) delete ast;
+            delete scope;
         }
         Variable &operator[](const string &s) { return *scope->get(s); }
         void set(const string &name, Object *v) { scope->set(name, v); }
@@ -45,13 +44,15 @@ namespace BM {
         string upscope;
         void import(Object*, const string&, const string&);
         void Using(Object*, AST::node*);
+        void clear() { delete scope;scope = new Scope(parent ? parent->scope : nullptr); }
     private:
-        string script;
-        string filename;
+        bool child = false;
+        bool loaded = false;
         AST *ast;
         Scope *scope;
-        bool child = false;
         Interpreter *parent;
+        string script;
+        string filename;
 
         static bool isNumber(const string &n) {
             if (n[0] == '.') return false;
@@ -89,25 +90,25 @@ namespace BM {
 #define THROW { exports->set(PASS_ERROR, new Number(1)); return exports; }
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR)) { \
-        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; if (ast) delete ast; \
+        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)
 #define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
-            << ast->line() << std::endl; if (ast) delete ast; \
+            << ast->line() << std::endl; \
             THROW; \
 }
 #define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
-            << ast->line() << std::endl; if (ast) delete ast; \
+            << ast->line() << std::endl; \
             THROW; \
 }
 #define WRONG(name, s)  else { std::cerr << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
-            << ast->line() << std::endl; if (ast) delete ast; \
+            << ast->line() << std::endl; \
             THROW; \
 }
 #define NOTDEFINED(v, name) if (!v) { \
         std::cerr << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
-        << ast->line()  << std::endl; if (ast) delete ast; \
+        << ast->line()  << std::endl; \
         THROW; \
     }
 #define CHECKPASSNEXTOP(e) auto v = e->get(PASS_NEXTOP);if (v) { auto value = (Number*)e->get(PASS_RETURN);if (value->type() == NUMBER) { value->value() += ((Number*)v)->value(); } WRONGEXPRTYPE("self increment or decrement"); }
