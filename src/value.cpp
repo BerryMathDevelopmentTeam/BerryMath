@@ -193,7 +193,7 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
 
     // 优先级顺序: 指定 > 传参 > 默认
     for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
-        ip.set(iter->first, iter->second);
+        ip.set(iter->first, iter->second->copy());
     }
     for (UL i = 0; i < args.size(); i++) {
         ip.set(i < desc.size() ? desc[i] : ("argv" + std::to_string(i - desc.size())), args[i]);
@@ -204,6 +204,7 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
     ip.upscope = "\033[34mfunction " + funname + "\033[0m";
     auto exports = ip.run();
     if (exports->get(PASS_ERROR)) THROW;
+    if (exports->get(PASS_ENDFUN)) return exports->get(PASS_ENDFUN);
     return exports->get(PASS_RETURN);
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {

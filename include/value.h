@@ -167,7 +167,7 @@ namespace BM {
             return this;
         }
         Object* copy() { return new String(v); }
-        ~String() {  
+        ~String() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
@@ -195,7 +195,7 @@ namespace BM {
             return "null";
         }
         ValueType type() { return NULL_; }
-        ~Null() {  
+        ~Null() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
@@ -221,7 +221,7 @@ namespace BM {
             return "undefined";
         }
         ValueType type() { return UNDEFINED; }
-        ~Undefined() {  
+        ~Undefined() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
@@ -248,15 +248,20 @@ namespace BM {
             return o;
         }
         void addDesc(string d) { desc.push_back(d); }
-        void defaultValue(string name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
+        void defaultValue(string name, Object* v) { v->bind();defaultValues.insert(std::pair<string, Object*>(name, v)); }
         void setParent(Interpreter* ip) { parent = ip; }
         Interpreter* getParent() { return parent; }
         virtual Object* run(vector<Object*>, map<string, Object*>);
         string functionName() {
             return funname;
         }
-        ~Function() {  
+        ~Function() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
+                Object* v = iter->second;
+                if (!v || v->links() < 1) continue;
+                if (!delhas(v) && v->unbind() < 1) delete v;
+            }
+            for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
                 if (!delhas(v) && v->unbind() < 1) delete v;
@@ -279,7 +284,8 @@ namespace BM {
             return n;
         }
         void value(Object* v) {
-            if (val && val->unbind() < 1) delete val;
+            if (val && val->unbind() < 1)
+                delete val;
             val = v;
         }
         ~Variable() {
@@ -297,7 +303,7 @@ namespace BM {
 #define SCOPE_D_NAME "__scope"
         Scope(Scope* p = nullptr);
         void set(const string&, Object*);
-        Variable* get(const string& name, Flag flag = ALL_MIGHT);
+        Variable* get(const string&, Flag = ALL_MIGHT);
         void del(const string& name);
         void clear() { variables.clear(); }
         void setParent(Scope* p) { parent = p; }
@@ -342,7 +348,7 @@ namespace BM {
         void addDesc(const string& d) { desc.push_back(d); }
         void defaultValue(const string& name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
         ValueType type() { return NATIVE_FUNCTION; }
-        ~NativeFunction() {  
+        ~NativeFunction() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;

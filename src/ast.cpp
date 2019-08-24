@@ -1094,6 +1094,28 @@ void BM::AST::parse() {
             root->insert(funcScript, funcScriptLine);
             break;
         }
+        case Lexer::RETURN_TOKEN:
+        {
+            ULL line = lexer.l + baseLine;
+            LL sbc(0), mbc(0), bbc(0);
+            string ret;
+            while (true) {
+                GET;
+                if (token.t == Lexer::END_TOKEN && sbc == 0 && mbc == 0 && bbc == 0) break;
+                if (token.t == Lexer::PROGRAM_END && (sbc > 0 || mbc > 0 || bbc > 0)) {
+                    if (root) delete root;
+                    root = new node("bad-tree", line);
+                    root->insert("SyntaxError: The unexpected end of the script", line);
+                    return;
+                }
+                ret += token.s;
+            }
+            if (ret.empty()) ret = "undefined";
+            if (root) delete root;
+            root = new node("return", line);
+            root->insert(ret, line);
+            break;
+        }
         case Lexer::USING_TOKEN:
         {
             UL usingLine = lexer.l + baseLine;

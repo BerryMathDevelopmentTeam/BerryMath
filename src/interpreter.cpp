@@ -92,7 +92,13 @@ BM::Object *BM::Interpreter::run() {
                 CHECKPASSNEXTOP(e);
                 auto pb = (Number*) e->get(PASS_BREAK);
                 if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
-                delete e;
+                auto ret = e->get(PASS_ENDFUN);
+                if (ret) {
+                    exports->set(PASS_ENDFUN, ret);
+                    return exports;
+                    FREE(e);
+                }
+                FREE(e);
             } else {
                 auto els = ast->rValue()->get(2);
                 for (UL i = 0; i < els->length(); i++) {
@@ -113,6 +119,12 @@ BM::Object *BM::Interpreter::run() {
                             CHECKPASSNEXTOP(e);
                             auto pb = (Number*) e->get(PASS_BREAK);
                             if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
+                            auto ret = e->get(PASS_ENDFUN);
+                            if (ret) {
+                                exports->set(PASS_ENDFUN, ret);
+                                return exports;
+                                FREE(e);
+                            }
                             delete e;
                             delete elconE;
                             break;
@@ -125,6 +137,12 @@ BM::Object *BM::Interpreter::run() {
                         CHECKPASSNEXTOP(e);
                         auto pb = (Number*) e->get(PASS_BREAK);
                         if (pb) exports->set(PASS_BREAK, new Number(pb->value()));
+                        auto ret = e->get(PASS_ENDFUN);
+                        if (ret) {
+                            exports->set(PASS_ENDFUN, ret);
+                            return exports;
+                            FREE(e);
+                        }
                         delete e;
                         break;
                     }
@@ -166,8 +184,14 @@ BM::Object *BM::Interpreter::run() {
                 if (pb) {
                     double v = pb->value() - 1;
                     if (v < 1) break;
-                    set(PASS_BREAK, new Number(v));
+                    exports->set(PASS_BREAK, new Number(v));
                     break;
+                }
+                auto ret = scriptE->get(PASS_ENDFUN);
+                if (ret) {
+                    exports->set(PASS_ENDFUN, ret);
+                    return exports;
+                    FREE(scriptE);
                 }
 
                 // 最后表达式执行
@@ -198,10 +222,16 @@ BM::Object *BM::Interpreter::run() {
                     CHECKPASSNEXTOP(e);
                     auto pb = (Number*) e->get(PASS_BREAK);
                     if (pb) {
-                        double v = pb->value() - 1;
-                        if (v < 1) break;
-                        set(PASS_BREAK, new Number(v));
+                        double bv = pb->value() - 1;
+                        if (bv < 1) break;
+                        exports->set(PASS_BREAK, new Number(bv));
                         break;
+                    }
+                    auto ret = e->get(PASS_ENDFUN);
+                    if (ret) {
+                        exports->set(PASS_ENDFUN, ret);
+                        return exports;
+                        FREE(e);
                     }
                 } else break;
                 FREE(conE);
@@ -218,8 +248,14 @@ BM::Object *BM::Interpreter::run() {
                 if (pb) {
                     double v = pb->value() - 1;
                     if (v < 1) break;
-                    set(PASS_BREAK, new Number(v));
+                    exports->set(PASS_BREAK, new Number(v));
                     break;
+                }
+                auto ret = e->get(PASS_ENDFUN);
+                if (ret) {
+                    exports->set(PASS_ENDFUN, ret);
+                    return exports;
+                    FREE(e);
                 }
 
                 Interpreter conIp("", filename, this);
@@ -236,6 +272,13 @@ BM::Object *BM::Interpreter::run() {
         } else if (ast->value() == "break") {
             auto count = atoi(ast->rValue()->get(0)->value().c_str());
             exports->set(PASS_BREAK, new Number(count));
+        } else if (ast->value() == "return") {
+            Interpreter ip(ast->rValue()->get(0)->value(), filename, this);
+            auto e = ip.run();
+            CHECKITER(e, ast->rValue());
+            exports->set(PASS_ENDFUN, e->get(PASS_RETURN));
+            delete e;
+            return exports;
         } else if (ast->value() == "continue") {
             exports->set(PASS_CONTINUE, new Number);
             break;
@@ -258,7 +301,7 @@ BM::Object *BM::Interpreter::run() {
                 CHECKITER(tmpe, arg);
                 CHECKPASSNEXTOP(tmpe);
                 fun->defaultValue(argname, tmpe->get(PASS_RETURN));
-                FREE(tmpe);
+//                FREE(tmpe);
             }
             set(funname, fun);
             exports->set(PASS_RETURN, fun);

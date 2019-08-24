@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#define NEW std::cout << "f: " << __FILE__ << ", l: " << __LINE__ << " ";new
 #include <BerryMath.h>
 #include <vector>
 #include <fstream>
@@ -8,6 +9,16 @@ using std::endl;
 using std::cin;
 using std::fstream;
 using std::vector;
+
+/*void* operator new(size_t n) {
+    auto o = malloc(n);
+    std::cout << "n: " << o << std::endl;
+    return o;
+}
+void operator delete(void* o) {
+    std::cout << "d: " << o << std::endl;
+    free(o);
+}*/
 
 void terminal() {
     cout << "BerryMath Terminal" << endl;

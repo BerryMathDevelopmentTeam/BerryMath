@@ -81,6 +81,7 @@ namespace BM {
 
 #define PASS_ERROR "__ERROR__"
 #define PASS_RETURN "__RETURN__"
+#define PASS_ENDFUN "__RETURNFUN__"
 #define PASS_THIS "__THIS__"
 #define PASS_UPVALUE "__UPVALUE__"
 #define PASS_LASTKEY "__LASTKEY__"
