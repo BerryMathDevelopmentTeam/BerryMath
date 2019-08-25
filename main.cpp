@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstdlib>
-#define NEW std::cout << "f: " << __FILE__ << ", l: " << __LINE__ << " ";new
 #include <BerryMath.h>
 #include <vector>
 #include <fstream>
@@ -128,11 +127,31 @@ int main(int argc, char* argv[]) {
         string line;
         string bytecode;
         while (getline(file, line)) {
-            bytecode += line;
+            bytecode += line + "\n";
         }
         BM::VM vm(bytecode);
         vm.run();
         file.close();
+    } else if (opt == "--compile" || opt == "-c") {// 运行字节码
+        if (argc < 3) {
+            std::cerr << "SystemError: Filename not found at <null:\033[33msystem\033[0m>:0" << endl;
+            exit(1);
+        }
+        fstream file;
+        string filename(argv[2]);
+        file.open(filename);
+        if (!file) {
+            std::cerr << "SystemError: Cannot open source file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
+            file.close();
+            exit(1);
+        }
+        string line;
+        string source;
+        while (getline(file, line)) {
+            source += line + "\n";
+        }
+        file.close();
+        BM::Compiler compiler;
     } else {// 运行源码
         fstream file;
         string& filename = opt;
@@ -147,9 +166,9 @@ int main(int argc, char* argv[]) {
         while (getline(file, line)) {
             script += line + "\n";
         }
+        file.close();
         BM::Interpreter ip(script, filename);
         delete ip.run();
-        file.close();
     }
     BM::Dylib::clear();
     return 0;
