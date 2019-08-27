@@ -2,7 +2,6 @@
 #define BERRYMATH_INTERPRETER_H
 
 #include <string>
-#include <sstream>
 #include "value.h"
 #include "ast.h"
 #include "types.h"
@@ -53,31 +52,6 @@ namespace BM {
         Interpreter *parent;
         string script;
         string filename;
-
-        static bool isNumber(const string &n) {
-            if (n[0] == '.') return false;
-            bool doted = false;
-            for (UL i = 0; i < n.length(); i++) {
-                if (n[i] == '.') {
-                    if (doted) return false;
-                    doted = true;
-                } else if (!(n[i] >= '0' && n[i] <= '9')) return false;
-            }
-            return true;
-        }
-
-        static bool isString(const string &n) {
-            char c = n[0];
-            if (c != '\'' && c != '"') return false;
-            return n[n.length() - 1] == c;
-        }
-
-        double transSD(const string &s) {// trans string to double
-            std::stringstream ss(s);
-            double t;
-            ss >> t;
-            return t;
-        }
 
 #define PASS_ERROR "__ERROR__"
 #define PASS_RETURN "__RETURN__"

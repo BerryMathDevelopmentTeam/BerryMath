@@ -4,6 +4,7 @@
 #include <string>
 #include "ast.h"
 #include "types.h"
+#include "sym.h"
 using std::string;
 
 namespace BM {
@@ -23,47 +24,24 @@ namespace BM {
         }
     private:
         bool child;
-        AST* ast;
+        AST* ast = nullptr;
         Compiler* parent;
+        Sym sym;
+
         string filename;
         string script;
     };
     enum Opcodes {
-        LOADTV, LOADSID,
-        MOVRR, MOVRA, MOVAA, MOVAR,
-        PUSHA, PUSHR, CALLA, CALLAO, RET,
-        ADPRRSR, ADPARSR, ADPARSA, ADPRAR, ADPAAR, ADPAAA, ADPRRR, ADPARR, ADPARA,
-        ADDRR,  ADDRA,  ADDAR,  ADDAA,
-        SUBRR,  SUBRA,  SUBAR,  SUBAA,
-        MULRR,  MULRA,  MULAR,  MULAA,
-        DIVRR,  DIVRA,  DIVAR,  DIVAA,
-        MODRR,  MODRA,  MODAR,  MODAA,
-        POWRR,  POWRA,  POWAR,  POWAA,
-        SHLRR,  SHLRA,  SHLAR,  SHLAA,
-        SHRRR,  SHRRA,  SHRAR,  SHRAA,
-        LESRR,  LESRA,  LESAR,  LESAA,
-        MORRR,  MORRA,  MORAR,  MORAA,
-        ELESRR, ELESRA, ELESAR, ELESAA,
-        EMORRR, EMORRA, EMORAR, EMORAA,
-        EQRR,   EQRA,   EQAR,   EQAA,
-        NEQRR,  NEQRA,  NEQAR,  NEQAA,
-        ANDRR,  ANDRA,  ANDAR,  ANDAA,
-        ORRR,   ORRA,   ORAR,   ORAA,
-        XORRR,  XORRA,  XORAR,  XORAA,
-        LANDRR, LANDRA, LANDAR, LANDAA,
-        LORRR,  LORRA,  LORAR,  LORAA,
-        NOTR,   NOTA,
-        LNOTR,  LNOTA,
-        GETRS,  GETARS, GETAR,  GETRA, GETAA,
-        JMP,    JMPC,
-        IMPRS,  IMPR,   IMPA,
-        BITR,   BITA,
-        EITR,   EITA,
-        KEYR,   KEYA,
-        VALR,   VALA,
-        NXTR,   NXTA,
-        PRER,   PREA,
-        NOP,
+        PUSH,
+        ADD,  SUB,  MUL,   DIV,   MOD, POW,
+        AND,  OR,   XOR,   NOP,   SHL, SHR,  EQ,
+        NEQ,  LT,   GT,    LE,    GE,  LAN,
+        LOR,  NOT,  LNT,   MIN,   JMP,
+        JMPT, JMPF, CALLA, CALLAA,
+        RET,  MOV,  LOAD,
+    };
+    enum Optypes {
+        NUM, STR, OBJ, NUL, UND
     };
 }
 

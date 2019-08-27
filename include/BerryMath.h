@@ -9,6 +9,7 @@
 #include "lex.h"
 #include "dylib.h"
 #include "compiler.h"
+#include "sym.h"
 #include "vm.h"
 
 namespace BM {

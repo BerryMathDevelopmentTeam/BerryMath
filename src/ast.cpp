@@ -1526,7 +1526,7 @@ BM::AST::~AST() {
 inline UL BM::AST::priority(const string& op) {
     if (op == "[" || op == ".") return 15;
     if (op == "(") return 14;
-    if (op == "++" || op == "--" || op == "!" || op == "~") return 13;
+    if (op == "++" || op == "--" || op == "!" || op == "~" || op == "**") return 13;
     if (op == "*" || op == "/" || op == "%") return 12;
     if (op == "+" || op == "-") return 11;
     if (op == "<<" || op == ">>") return 10;

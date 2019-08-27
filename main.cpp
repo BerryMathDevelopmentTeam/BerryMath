@@ -151,7 +151,13 @@ int main(int argc, char* argv[]) {
             source += line + "\n";
         }
         file.close();
-        BM::Compiler compiler;
+        BM::Compiler compiler(source);
+        string bytecode(compiler.compile());
+        string outerName(filename);
+        outerName.replace(outerName.find(".bm"), 3, ".bmc");
+        file.open(outerName);
+        file << bytecode;
+        file.close();
     } else {// 运行源码
         fstream file;
         string& filename = opt;
