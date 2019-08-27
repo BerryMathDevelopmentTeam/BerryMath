@@ -4,7 +4,7 @@
 using std::string;
 using std::fstream;
 
-typedef char byte;
+typedef unsigned char byte;
 
 #define GET bt = (bytecode[i++] << 4) + (bytecode[i++])
 #define GETP bt = (bytecode[i++] << 4) + (bytecode[i++]);printf("%02x ", bt);
