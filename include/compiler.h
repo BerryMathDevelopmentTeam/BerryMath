@@ -18,7 +18,7 @@ namespace BM {
             filename = f;
             parent = p;
         }
-        string compile();
+        bool compile(string&);
         ~Compiler() {
             if (!child && ast) delete ast;
         }
@@ -43,6 +43,13 @@ namespace BM {
     enum Optypes {
         NUM, STR, OBJ, NUL, UND
     };
+
+#define FREEAST if (!child && ast) { delete ast;ast = nullptr; }
+#define COMPILE(compiler, out) if (!compiler.compile(out)) { \
+        std::cerr << "\n\tat <" << filename << ">:" << ast->line() << std::endl; \
+        bytecode = ""; \
+        return false; \
+    }
 }
 
 /*

@@ -54,6 +54,8 @@ _^: The first bit means the version type. a: Official version, b: Advanced versi
 | 20 | imp  | /               | Import modules based on the value of the top element of the stack. | imp |
 | 21 | line | source-line     | Identification is the line of source code. | line |
 | 22 | adp  | address, address| Add attributes to the top element of the stack, named the value pointed to by the first address and the value pointed to by the second address. | adp [bp+2], [bp+1] |
+| ff | .JLAB|                 | Pseudo instructions for setting labels (used only when the compiler generates code). | / |
+
 ## Types
 | Bytecode Name | ASM Name | describe |
 |---|---|---|
