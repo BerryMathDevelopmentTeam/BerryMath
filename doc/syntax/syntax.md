@@ -7,7 +7,13 @@ number, string, null, undefined, object, function, native-function
 number: `\d+\.?\d*`, string: `".*""` or `'.+'`, null: `null`, undefined: `undefined`, object: [Development], function: [See define a function], native-function: None
 ### Expression
 #### Operators
-=, :, ==, !=, <=, >=, <, >, ( ), [ ], { }, ., (comma), &, |, ^, ~, &&, ||, !, +, -, *, /, %, **, <<, >>, +=, -=, *-, /=, %=, **=, <<=, >>=, &=, |=, ^=, in, of
+=, :, ==, !=, <=, >=, <, >, ( ), [ ], { }, ., (comma), &, |, ^, ~, &&, ||, !, +, -, *, /, %, **, <<, >>, +=, -=, *-, /=, %=, **=, <<=, >>=, &=, |=, ^=, in, of, ~~
+
+#### Operator ~~
+Format: n~~m  
+Returns all integers in an interval [n, m)  
+_note_: If n, m is a floating point number, then the system automatically integrates the value of n, m downwards.
+
 #### Calling Functions
 Syntax: `<function-name>(arg1, arg2, arg3...)`
 Demo: 
