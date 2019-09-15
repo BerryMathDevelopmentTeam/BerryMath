@@ -46,3 +46,5 @@ cmake-build-debug/
 /BerryMath
 
 build*
+
+.vscode/

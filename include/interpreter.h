@@ -86,7 +86,7 @@ namespace BM {
         << ast->line()  << std::endl; \
         THROW; \
     }
-#define CHECKPASSNEXTOP(e) auto v = e->get(PASS_NEXTOP);if (v) { auto value = (Number*)e->get(PASS_RETURN);if (value->type() == NUMBER) { value->value() += ((Number*)v)->value(); } WRONGEXPRTYPE("self increment or decrement"); }
+#define CHECKPASSNEXTOP(e) { auto v = e->get(PASS_NEXTOP);if (v) { auto value = (Number*)e->get(PASS_RETURN);if (value->type() == NUMBER) { value->value() += ((Number*)v)->value(); } WRONGEXPRTYPE("self increment or decrement"); } }
 #define OPERPASSNEXTOP(conE, con) { auto ret = conE->get(PASS_RETURN); \
         if (ret->type() == OBJECT) { \
             con = ret; \

@@ -5,6 +5,8 @@
 #include "value.h"
 #include "dylib.h"
 #include "ast.h"
+#include "types.h"
+#include "types.cpp"
 #include "interpreter.h"
 
 string BM::Interpreter::compile() {
@@ -844,6 +846,21 @@ BM::Object *BM::Interpreter::run() {
                         else if (op == "&&") exports->set(PASS_RETURN, new Number(((bool) (leftV)) && ((bool) (rightV))));
                         else if (op == "<<") exports->set(PASS_RETURN, new Number(((LL) (leftV)) << ((LL) (rightV))));
                         else if (op == ">>") exports->set(PASS_RETURN, new Number(((LL) (leftV)) >> ((LL) (rightV))));
+                        else if (op == "~~") {
+                            auto arr = new Object();
+                            arr->set("ctor", new Function("ctor", "let this = {};return this;"));
+                            auto pushFun = new Function("push", "this[this.__len] = n;this.__len++;");
+                            pushFun->addDesc("n");
+                            arr->set("push", pushFun);
+                            arr->set("__SYSTEM_TYPE__", new String("Array"));
+                            leftV = (ULL)leftV;
+                            rightV = (ULL)rightV;
+                            arr->set("__len", new Number(rightV - leftV));
+                            for (ULL v = leftV, i = 0; v < rightV; v++, i++) {
+                                arr->set(std::to_string(i), new Number(v));
+                            }
+                            exports->set(PASS_RETURN, arr);
+                        }
                     } WRONGEXPRTYPE(op);
                 }
             }

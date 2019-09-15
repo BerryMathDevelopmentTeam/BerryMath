@@ -34,7 +34,10 @@ namespace BM {
         Object& operator[](const string &key) { return *get(key); }
         inline UL links() { return linked; }
         inline UL bind() { return ++linked; }
-        inline UL unbind() { return --linked; }
+        inline UL unbind() { 
+            if (linked > 0) return --linked;
+            return 0;
+        }
         virtual string toString(bool = true, bool = true, string = "");
         virtual ValueType type() { return OBJECT; }
         virtual Object* copy() {
@@ -85,6 +88,7 @@ namespace BM {
         UL linked;
         map<string, Object*> proto;
         Object* parent;
+        bool foo;// 无意义，用于占位，令方便内存统计管理
     };
     class Number : public Object {
     public:

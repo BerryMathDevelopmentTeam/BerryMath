@@ -1,6 +1,7 @@
 #ifndef BERRYMATH_BERRYMATH_H
 #define BERRYMATH_BERRYMATH_H
 
+#include <map>
 #include "../OSPlatformUtil/src/osplatformutil.h"
 #include "types.h"
 #include "interpreter.h"
@@ -11,6 +12,7 @@
 #include "compiler.h"
 #include "sym.h"
 #include "vm.h"
+#include "bmcache.h"
 
 namespace BM {
 #define BM_0_0_1_BETA

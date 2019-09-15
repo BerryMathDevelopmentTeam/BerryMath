@@ -31,7 +31,7 @@ void terminal() {
     cout << "   \033[41m      \033[45m     \033[0m" << endl;
     cout << "     \033[41m    \033[45m    \033[0m" << endl;
     BM::Interpreter ip("", "terminal");
-    vector<BM::Object*> gPool;
+    // vector<BM::Object*> gPool;
 
     while (true) {
         string tmp;
@@ -87,19 +87,19 @@ void terminal() {
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
             if (ret) cout << (*ret) << endl;
-            gPool.push_back(e);
+            // gPool.push_back(e);
         } else {
             ip.open(tmp, "terminal");
             auto e = ip.run();
             auto ret = e->get(PASS_RETURN);
             if (ret) cout << (*ret) << endl;
-            gPool.push_back(e);
+            // gPool.push_back(e);
         }
     }
     ip.clear();
-    for (auto i = gPool.begin(); i != gPool.end(); i++) {
-        delete *i;
-    }
+    // for (auto i = gPool.begin(); i != gPool.end(); i++) {
+        // delete *i;
+    // }
     cout << "bye" << endl;
     exit(0);
 }
@@ -152,7 +152,10 @@ int main(int argc, char* argv[]) {
         }
         file.close();
         BM::Compiler compiler(source);
-        string bytecode(compiler.compile());
+        string bytecode;
+        if (!compiler.compile(bytecode)) {
+            std::cerr << "[COMPILE FAILED]" << std::endl;
+        }
         string outerName(filename);
         outerName.replace(outerName.find(".bm"), 3, ".bmc");
         file.open(outerName);

@@ -180,6 +180,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = DADD_TOKEN;
     } else if (t.s == "--") {
         t.t = DSUB_TOKEN;
+    } else if (t.s == "~~") {
+        t.t = RANGE_TOKEN;
     }
         // key word token判断
     else if (t.s == "let") {
