@@ -1109,7 +1109,7 @@ void BM::AST::parse() {
                     root->insert("SyntaxError: The unexpected end of the script", line);
                     return;
                 }
-                ret += token.s;
+                ret += " " + token.s;
             }
             if (ret.empty()) ret = "undefined";
             if (root) delete root;
@@ -1380,13 +1380,13 @@ void BM::AST::parse() {
                     if (token.t == Lexer::DEF_TOKEN) {
                         string defScript("def ");
                         GET;
-                        defScript += token.s;
+                        defScript += " " + token.s;
                         GET;
-                        defScript += token.s;
+                        defScript += " " + token.s;
                         UL sbc(1);
                         while (true) {
                             GET;
-                            defScript += token.s;
+                            defScript += " " + token.s;
                             if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
                             else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
                                 sbc--;
@@ -1394,11 +1394,11 @@ void BM::AST::parse() {
                             }
                         }
                         GET;
-                        defScript += token.s;
+                        defScript += " " +  token.s;
                         UL bbc(1);
                         while (true) {
                             GET;
-                            defScript += token.s;
+                            defScript += " " + token.s;
                             if (token.t == Lexer::BIG_BRACKETS_LEFT_TOKEN) bbc++;
                             else if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) {
                                 bbc--;

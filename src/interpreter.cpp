@@ -34,20 +34,21 @@ BM::Object *BM::Interpreter::run() {
     if (!ast) ast = new AST(script);
     while (true) {
         if (!child) ast->parse();
+        string rootValue = ast->value();
 //        if (!ast->rValue()) continue;
-        if (ast->value() == "PROGRAM-END") break;
-        if (ast->value() == "bad-tree") {
-            std::cerr << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+        if (rootValue == "PROGRAM-END") break;
+        if (rootValue == "bad-tree") {
+            std::clog << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
             if (ast) { delete ast;ast = nullptr; }
             THROW;
-        } else if (ast->value() == "export") {
+        } else if (rootValue == "export") {
             auto name = ast->rValue()->get(0)->value();
             auto var = scope->get(name);
             NOTDEFINED(var, name);
             exports->set(name, var->value());
-        } else if (ast->value() == "pass") {
+        } else if (rootValue == "pass") {
             // 因为是pass所以直接跳过即可
-        } else if (ast->value() == "import") {
+        } else if (rootValue == "import") {
             Interpreter nameIp("", filename, this);
             nameIp.child = true;
             nameIp.ast->root = ast->rValue()->get(0);
@@ -62,7 +63,7 @@ BM::Object *BM::Interpreter::run() {
                 import(exports, name, asName);
             } WRONGSCRIPT("import");
             FREE(e);
-        } else if (ast->value() == "let") {
+        } else if (rootValue == "let") {
             auto name = ast->rValue()->get(0)->value();
             Interpreter ip("", filename, this);
             ip.ast->root = ast->rValue()->get(1);
@@ -77,7 +78,7 @@ BM::Object *BM::Interpreter::run() {
                 CHECKPASSNEXTOP(e);
                 FREE(ret);
             }
-        } else if (ast->value() == "if") {
+        } else if (rootValue == "if") {
             auto conAst = ast->rValue()->get(0);
             Interpreter conIp("", filename, this);
             conIp.child = true;
@@ -151,7 +152,7 @@ BM::Object *BM::Interpreter::run() {
                 }
             }
             delete conE;
-        } else if (ast->value() == "for") {
+        } else if (rootValue == "for") {
             // 初始化
             auto initAst = ast->rValue()->get(0);
             Interpreter initIp("", filename, this);
@@ -206,7 +207,7 @@ BM::Object *BM::Interpreter::run() {
                 FREE(conE);
                 FREE(nxtE);
             }
-        } else if (ast->value() == "while") {
+        } else if (rootValue == "while") {
             auto conAst = ast->rValue()->get(0);
             auto whscript = ast->rValue()->get(1)->value();
             while (true) {
@@ -238,7 +239,7 @@ BM::Object *BM::Interpreter::run() {
                 } else break;
                 FREE(conE);
             }
-        } else if (ast->value() == "do") {
+        } else if (rootValue == "do") {
             auto doscript = ast->rValue()->get(0)->value();
             auto conAst = ast->rValue()->get(1);
             while (true) {
@@ -271,24 +272,24 @@ BM::Object *BM::Interpreter::run() {
                     break;
                 FREE(conE);
             }
-        } else if (ast->value() == "break") {
+        } else if (rootValue == "break") {
             auto count = atoi(ast->rValue()->get(0)->value().c_str());
             exports->set(PASS_BREAK, new Number(count));
-        } else if (ast->value() == "return") {
+        } else if (rootValue == "return") {
             Interpreter ip(ast->rValue()->get(0)->value(), filename, this);
             auto e = ip.run();
             CHECKITER(e, ast->rValue());
             exports->set(PASS_ENDFUN, e->get(PASS_RETURN));
             delete e;
             return exports;
-        } else if (ast->value() == "continue") {
+        } else if (rootValue == "continue") {
             exports->set(PASS_CONTINUE, new Number);
             break;
-        } else if (ast->value() == "using") {
+        } else if (rootValue == "using") {
             auto objAst = ast->rValue()->get(0);
             Using(exports, objAst);
             ast->rValue()->clear();
-        } else if (ast->value() == "def") {
+        } else if (rootValue == "def") {
             string funname(ast->rValue()->get(0)->value());
             string funscript(ast->rValue()->get(2)->value());
             auto fun = new Function(funname, funscript);
@@ -307,7 +308,7 @@ BM::Object *BM::Interpreter::run() {
             }
             set(funname, fun);
             exports->set(PASS_RETURN, fun);
-        } else if (ast->value() == "class") {
+        } else if (rootValue == "class") {
             string className(ast->rValue()->get(0)->value());
             set(className, new Object);
             auto prototype = new Object;
@@ -330,7 +331,7 @@ BM::Object *BM::Interpreter::run() {
                 prototype->set(name, e->get(PASS_RETURN));
                 FREE(e);
             }
-        } else if (ast->value() == "new") {
+        } else if (rootValue == "new") {
             auto line = ast->rValue()->get(0)->line();
             string name(ast->rValue()->get(0)->value());
             ast->rValue()->get(0)->value(".");
@@ -357,7 +358,7 @@ BM::Object *BM::Interpreter::run() {
         }
         else { //为表达式
             auto len = ast->rValue()->length();
-            if (ast->value() == "call") {
+            if (rootValue == "call") {
                 auto r = ast->rValue();
                 auto argsNode = r->get(1);
                 vector<Object *> args;
@@ -367,7 +368,7 @@ BM::Object *BM::Interpreter::run() {
                     if (node->value() == "=") {
                         auto argName = node->get(0)->value();
                         if (node->get(0)->length() > 0) {
-                            std::cerr << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
+                            std::clog << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
                                       << ":" << upscope << ">:"
                                       << ast->line() << std::endl;
                             if (ast) { delete ast;ast = nullptr; }
@@ -409,7 +410,7 @@ BM::Object *BM::Interpreter::run() {
                     clean = true;
                 }
                 if (!fun_) {
-                    std::cerr << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
+                    std::clog << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     if (ast) { delete ast;ast = nullptr; }
                     THROW;
@@ -428,9 +429,8 @@ BM::Object *BM::Interpreter::run() {
                     auto fune = fun->run(args, hashArg);
                     exports->set(PASS_RETURN, fune);
                 } else {
-                    if (clean && up->unbind() < 1)
-                        delete up;
-                    std::cerr << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
+                    if (clean) up->unbind();
+                    std::clog << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     if (ast) { delete ast;ast = nullptr; }
                     THROW;
@@ -438,12 +438,11 @@ BM::Object *BM::Interpreter::run() {
 //                if (get("this")->value()->type() == OBJECT && fune->type() == UNDEFINED) {
 //                    exports->set(PASS_RETURN, get("this")->value());
 //                }
-                if (clean && up->unbind() < 1)
-                    delete up;
+                if (clean) up->unbind();
                 del("this");
-            } else if (ast->value() == "get") {
+            } else if (rootValue == "get") {
                 if (ast->rValue()->length() < 1) {
-                    auto name = ast->value();
+                    auto name = rootValue;
                     auto var = scope->get(name);
                     NOTDEFINED(var, name);
                     exports->set(PASS_RETURN, var->value());
@@ -470,7 +469,7 @@ BM::Object *BM::Interpreter::run() {
                                 value = new Undefined;
                                 up->set(key, value);
                             } else {
-                                std::cerr << "ReferenceError: Cannot get property "
+                                std::clog << "ReferenceError: Cannot get property "
                                           << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
@@ -483,7 +482,7 @@ BM::Object *BM::Interpreter::run() {
                     exports->set(PASS_UPVALUE, up);
                     exports->set(PASS_LASTKEY, new String(key));
                 }
-            } else if (ast->value() == ".") {
+            } else if (rootValue == ".") {
                 string startV(ast->rValue()->get(0)->value());
                 vector<string> keys;
                 auto node = ast->rValue()->get(1);
@@ -515,7 +514,7 @@ BM::Object *BM::Interpreter::run() {
                     exports->set(PASS_UPVALUE, up);
                     exports->set(PASS_LASTKEY, new String(keys[keys.size() - 1]));
                 } WRONG("ReferenceError", startV + " is not defined");
-            } else if (ast->value() == "o-value") {
+            } else if (rootValue == "o-value") {
                 auto object = new Object;
                 for (L i = 0; i < ast->rValue()->length(); i++) {
                     string key(ast->rValue()->get(i)->value());
@@ -529,7 +528,7 @@ BM::Object *BM::Interpreter::run() {
                     FREE(e);
                 }
                 exports->set(PASS_RETURN, object);
-            } else if (ast->value() == "a-value") {
+            } else if (rootValue == "a-value") {
                 auto ret = new Object;
                 ret->set("ctor", new Function("ctor", "let this = {};return this;"));
                 auto pushFun = new Function("push", "this[this.__len] = n;this.__len++;");
@@ -550,21 +549,21 @@ BM::Object *BM::Interpreter::run() {
                 ret->set("__len", new Number(arrlen));
                 exports->set(PASS_RETURN, ret);
             } else if (len < 1) {
-                if (isNumber(ast->value())) {
-                    exports->set(PASS_RETURN, new Number(transSD(ast->value())));
-                } else if (isString(ast->value())) {
-                    auto s = ast->value();
+                if (isNumber(rootValue)) {
+                    exports->set(PASS_RETURN, new Number(transSD(rootValue)));
+                } else if (isString(rootValue)) {
+                    auto s = rootValue;
                     s.erase(0, 1);
                     s.erase(s.length() - 1, 1);
                     exports->set(PASS_RETURN, (new String(s))->trans());
                 } else {
-                    auto name = ast->value();
+                    auto name = rootValue;
                     auto var = scope->get(name);
                     NOTDEFINED(var, name);
                     exports->set(PASS_RETURN, var->value());
                 }
             } else if (len == 1) {
-                if (ast->value() == "++" || ast->value() == "--" || ast->value() == "++-f" || ast->value() == "---f") {
+                if (rootValue == "++" || rootValue == "--" || rootValue == "++-f" || rootValue == "---f") {
                     Interpreter ip("", filename, this);
                     ip.ast->root = ast->rValue()->get(0);
                     ip.child = true;
@@ -573,30 +572,30 @@ BM::Object *BM::Interpreter::run() {
                     CHECKPASSNEXTOP(e);
                     auto n = e->get(PASS_RETURN);
 //                std::cout << n->type() << std::endl;
-                    if (ast->value() == "++") {
+                    if (rootValue == "++") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             exports->set(PASS_RETURN, v->copy());
                             v->value()++;
-                        } WRONGEXPRTYPE(ast->value());
-                    } else if (ast->value() == "--") {
+                        } WRONGEXPRTYPE(rootValue);
+                    } else if (rootValue == "--") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             exports->set(PASS_RETURN, v->copy());
                             v->value()--;
-                        } WRONGEXPRTYPE(ast->value());
-                    } else if (ast->value() == "++-f") {
+                        } WRONGEXPRTYPE(rootValue);
+                    } else if (rootValue == "++-f") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()++;
                             exports->set(PASS_RETURN, v->copy());
-                        } WRONGEXPRTYPE(ast->value());
-                    } else if (ast->value() == "---f") {
+                        } WRONGEXPRTYPE(rootValue);
+                    } else if (rootValue == "---f") {
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()--;
                             exports->set(PASS_RETURN, v->copy());
-                        } WRONGEXPRTYPE(ast->value());
+                        } WRONGEXPRTYPE(rootValue);
                     }
                     FREE(e);
                 } else {
@@ -608,8 +607,9 @@ BM::Object *BM::Interpreter::run() {
                     auto e_ = vipe->get(PASS_RETURN);
                     delete valueIp;
 
-                    auto op = ast->value();
-                    if (e_->type() == NUMBER) {
+                    auto op = rootValue;
+                    auto etype = e_->type();
+                    if (etype == NUMBER) {
                         auto e = (Number *) e_;
                         double &s = e->value();
                         if (op == "!") {
@@ -619,6 +619,12 @@ BM::Object *BM::Interpreter::run() {
                         }
                         exports->set(PASS_RETURN, e);
                         delete vipe;
+                    } else if (etype == OBJECT || etype == STRING) {
+                        if (op == "!") exports->set(PASS_RETURN, new Number(0));
+                        WRONGEXPRTYPE(op);
+                    } else if (etype == NULL_ || etype == UNDEFINED) {
+                        if (op == "!") exports->set(PASS_RETURN, new Number(1));
+                        WRONGEXPRTYPE(op);
                     } WRONGEXPRTYPE(op);
                     FREE(e_);
                 }
@@ -635,7 +641,7 @@ BM::Object *BM::Interpreter::run() {
                 CHECKITER(left, leftIp->ast);
                 auto right = rightIp->run()->get(PASS_RETURN);
                 CHECKITER(right, rightIp->ast);
-                string op(ast->value());
+                string op(rootValue);
                 delete leftIp;
                 delete rightIp;
                 if (op == "+") {
@@ -655,7 +661,7 @@ BM::Object *BM::Interpreter::run() {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
                     if ((leftNode->length() > 0 && name != "." && name != "get") || isNumber(name) || isString(name) || name == "o-value" || name == "a-value") {
-                        std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
+                        std::clog << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         if (ast) { delete ast;ast = nullptr; }
                         THROW;
@@ -777,9 +783,18 @@ BM::Object *BM::Interpreter::run() {
                         op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="
                         ) {
                     if (left->type() != right->type()) {
-                        std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
-                        if (ast) { delete ast;ast = nullptr; }
-                        THROW;
+                        if (
+                                (left->type() == OBJECT && right->type() == NULL_) ||
+                                (left->type() == NULL_ && right->type() == OBJECT) ||
+                                (left->type() == UNDEFINED && right->type() == OBJECT) ||
+                                (left->type() == OBJECT && right->type() == UNDEFINED)
+                                ) {
+                            exports->set(PASS_RETURN, new Number(0));
+                        } else {
+                            std::clog << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+                            if (ast) { delete ast;ast = nullptr; }
+                            THROW;
+                        }
                     }
                     switch (left->type()) {
                         case NUMBER:
@@ -881,7 +896,7 @@ BM::Object *BM::Interpreter::runCC() {
 
 void BM::Interpreter::import(Object* exports, const string& name, const string& asName) {
     if (scope->get(asName)) {
-        std::cerr << "ImportError: '" << asName << "' is in usage \n\tat <" << filename << ">:" << ast->line() << std::endl;
+        std::clog << "ImportError: '" << asName << "' is in usage \n\tat <" << filename << ">:" << ast->line() << std::endl;
         exports->set(PASS_ERROR, new Number(1));
         return;
     }
@@ -903,7 +918,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
+                std::clog << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
             }
             moduleExports->del(PASS_RETURN);
@@ -923,7 +938,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
+                std::clog << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
                 return;
             }
@@ -947,7 +962,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set("undefined", new Undefined);
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
+                std::clog << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
                 return;
             }
@@ -964,7 +979,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             auto initModule = (initModuleFun) dylib.resolve("initModule");
             Object *moduleExports = initModule();
             scope->set(asName, moduleExports);
-        } else std::cerr << "ImportError" << ": No module named " << name << "\n\tat <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
+        } else std::clog << "ImportError" << ": No module named " << name << "\n\tat <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
         dylib.close();
     }
 }
@@ -973,7 +988,7 @@ void BM::Interpreter::Using(Object* exports, AST::node* objAst) {
     ip.ast->root = objAst;
     ip.child = true;
     auto e = ip.run();
-    if (!e || e->get(PASS_ERROR)) std::cerr << "at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+    if (!e || e->get(PASS_ERROR)) std::clog << "at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
     auto obj = e->get(PASS_RETURN);
     Object::Iterator iter(obj);
     for (; !iter.end(); iter.next()) {

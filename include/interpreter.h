@@ -65,24 +65,24 @@ namespace BM {
 #define THROW { exports->set(PASS_ERROR, new Number(1)); return exports; }
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR)) { \
-        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
+        std::clog << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)
-#define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
+#define WRONGEXPRTYPE(op) else { std::clog << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
-#define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
+#define WRONGSCRIPT(token) else { std::clog << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
-#define WRONG(name, s)  else { std::cerr << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
+#define WRONG(name, s)  else { std::clog << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
 #define NOTDEFINED(v, name) if (!v) { \
-        std::cerr << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
+        std::clog << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
         << ast->line()  << std::endl; \
         THROW; \
     }
@@ -94,7 +94,7 @@ namespace BM {
             con = ret->copy(); \
             CHECKPASSNEXTOP(conE); \
         } }
-#define FREE(v) { if (v->unbind() < 1) delete v; }
+#define FREE(v) { if (v->unbind() == 0) delete v; }
 #ifdef I_OS_WIN32
         // 拓展库path
 #define BMMPATH "C:\\BM\\libraries\\lib"

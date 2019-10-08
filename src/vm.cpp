@@ -96,10 +96,10 @@ void BM::VM::run() {
 }
 
 void BM::Throw(const string& name, const string& txt) {
-    std::cerr << name << "Error: " << txt << std::endl;
+    std::clog << name << "Error: " << txt << std::endl;
 }
 void BM::ThrowExit(const string& name, const string& txt) {
-    std::cerr << name << "Error: " << txt << std::endl;
+    std::clog << name << "Error: " << txt << std::endl;
     exit(1);
 }
 

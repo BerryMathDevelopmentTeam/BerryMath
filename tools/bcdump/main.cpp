@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
         if (argv[0] == "-h" || argv[i] == "--header") header = true;
         else if (argv[i] == "-i" || argv[i] == "--index") index = true;
         else {
-            std::cerr << "Error: Wrong option: " << argv[i] << std::endl;
+            std::clog << "Error: Wrong option: " << argv[i] << std::endl;
             help();
             return 1;
         }
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
     fstream file;
     file.open(filename);
     if (!file) {
-        std::cerr << "Error: Cannot open file '" << filename << "'" << std::endl;
+        std::clog << "Error: Cannot open file '" << filename << "'" << std::endl;
         file.close();
         return 1;
     }
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     for (byte t = 0; t < 4; t++) {
         GET;
         if (bt != magic_code[i]) {
-            std::cerr << "Error: Wrong bytecode file '" << filename << "', wrong magic code" << std::endl;
+            std::clog << "Error: Wrong bytecode file '" << filename << "', wrong magic code" << std::endl;
             return 1;
         }
     }
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     }
     byte vtype = first >> 4;
     if (vtype < 10 || vtype > 12) {
-        std::cerr << "Error: Wrong bytecode file '" << filename << "', wrong version type" << std::endl;
+        std::clog << "Error: Wrong bytecode file '" << filename << "', wrong version type" << std::endl;
         return 1;
     }
     if (header) {
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
                     }
                     default:
                     {
-                        std::cerr << "Error: Wrong bytecode file '" << filename << "', wrong operation type" << std::endl;
+                        std::clog << "Error: Wrong bytecode file '" << filename << "', wrong operation type" << std::endl;
                         break;
                     }
                 }
@@ -405,7 +405,7 @@ int main(int argc, char* argv[]) {
                 break;
             }
             default:
-                std::cerr << "Error: Wrong bytecode file '" << filename << "', wrong operation code" << std::endl;
+                std::clog << "Error: Wrong bytecode file '" << filename << "', wrong operation code" << std::endl;
                 break;
         }
     }

@@ -1,0 +1,73 @@
+import "sys" as sys;
+using sys.io;
+
+class node {
+public:
+	def ctor(v = 0, l = null, r = null) {
+		this.v = v;
+		this.l = l;
+		this.r = r;
+	}
+	def insert(n) {
+		if (n < this.v) {
+			if (this.l) {
+				this.l.insert(n);
+			} else {
+				this.l = new node(n);
+			}
+		} else {
+			if (this.r) {
+				this.r.insert(n);
+			} else {
+				this.r = new node(n);
+			}
+		}
+	}
+	def sort(arr) {
+		if (this.l) { this.l.sort(arr); }
+		arr.push(this.v);
+		if (this.r) { this.r.sort(arr); }
+	}
+}
+
+class BinTree {
+public:
+	def ctor() {
+		this.root = null;
+	}
+	def insert(n) {
+		if (this.root == null) {
+			this.root = new node(n);
+		} else {
+			this.root.insert(n);
+		}
+	}
+	def sort() {
+		let arr = [];
+		if (!this.root) { return arr; }
+		this.root.sort(arr);
+		return arr;
+	}
+}
+
+BinTree.node = node;
+
+//(def limbda() {
+// 	print("This is limbda");
+//	let tree = new BinTree();
+//	tree.insert(5);
+//	tree.insert(3);
+//	tree.insert(9);
+//	tree.insert(10);
+//	tree.insert(1);
+//	print(tree.sort());
+//})();
+print("This is limbda");
+let tree = new BinTree();
+tree.insert(5);
+tree.insert(3);
+tree.insert(9);
+tree.insert(10);
+tree.insert(1);
+print(tree.sort());
+

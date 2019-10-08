@@ -10,10 +10,14 @@ using std::vector;
 
 bool BM::Object::has(Object *v, Object* root = nullptr, bool flag) {
     if (!root) root = this;
-    if (this == v || (parent == v && !flag)) return true;
-    if (parent == root) return false;
-    if (parent && parent != this && !flag) return parent->has(v, root, flag);
-    if (proto.size() < 1) return false;
+    if (this == v) return true;
+    if (parents.count(root) > 0) return false;
+    if (parents.count(root) == 0 && !flag) {
+        for (auto iter = parents.begin(); iter != parents.end(); iter++) {
+            iter->first->has(v, root, flag);
+        }
+    }
+    if (proto.empty()) return false;
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
         if (iter->second && (iter->second == this || iter->second->has(this, root, flag))) return true;
     }
@@ -107,10 +111,13 @@ void BM::Object::print(std::ostream &o, bool hl) {
 void BM::Object::set(const string &key, Object *value) {
     if (proto.count(key)) {
         auto v = proto[key];
-        if (v->unbind() < 1) delete v;
+        auto it = value->parents.find(this);
+        if (it != value->parents.end()) value->parents.erase(it);
+        if (v->parents.find(this) != v->parents.end()) v->parents.erase(v->parents.find(this));
+        v->unbind();
         proto[key] = value;
         value->bind();
-        value->parent = this;
+        value->parents[this] = true;
     } else {
         insert(key, value);
     }
@@ -122,30 +129,25 @@ BM::Object* BM::Object::get(const string &key) {
 }
 void BM::Object::insert(const string& key, Object *value) {
     if (!value) {
-        std::cerr << "SystemError: Insert en empty object(In method BM::Object::insert(const string&, Object*), SystemFile: 'src/value.cpp', line: " << __LINE__ << "), you can open an issue at https://github.com/BerryMathDevelopmentTeam/BerryMath/" << std::endl;
+        std::clog << "SystemError: Insert en empty object(In method BM::Object::insert(const string&, Object*), SystemFile: 'src/value.cpp', line: " << __LINE__ << "), you can open an issue at https://github.com/BerryMathDevelopmentTeam/BerryMath/" << std::endl;
         proto.insert(std::pair<string, Object*>(key, new Undefined));
         return;
     }
-    proto.insert(std::pair<string, Object*>(key, value));
-    if (this != value) value->linked++;
-    value->parent = this;
+    proto[key] = value;
+    if (this != value) value->bind();
+    value->parents[this] = true;
 }
 void BM::Object::del(const string &key) {
     auto iter = proto.find(key);
     if (iter == proto.end()) return;
-    if (iter->second->unbind() < 1) delete iter->second;
+    iter->second->unbind();
     proto.erase(iter);
-//    Object* v = iter->second;
-//    if (v) {
-//        v->linked--;
-//        if (v->linked < 1) delete v;
-//    }
 }
 BM::Object::~Object() {
     for (auto iter = proto.begin(); iter != proto.end(); iter++) {
         Object* v = iter->second;
-        if (!v || v->linked < 1) continue;
-        if (!delhas(v) && v->unbind() < 1) delete v;
+        if (!v || v->links() < 1) continue;
+        if (!delhas(v)) v->unbind();
     }
     proto.clear();
 }
@@ -174,13 +176,12 @@ void BM::Scope::del(const string& name) {
     auto __scope = get(SCOPE_D_NAME, SELF);
     variables.erase(name);
     if (__scope) __scope->value()->del(name);
-//    if (v) delete v;
 }
 void BM::Scope::set(const string& name, Object* v) {
     auto iter = variables.find(name);
     if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, new Variable(name, v)));
     else {
-        if (iter->second->value()->links() < 1 || iter->second->value()->unbind() < 1) iter->second->value();
+        iter->second->value()->unbind();
         iter->second->value(v);
         v->bind();
     }
@@ -196,7 +197,7 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
     for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
         ip.set(iter->first, iter->second->copy());
     }
-    for (UL i = 0; i < args.size(); i++) {
+    for (LL i = 0; i < args.size(); i++) {
         ip.set(i < desc.size() ? desc[i] : ("argv" + std::to_string(i - desc.size())), args[i]);
     }
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
@@ -216,7 +217,7 @@ BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *
     for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
         s->set(iter->first, iter->second);
     }
-    for (UL i = 0; i < args.size(); i++) {
+    for (LL i = 0; i < args.size(); i++) {
         if (i < desc.size()) s->set(desc[i], args[i]);
         else unknowns.push_back(args[i]);
     }
@@ -255,4 +256,7 @@ BM::Object* BM::NativeFunction::copy() {
         fun->defaultValue(iter->first, iter->second);
     }
     return fun;
+}
+inline void BM::clearObject(Object* obj) {
+    delete obj;
 }

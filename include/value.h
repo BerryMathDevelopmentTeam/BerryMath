@@ -5,12 +5,12 @@
 #include <map>
 #include <vector>
 #include <sstream>
+#include <list>
 #include "types.h"
 #include "dylib.h"
 using std::string;
 using std::map;
 using std::vector;
-typedef unsigned long UL;
 
 namespace BM {
     extern class Interpreter;
@@ -21,10 +21,11 @@ namespace BM {
         NONE, ARRAY
     };
     class Object;
+    inline void clearObject(Object* obj);
     using forEachCB = void(*)(const string&, Object*);
     class Object {
     public:
-        Object() : linked(0), parent(nullptr) {  }
+        Object() : linked(0) {  }
         bool has(Object*, Object*, bool = true);
         bool delhas(Object*);
         void set(const string &key, Object *value);
@@ -32,11 +33,14 @@ namespace BM {
         Object* get(const string &key);
         void del(const string &key);
         Object& operator[](const string &key) { return *get(key); }
-        inline UL links() { return linked; }
-        inline UL bind() { return ++linked; }
-        inline UL unbind() { 
-            if (linked > 0) return --linked;
-            return 0;
+        inline LL links() { return linked; }
+        inline LL bind() {
+            if (linked >= 0) return ++linked;
+            return linked;
+        }
+        inline LL unbind() {
+            if (linked == 0) clearObject(this);
+            return --linked;
         }
         virtual string toString(bool = true, bool = true, string = "");
         virtual ValueType type() { return OBJECT; }
@@ -54,6 +58,7 @@ namespace BM {
             }
             return ret;
         }
+        virtual unsigned long long memberCount() { return proto.size(); }
         virtual ~Object();
         friend std::ostream& operator<<(std::ostream& o, Object& v) {
             v.print(o);
@@ -85,10 +90,9 @@ namespace BM {
         };
     protected:
         void print(std::ostream&, bool = true);
-        UL linked;
+        LL linked;
         map<string, Object*> proto;
-        Object* parent;
-        bool foo;// 无意义，用于占位，令方便内存统计管理
+        map<Object*, bool> parents;
     };
     class Number : public Object {
     public:
@@ -112,7 +116,7 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v)) v->unbind();
             }
             proto.clear();
         }
@@ -133,7 +137,7 @@ namespace BM {
         ValueType type() { return STRING; }
         string& value() { return v; }
         String* trans() {
-            for (UL i = 0; i < v.length(); i++) {
+            for (LL i = 0; i < v.length(); i++) {
                 if (v[i] == '\\') {
                     if (i == v.length() - 1) break;
                     char flag = v[++i];
@@ -175,7 +179,7 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v)) v->unbind();
             }
             proto.clear();
         }
@@ -203,7 +207,7 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v)) v->unbind();
             }
             proto.clear();
         }
@@ -229,7 +233,7 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v)) v->unbind();
             }
             proto.clear();
         }
@@ -263,12 +267,12 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v)) v->unbind();
             }
             for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v)) v->unbind();
             }
             proto.clear();
         }
@@ -288,12 +292,12 @@ namespace BM {
             return n;
         }
         void value(Object* v) {
-            if (val && val->unbind() < 1)
-                delete val;
+            if (val)
+                val->unbind();
             val = v;
         }
         ~Variable() {
-            if (val && val->unbind() < 1) delete val;
+            if (val) val->unbind();
         }
     private:
         string n;
@@ -356,7 +360,7 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v) && v->unbind() == 0) delete v;
             }
             proto.clear();
         }
@@ -386,7 +390,7 @@ namespace BM {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
                 if (!v || v->links() < 1) continue;
-                if (!delhas(v) && v->unbind() < 1) delete v;
+                if (!delhas(v) && v->unbind() == 0) delete v;
             }
             proto.clear();
         }

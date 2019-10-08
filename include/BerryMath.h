@@ -12,7 +12,6 @@
 #include "compiler.h"
 #include "sym.h"
 #include "vm.h"
-#include "bmcache.h"
 
 namespace BM {
 #define BM_0_0_1_BETA
@@ -20,7 +19,8 @@ namespace BM {
 #define BM_0_0_1_ALPHA
 #define BM_0_0_1_ALPHA2
 #define BM_0_0_1_ALPHA3
-#define BMVersion "v0.0.1-alpha3"
+#define BM_0_0_1_ALPHA4
+#define BMVersion "v0.0.1-alpha4"
 }
 
 #endif //BERRYMATH_BERRYMATH_H

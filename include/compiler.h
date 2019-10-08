@@ -46,7 +46,7 @@ namespace BM {
 
 #define FREEAST if (!child && ast) { delete ast;ast = nullptr; }
 #define COMPILE(compiler, out) if (!compiler.compile(out)) { \
-        std::cerr << "\n\tat <" << filename << ">:" << ast->line() << std::endl; \
+        std::clog << "\n\tat <" << filename << ">:" << ast->line() << std::endl; \
         bytecode = ""; \
         return false; \
     }
