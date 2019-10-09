@@ -64,6 +64,30 @@ def sub(a = 4 + 2, b = 5) {
     return a + b;
 }
 ```
+### Reference variable
+Use key word `refer` to declare a reference variable.  
+**#: Initialization is necessary or the consequences are at your own expense.** 
+**#: Reference variables are only applicable to variables, and reference assignments in the form of `refer a = b.c` are not accepted for the time being.**       
+Demo:
+```
+let a = 0;
+refer b = a;
+b++;// a == 1
+```
+### Reference arguments
+You can define a reference parameter by adding the keyword `refer` before the parameter name. 
+Demo:
+```
+def swap(refer a, refer b) {
+    let tmp = a;
+    a = b;
+    b = a;
+}
+let a = 0;
+let b = 1;
+swap(a, b);// a = 1, b = 0
+``` 
+**#: All referenced variables/parameters are automatically de-referenced when the type changes!!!**    
 
 ## Process statement
 ### If
