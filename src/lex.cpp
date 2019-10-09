@@ -208,6 +208,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = CONTINUE_TOKEN;
     } else if (t.s == "break") {
         t.t = BREAK_TOKEN;
+    } else if (t.s == "refer") {
+        t.t = REFER_TOKEN;
     } else if (t.s == "return") {
         t.t = RETURN_TOKEN;
     } else if (t.s == "in") {

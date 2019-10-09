@@ -256,6 +256,8 @@ namespace BM {
             return o;
         }
         void addDesc(string d) { desc.push_back(d); }
+        void addRefer(string d) { refers[d] = true; }
+        bool isRefer(string d) { return refers.count(d) > 0; }
         void defaultValue(string name, Object* v) { v->bind();defaultValues.insert(std::pair<string, Object*>(name, v)); }
         void setParent(Interpreter* ip) { parent = ip; }
         Interpreter* getParent() { return parent; }
@@ -281,6 +283,7 @@ namespace BM {
         string script;
         Interpreter* parent;
         map<string, Object*> defaultValues;
+        map<string, bool> refers;
         vector<string> desc;
         string funname;
     };

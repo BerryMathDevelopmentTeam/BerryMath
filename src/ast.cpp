@@ -92,8 +92,10 @@ void BM::AST::parse() {
     if (token.t == Lexer::NOTE_TOKEN) GET;
     switch (token.t) {
         case Lexer::LET_TOKEN:
+        case Lexer::REFER_TOKEN:
         {
-            root = new node("let", lexer.l + baseLine);
+            if (token.t == Lexer::LET_TOKEN) root = new node("let", lexer.l + baseLine);
+            else root = new node("refer", lexer.l + baseLine);
             GET;
             if (token.t != Lexer::UNKNOWN_TOKEN) {
                 root->value("bad-tree");
@@ -214,7 +216,7 @@ void BM::AST::parse() {
                     isUnknownTk = false;
                     tempTK = -1;
                 }
-                if (token.t < Lexer::UNKNOWN_OP_TOKEN || token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) {
+                if (token.t == Lexer::UNKNOWN_TOKEN || token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) {
                     isUnknownTk = true;
                     unknownTkLen = token.s.length();
                     if (tempTK == -1) tempTK = opIndex;
@@ -947,7 +949,7 @@ void BM::AST::parse() {
             }
 
             enum ArgType {
-                PUBLIC, PRIVATE
+                DEFAULT, REFER
             };
             struct Arg {
                 ArgType type;
@@ -971,7 +973,7 @@ void BM::AST::parse() {
                     auto t = l.get();
                     auto tmpI = l.i;
                     string defaultValue("");
-                    if (t.t == Lexer::PUBLIC_TOKEN) {
+                    if (t.t == Lexer::DEFAULT_TOKEN) {
                         auto name = l.get().s;
                         auto t2 = l.get();
                         if (t2.t == Lexer::SET_TOKEN) {
@@ -981,7 +983,7 @@ void BM::AST::parse() {
                                 t2 = l.get();
                             }
                         }
-                        args.push_back(Arg(PUBLIC, name, defaultValue));
+                        args.push_back(Arg(DEFAULT, name, defaultValue));
                     } else if (t.t == Lexer::UNKNOWN_TOKEN) {
                         auto t2 = l.get();
                         if (t2.t == Lexer::SET_TOKEN) {
@@ -991,8 +993,8 @@ void BM::AST::parse() {
                                 t2 = l.get();
                             }
                         }
-                        args.push_back(Arg(PUBLIC, t.s, defaultValue));
-                    } else if (t.t == Lexer::PRIVATE_TOKEN) {
+                        args.push_back(Arg(DEFAULT, t.s, defaultValue));
+                    } else if (t.t == Lexer::REFER_TOKEN) {
                         auto name = l.get().s;
                         auto t2 = l.get();
                         if (t2.t == Lexer::SET_TOKEN) {
@@ -1002,7 +1004,7 @@ void BM::AST::parse() {
                                 t2 = l.get();
                             }
                         }
-                        args.push_back(Arg(PRIVATE, name, defaultValue));
+                        args.push_back(Arg(REFER, name, defaultValue));
                     } else {
                         root = new node("bad-tree", lexer.l + baseLine);
                         root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine);
@@ -1020,7 +1022,7 @@ void BM::AST::parse() {
             Lexer l(arg);
             auto t = l.get();
             string defaultValue("");
-            if (t.t == Lexer::PUBLIC_TOKEN) {
+            if (t.t == Lexer::DEFAULT_TOKEN) {
                 auto name = l.get().s;
                 auto t2 = l.get();
                 if (t2.t == Lexer::SET_TOKEN) {
@@ -1030,7 +1032,7 @@ void BM::AST::parse() {
                         t2 = l.get();
                     }
                 }
-                args.push_back(Arg(PUBLIC, name, defaultValue));
+                args.push_back(Arg(DEFAULT, name, defaultValue));
             } else if (t.t == Lexer::UNKNOWN_TOKEN) {
                 auto t2 = l.get();
                 if (t2.t == Lexer::SET_TOKEN) {
@@ -1040,8 +1042,8 @@ void BM::AST::parse() {
                         t2 = l.get();
                     }
                 }
-                args.push_back(Arg(PUBLIC, t.s, defaultValue));
-            } else if (t.t == Lexer::PRIVATE_TOKEN) {
+                args.push_back(Arg(DEFAULT, t.s, defaultValue));
+            } else if (t.t == Lexer::REFER_TOKEN) {
                 auto name = l.get().s;
                 auto t2 = l.get();
                 if (t2.t == Lexer::SET_TOKEN) {
@@ -1051,7 +1053,7 @@ void BM::AST::parse() {
                         t2 = l.get();
                     }
                 }
-                args.push_back(Arg(PRIVATE, name, defaultValue));
+                args.push_back(Arg(REFER, name, defaultValue));
             }
 
             GET;
@@ -1083,8 +1085,8 @@ void BM::AST::parse() {
             for (auto i = 0; i < args.size(); i++) {
                 Arg& a = args[i];
                 root->get(1)->insert(a.arg, dl);
-                if (a.type == PUBLIC) root->get(1)->get(-1)->insert("public", dl);
-                else root->get(1)->get(-1)->insert("private", dl);
+                if (a.type == REFER) root->get(1)->get(-1)->insert("refer", dl);
+                else root->get(1)->get(-1)->insert("default", dl);
                 auto ast = new AST(a.defaultValue, dl);
                 ast->parse();
                 CHECK(ast);

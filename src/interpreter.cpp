@@ -298,7 +298,9 @@ BM::Object *BM::Interpreter::run() {
                 auto arg = args->get(i);
                 string argname(arg->value());
                 string defaultValue = arg->get(1)->value();
+                if (defaultValue == "pass") defaultValue = "undefined";
                 fun->addDesc(argname);
+                if (arg->get(0)->value() == "refer") fun->addRefer(argname);
                 Interpreter tmp(defaultValue, filename, this);
                 auto tmpe = tmp.run();
                 CHECKITER(tmpe, arg);
@@ -363,6 +365,14 @@ BM::Object *BM::Interpreter::run() {
                 auto argsNode = r->get(1);
                 vector<Object *> args;
                 map<string, Object *> hashArg;
+                Interpreter getIp("", filename, this);
+                getIp.child = true;
+                getIp.ast->root = r->get(0);
+                auto e = getIp.run();
+                if (e->get(PASS_ERROR)) return exports;
+                CHECKITER(e, r);
+                CHECKPASSNEXTOP(e);
+                auto fun_ = e->get(PASS_RETURN);
                 for (UL i = 0; i < argsNode->length(); i++) {
                     auto node = argsNode->get(i);
                     if (node->value() == "=") {
@@ -391,18 +401,14 @@ BM::Object *BM::Interpreter::run() {
                         auto e = ip.run();
                         CHECKITER(e, ast);
                         Object* argValue;
-                        OPERPASSNEXTOP(e, argValue);
+                        if (fun_->type() == FUNCTION && ((Function*)fun_)->isRefer(node->value())) {
+                            argValue = e->get(PASS_RETURN);
+                        } else {
+                            OPERPASSNEXTOP(e, argValue);
+                        }
                         args.push_back(argValue);
                     }
                 }
-                Interpreter getIp("", filename, this);
-                getIp.child = true;
-                getIp.ast->root = r->get(0);
-                auto e = getIp.run();
-                if (e->get(PASS_ERROR)) return exports;
-                CHECKITER(e, r);
-                CHECKPASSNEXTOP(e);
-                auto fun_ = e->get(PASS_RETURN);
                 auto up = e->get(PASS_UPVALUE);
                 bool clean = false;
                 if (!up) {
@@ -619,7 +625,7 @@ BM::Object *BM::Interpreter::run() {
                         }
                         exports->set(PASS_RETURN, e);
                         delete vipe;
-                    } else if (etype == OBJECT || etype == STRING) {
+                    } else if (etype == OBJECT || etype == STRING || etype == NATIVE_FUNCTION || etype == FUNCTION || etype == NATIVE_VALUE) {
                         if (op == "!") exports->set(PASS_RETURN, new Number(0));
                         WRONGEXPRTYPE(op);
                     } else if (etype == NULL_ || etype == UNDEFINED) {
@@ -681,7 +687,31 @@ BM::Object *BM::Interpreter::run() {
                         exports->set(PASS_RETURN, right);
                     }
                     if (op == "=" && !(name == "." || (name == "get" && leftNode->length() > 0))) {
-                        scope->set(name, right);
+                        auto snV = scope->get(name)->value();
+                        auto snType = snV->type();
+                        if (snType == right->type()) {
+                            switch (snType) {
+                                case STRING:
+                                {
+                                    String* snVS = (String*)snV;
+                                    String* rightS = (String*)right;
+                                    snVS->value() = rightS->value();
+                                    break;
+                                }
+                                case NUMBER:
+                                {
+                                    Number* snVS = (Number*)snV;
+                                    Number* rightS = (Number*)right;
+                                    snVS->value() = rightS->value();
+                                    break;
+                                }
+                                default:
+                                {
+                                    scope->set(name, right);
+                                    break;
+                                }
+                            }
+                        } else scope->set(name, right);
                         exports->set(PASS_RETURN, right);
                     } else {
                         Object* value_ = nullptr;
@@ -783,13 +813,18 @@ BM::Object *BM::Interpreter::run() {
                         op == "==" || op == "<=" || op == ">=" || op == "<" || op == ">" || op == "!="
                         ) {
                     if (left->type() != right->type()) {
+#define CHECK_EQ_DIF_TYPE_MACRO(t) ((left->type() == t && right->type() == NULL_) || \
+                        (left->type() == NULL_ && right->type() == t) || \
+                        (left->type() == UNDEFINED && right->type() == t) || \
+                        (left->type() == t && right->type() == UNDEFINED))
                         if (
-                                (left->type() == OBJECT && right->type() == NULL_) ||
-                                (left->type() == NULL_ && right->type() == OBJECT) ||
-                                (left->type() == UNDEFINED && right->type() == OBJECT) ||
-                                (left->type() == OBJECT && right->type() == UNDEFINED)
+                                CHECK_EQ_DIF_TYPE_MACRO(OBJECT)
+                                || CHECK_EQ_DIF_TYPE_MACRO(NATIVE_VALUE)
+                                || CHECK_EQ_DIF_TYPE_MACRO(FUNCTION)
+                                || CHECK_EQ_DIF_TYPE_MACRO(NATIVE_FUNCTION)
                                 ) {
-                            exports->set(PASS_RETURN, new Number(0));
+                            if (op == "!=") exports->set(PASS_RETURN, new Number(1));
+                            else exports->set(PASS_RETURN, new Number(0));
                         } else {
                             std::clog << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
                             if (ast) { delete ast;ast = nullptr; }
