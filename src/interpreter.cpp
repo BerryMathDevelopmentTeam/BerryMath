@@ -63,7 +63,7 @@ BM::Object *BM::Interpreter::run() {
                 import(exports, name, asName);
             } WRONGSCRIPT("import");
             FREE(e);
-        } else if (rootValue == "let") {
+        } else if (rootValue == "let" || rootValue == "refer") {
             auto name = ast->rValue()->get(0)->value();
             Interpreter ip("", filename, this);
             ip.ast->root = ast->rValue()->get(1);
@@ -71,12 +71,16 @@ BM::Object *BM::Interpreter::run() {
             auto e = ip.run();
             CHECKITER(e, ip.ast);
             auto ret = e->get(PASS_RETURN);
-            if (ret->type() == OBJECT) {
-                scope->set(name, ret);
+            if (rootValue == "let") {
+                if (ret->type() == OBJECT) {
+                    scope->set(name, ret);
+                } else {
+                    scope->set(name, ret->copy());
+                    CHECKPASSNEXTOP(e);
+                    FREE(ret);
+                }
             } else {
-                scope->set(name, ret->copy());
-                CHECKPASSNEXTOP(e);
-                FREE(ret);
+                scope->set(name, ret);
             }
         } else if (rootValue == "if") {
             auto conAst = ast->rValue()->get(0);
