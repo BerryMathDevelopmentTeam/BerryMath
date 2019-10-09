@@ -85,3 +85,5 @@ y += 1;
 x++;
 y++;
 print(a, b);
+
+print(sys.range(0, 10, 0.01));

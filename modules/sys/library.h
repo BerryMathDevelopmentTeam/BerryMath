@@ -13,6 +13,7 @@ Object* print(Scope*, vector<Object*>);
 Object* input(Scope*, vector<Object*>);
 Object* number(Scope*, vector<Object*>);
 Object* String(Scope*, vector<Object*>);
+Object* range(Scope*, vector<Object*>);
 extern "C" Object* initModule();
 
 #endif

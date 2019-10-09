@@ -47,6 +47,29 @@ Object* number(BM::Scope* scope, vector<Object*> unknowns) {
     ss >> t;
     return new BM::Number(t);
 }
+Object* range(BM::Scope* scope, vector<Object*> unknowns) {
+    auto s_ = scope->get("s")->value();
+    auto e_ = scope->get("e")->value();
+    auto step_ = scope->get("step")->value();
+    BM::Interpreter ip("[]");
+    auto ex = ip.run();
+    auto ret = ex->get("__RETURN__");
+    ret->bind();
+    if (s_->type() != BM::NUMBER || e_->type() != BM::NUMBER || step_->type() != BM::NUMBER) return ret;
+    auto s = ((BM::Number*)s_)->value();
+    auto e = ((BM::Number*)e_)->value();
+    auto step = ((BM::Number*)step_)->value();
+    double i = s;
+    unsigned long long v = ((BM::Number*)ret->get("__len"))->value();
+    while (i < e) {
+        ret->set(std::to_string(v), new BM::Number(i));
+        v++;
+        i += step;
+    }
+    ((BM::Number*)ret->get("__len"))->value() = v;
+    delete ex;
+    return ret;
+}
 Object* String(BM::Scope* scope, vector<Object*> unknowns) {
     return new BM::String(scope->get("value")->value()->toString(false, false));
 }
@@ -79,6 +102,14 @@ BM::Object* initModule() {
     stringP->addDesc("value");
     exports->get("type")->set("number", numberP);
     exports->get("type")->set("string", stringP);
+
+    // 为type分区添加函数
+    auto rangeP = new BM::NativeFunction("range", range);// 创建拓展函数
+    rangeP->addDesc("s");
+    rangeP->addDesc("e");
+    rangeP->addDesc("step");
+    rangeP->defaultValue("step", new BM::Number(1));
+    exports->set("range", rangeP);
 
 #if defined(I_OS_DARWIN)
     exports->get("platform")->set("osName", new BM::String("darwin"));
