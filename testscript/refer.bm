@@ -1,0 +1,15 @@
+let a = 0;
+let b = 1;
+print(a, b);
+swap(a, b);
+print(a, b);
+refer x = a;
+refer y = b;
+let tmp = x;
+x = y;
+y = tmp;
+x += 1;
+y += 1;
+x++;
+y++;
+print(a, b);

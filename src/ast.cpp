@@ -1183,6 +1183,11 @@ void BM::AST::parse() {
             if (hasAs) {
                 GET;
                 asName = token.s;
+            } else {
+                expr.erase(0, 1);
+                asName = expr;
+                expr.insert(0, "\"");
+                expr.insert(expr.length(), "\"");
             }
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
