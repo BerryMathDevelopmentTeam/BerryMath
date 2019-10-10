@@ -130,6 +130,40 @@ for (let i = 1; i <= 100; i++) {
     res += i;
 }
 ```
+In the for loop condition, an in/of expression (`var > in < expr > `or `var > of < expr > `) can also be used to traverse an object in / of with only one expression.   
+Syntax:
+```
+for (<in/of-expr>) {
+    <script>
+}
+```
+Demo  
+[1]
+```
+import sys;
+using sys.io;
+
+let arr = {
+    "a": "a",
+    "b": "b"
+};
+for (i in arr) {
+    print(i, arr[i]);
+}
+```
+[2]
+```
+import sys;
+using sys.io;
+
+let arr = {
+    "a": "a",
+    "b": "b"
+};
+for (i of arr) {
+    print(i);
+}
+```
 
 ### While loop
 This statement can be used for loop operation. This expression is used for conditional judgment. If it does not conform, it exits.  
