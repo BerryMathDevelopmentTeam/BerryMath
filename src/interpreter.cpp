@@ -158,58 +158,100 @@ BM::Object *BM::Interpreter::run() {
             delete conE;
         } else if (rootValue == "for") {
             // 初始化
-            auto initAst = ast->rValue()->get(0);
-            Interpreter initIp("", filename, this);
-            initIp.ast->root = initAst;
-            initIp.child = true;
-            auto initE = initIp.run();
-            CHECKITER(initE, initAst);
-            CHECKPASSNEXTOP(initE);
-            scope->load(initIp.scope);
+            if (ast->rValue()->length() > 2) {
+                auto initAst = ast->rValue()->get(0);
+                Interpreter initIp("", filename, this);
+                initIp.ast->root = initAst;
+                initIp.child = true;
+                auto initE = initIp.run();
+                CHECKITER(initE, initAst);
+                CHECKPASSNEXTOP(initE);
+                scope->load(initIp.scope);
 
-            // 获取条件
-            auto conAst = ast->rValue()->get(1);
-            auto nxtAst = ast->rValue()->get(2);
-            string forscript(ast->rValue()->get(3)->value());// 获取for循环代码块
-            while (true) {
-                // 条件判断
-                Interpreter conIp("", filename, this);
-                conIp.ast->root = conAst;
-                conIp.child = true;
-                auto conE = conIp.run();
-                CHECKITER(conE, conAst);
-                CHECKPASSNEXTOP(conE);
-                if (!isTrue(conE->get(PASS_RETURN))) break;
+                // 获取条件
+                auto conAst = ast->rValue()->get(1);
+                auto nxtAst = ast->rValue()->get(2);
+                string forscript(ast->rValue()->get(3)->value());// 获取for循环代码块
+                while (true) {
+                    // 条件判断
+                    Interpreter conIp("", filename, this);
+                    conIp.ast->root = conAst;
+                    conIp.child = true;
+                    auto conE = conIp.run();
+                    CHECKITER(conE, conAst);
+                    CHECKPASSNEXTOP(conE);
+                    if (!isTrue(conE->get(PASS_RETURN))) break;
 
-                // 代码块运行
-                Interpreter scriptIp(forscript, filename, this);
-                scriptIp.scope->load(conIp.scope);
-                Object* scriptE = scriptIp.run();
-                CHECKITER(scriptE, scriptIp.ast);
-                { CHECKPASSNEXTOP(scriptE); }
-                auto pb = (Number*) scriptE->get(PASS_BREAK);
-                if (pb) {
-                    double v = pb->value() - 1;
-                    if (v < 1) break;
-                    exports->set(PASS_BREAK, new Number(v));
+                    // 代码块运行
+                    Interpreter scriptIp(forscript, filename, this);
+                    scriptIp.scope->load(conIp.scope);
+                    Object* scriptE = scriptIp.run();
+                    CHECKITER(scriptE, scriptIp.ast);
+                    { CHECKPASSNEXTOP(scriptE); }
+                    auto pb = (Number*) scriptE->get(PASS_BREAK);
+                    if (pb) {
+                        double v = pb->value() - 1;
+                        if (v < 1) break;
+                        exports->set(PASS_BREAK, new Number(v));
+                        break;
+                    }
+                    auto ret = scriptE->get(PASS_ENDFUN);
+                    if (ret) {
+                        exports->set(PASS_ENDFUN, ret);
+                        return exports;
+                        FREE(scriptE);
+                    }
+
+                    // 最后表达式执行
+                    Interpreter nxtIp("", filename, this);
+                    nxtIp.ast->root = nxtAst;
+                    nxtIp.child = true;
+                    auto nxtE = nxtIp.run();
+                    CHECKITER(nxtE, nxtAst);
+                    { CHECKPASSNEXTOP(nxtE); }
+                    FREE(conE);
+                    FREE(nxtE);
+                }
+            } else {
+                auto traverExprAst = ast->rValue()->get(0);
+                auto teNode = traverExprAst->get(0);
+                if (teNode->length() > 0) {
+                    std::clog << "TraversalsError: Traversals object with a non-singular expression" << std::endl;
                     break;
                 }
-                auto ret = scriptE->get(PASS_ENDFUN);
-                if (ret) {
-                    exports->set(PASS_ENDFUN, ret);
-                    return exports;
-                    FREE(scriptE);
+                string varName(teNode->value());
+                set(varName, new Null);
+                auto variable = get(varName);
+                string forscript(ast->rValue()->get(1)->value());// 获取for循环代码块
+                string op(ast->value());
+                auto rightIp = new Interpreter("", filename, this);
+                rightIp->ast->root = traverExprAst->get(1);
+                rightIp->child = true;
+                auto right = rightIp->run()->get(PASS_RETURN);
+                CHECKITER(right, rightIp->ast);
+                for (Object::Iterator iter(right); !iter.end(); iter.next()) {
+                    if (op == "of") variable->value(iter.value());
+                    else variable->value(new String(iter.key()));
+                    // 代码块运行
+                    Interpreter scriptIp(forscript, filename, this);
+                    Object* scriptE = scriptIp.run();
+                    CHECKITER(scriptE, scriptIp.ast);
+                    { CHECKPASSNEXTOP(scriptE); }
+                    auto pb = (Number*) scriptE->get(PASS_BREAK);
+                    if (pb) {
+                        double v = pb->value() - 1;
+                        if (v < 1) break;
+                        exports->set(PASS_BREAK, new Number(v));
+                        break;
+                    }
+                    auto ret = scriptE->get(PASS_ENDFUN);
+                    if (ret) {
+                        exports->set(PASS_ENDFUN, ret);
+                        return exports;
+                        FREE(scriptE);
+                    }
                 }
-
-                // 最后表达式执行
-                Interpreter nxtIp("", filename, this);
-                nxtIp.ast->root = nxtAst;
-                nxtIp.child = true;
-                auto nxtE = nxtIp.run();
-                CHECKITER(nxtE, nxtAst);
-                { CHECKPASSNEXTOP(nxtE); }
-                FREE(conE);
-                FREE(nxtE);
+                delete rightIp;
             }
         } else if (rootValue == "while") {
             auto conAst = ast->rValue()->get(0);

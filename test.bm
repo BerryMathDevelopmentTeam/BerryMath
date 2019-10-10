@@ -1,8 +1,9 @@
 import sys;
+using sys.io;
 
 let arr = sys.range(0, 10);
 
 let i;
 for (i in arr) {
-    print(i, arr[i]);
+    print(i + ":", arr[i]);
 }
