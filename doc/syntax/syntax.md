@@ -209,12 +209,20 @@ for (let i = 0; i < 10; i++) {
 To import a module.
 Syntax:
 ```
-import <module-path> as <export-name>;
+import "<module-path>" as <export-name>;
 ```
 Demo:
 ```
 import "sys" as sys;
 sys.io.print("Hello world!");
+```
+And you can also import a module with:
+```
+import <module-name>
+```
+Like:
+```
+import sys;
 ```
 ### Export
 To export values in a module script
