@@ -8,6 +8,25 @@ number: `\d+\.?\d*`, string: `".*""` or `'.+'`, null: `null`, undefined: `undefi
 ### Expression
 #### Operators
 =, :, ==, !=, <=, >=, <, >, ( ), [ ], { }, ., (comma), &, |, ^, ~, &&, ||, !, +, -, *, /, %, **, <<, >>, +=, -=, *-, /=, %=, **=, <<=, >>=, &=, |=, ^=, in, of, ~~
+#### in/of operator
+Format: `<expr> in <expr>`  
+Used to detect whether the second expr has a value with the keyword expr1.
+#### Prioritization
+"[" "." 15  
+"(" 14  
+"++" "--" "!" "~" "**" 13  
+"*" "/" "%" 12  
+"+" "-" 11  
+"<<" ">>" 10  
+">" ">=" "<" "<=" 9  
+"==" "!=" 8  
+"&" 7  
+"^" 6  
+"|" 5  
+"&&" 4  
+"||" "~~" 3  
+"=" "*=" "/=" "%=" "+=" "-=" ">>=" "<<=" "^=" "&=" "|=" "in" "of" 2  
+"," 1  
 
 #### Operator ~~
 Format: n~~m  

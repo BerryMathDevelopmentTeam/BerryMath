@@ -1551,6 +1551,7 @@ inline UL BM::AST::priority(const string& op) {
             || op == "+=" || op == "-="
             || op == ">>=" || op == "<<="
             || op == "^=" || op == "&=" || op == "|="
+            || op == "in" || op == "of"
             )
         return 2;
     if (op == ",") return 1;
