@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <sstream>
 #include <cstdlib>
 #include "value.h"
 #include "dylib.h"
@@ -926,6 +927,29 @@ BM::Object *BM::Interpreter::run() {
                             break;
                         }
                     }
+                } else if (op == "in" || op == "of") {
+                    string v;
+                    switch (left->type()) {
+                        case STRING:
+                            v = ((String*)left)->value();
+                            break;
+                        case NUMBER: {
+                            std::stringstream ss;
+                            ss << ((Number*)left)->value();
+                            ss >> v;
+                            break;
+                        }
+                        case UNDEFINED:
+                            v = "undefined";
+                            break;
+                        case NULL_:
+                            v = "null";
+                            break;
+                        default:
+                            v = "[EXPT]";
+                            break;
+                    }
+                    exports->set(PASS_RETURN, new Number(!!right->get(v)));
                 } else {
                     RIGHTEXPRTYPE(left, right) {
                         auto leftV = ((Number *) (left))->value();

@@ -7,3 +7,6 @@ let i;
 for (i in arr) {
     print(i + ":", arr[i]);
 }
+print(1.00023 in arr);
+print(1 in arr);
+print("ctor" in arr);
