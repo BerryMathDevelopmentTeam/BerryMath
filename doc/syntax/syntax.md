@@ -4,8 +4,15 @@
 ### Types
 number, string, null, undefined, object, function, native-function
 ### Formats
-number: `\d+\.?\d*`, string: `".*""` or `'.+'`, null: `null`, undefined: `undefined`, object: [Development], function: [See define a function], native-function: None
+number: `\d+\.?\d*`/`0[xob]\d+`, string: `".*""` or `'.+'`, null: `null`, undefined: `undefined`, object: [Development], function: [See define a function], native-function: None
 ### Expression
+#### Numeric Representation in Other Numbers
+##### Hexadecimal
+We use header `0x` to express hexadecimal number;
+##### Octal
+We use header `0x` to express octal number;
+##### Binary
+We use header `0b` to express binary number;
 #### Operators
 =, :, ==, !=, <=, >=, <, >, ( ), [ ], { }, ., (comma), &, |, ^, ~, &&, ||, !, +, -, *, /, %, **, <<, >>, +=, -=, *-, /=, %=, **=, <<=, >>=, &=, |=, ^=, in, of, ~~
 #### in/of operator
