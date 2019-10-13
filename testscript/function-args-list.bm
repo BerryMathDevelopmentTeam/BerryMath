@@ -1,0 +1,8 @@
+import sys;
+using sys.io;
+
+def p(t) {
+    print(args)
+}
+
+p(1, 2, 3, 4, 5, t = 10);

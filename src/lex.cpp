@@ -183,7 +183,25 @@ BM::Lexer::Token BM::Lexer::get() {
     } else if (t.s == "~~") {
         t.t = RANGE_TOKEN;
     }
-        // key word token判断
+    // 特判
+    else if (t.s[0] == '0' && t.t != NUMBER_TOKEN && t.s.length() > 2) {
+        t.t = NUMBER_TOKEN;
+        string s(t.s);
+        char* endp;
+        s.erase(0, 2);
+        switch (t.s[1]) {
+            case 'x':
+                t.s = std::to_string(strtol(s.c_str(), &endp, 16));
+                break;
+            case 'b':
+                t.s = std::to_string(strtol(s.c_str(), &endp, 2));
+                break;
+            case 'o':
+                t.s = std::to_string(strtol(s.c_str(), &endp, 8));
+                break;
+        }
+    }
+    // key word token判断
     else if (t.s == "let") {
         t.t = LET_TOKEN;
     } else if (t.s == "def") {
