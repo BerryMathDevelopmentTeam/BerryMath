@@ -10,17 +10,17 @@ using BM::Object;
 using BM::Scope;
 
 Object* print(BM::Scope* scope, vector<Object*> unknowns) {
-    std::ios_base::sync_with_stdio(false);
+//    std::ios_base::sync_with_stdio(false);
     auto sp = scope->get("sp")->value()->toString(true, false);
     if (!unknowns.empty()) {
         UL i = 0;
         for (; i < unknowns.size() - 1; i++) {
             std::cout << unknowns[i]->toString(true, false) << sp;
-            std::ios_base::sync_with_stdio(false);
+//            std::ios_base::sync_with_stdio(false);
         }
         std::cout << unknowns[i]->toString(true, false) << scope->get("end")->value()->toString(true, false);
     }
-    std::ios_base::sync_with_stdio(false);
+//    std::ios_base::sync_with_stdio(false);
     return new BM::Undefined;
 }
 Object* input(BM::Scope* scope, vector<Object*> unknowns) {

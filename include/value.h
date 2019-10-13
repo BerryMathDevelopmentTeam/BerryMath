@@ -358,7 +358,7 @@ namespace BM {
         Interpreter* getParent() { return parent; }
         void setParent(Interpreter* p) { parent = p; }
         void addDesc(const string& d) { desc.push_back(d); }
-        void defaultValue(const string& name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); }
+        void defaultValue(const string& name, Object* v) { defaultValues.insert(std::pair<string, Object*>(name, v)); v->bind(); }
         ValueType type() { return NATIVE_FUNCTION; }
         ~NativeFunction() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
@@ -367,6 +367,11 @@ namespace BM {
                 if (!delhas(v) && v->unbind() == 0) delete v;
             }
             proto.clear();
+            for (auto i = defaultValues.begin(); i != defaultValues.end(); i++) {
+                i->second->unbind();
+            }
+            defaultValues.clear();
+            desc.clear();
         }
     private:
         friend class Interpreter;

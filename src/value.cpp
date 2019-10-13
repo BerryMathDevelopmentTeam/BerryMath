@@ -109,7 +109,7 @@ void BM::Object::print(std::ostream &o, bool hl) {
     o << toString(true, hl) << std::endl;
 }
 void BM::Object::set(const string &key, Object *value) {
-    if (proto.count(key)) {
+    if (proto[key]) {
         auto v = proto[key];
         auto it = value->parents.find(this);
         if (it != value->parents.end()) value->parents.erase(it);
@@ -135,7 +135,7 @@ void BM::Object::insert(const string& key, Object *value) {
     }
     proto[key] = value;
     if (this != value) value->bind();
-    value->parents[this] = true;
+    if (value->parents.count(this) == 0) value->parents.insert(std::pair<Object*, bool>(this, true));
 }
 void BM::Object::del(const string &key) {
     auto iter = proto.find(key);
@@ -179,7 +179,10 @@ void BM::Scope::del(const string& name) {
 }
 void BM::Scope::set(const string& name, Object* v) {
     auto iter = variables.find(name);
-    if (iter == variables.end()) variables.insert(std::pair<string, Variable*>(name, new Variable(name, v)));
+    if (iter == variables.end())
+        variables.insert(
+                std::pair<string, Variable*>(name,
+                        new Variable(name, v)));
     else {
         iter->second->value()->unbind();
         iter->second->value(v);
