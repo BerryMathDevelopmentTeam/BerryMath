@@ -183,7 +183,6 @@ void BM::Scope::set(const string& name, Object* v) {
     else {
         iter->second->value()->unbind();
         iter->second->value(v);
-        v->bind();
     }
     if (name != SCOPE_D_NAME) {
         get(SCOPE_D_NAME, SELF)->value()->set(name, v);
@@ -192,21 +191,30 @@ void BM::Scope::set(const string& name, Object* v) {
 
 BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
     Interpreter ip(script, parent ? parent->fn() : "", parent);
+    Interpreter arrIp("[]");
+    auto arrE = arrIp.run();
+    auto arr = arrE->get(PASS_RETURN);
+    auto arrLen = 0;
 
     // 优先级顺序: 指定 > 传参 > 默认
     for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
         ip.set(iter->first, iter->second->copy());
     }
     for (LL i = 0; i < args.size(); i++) {
+        if (i < desc.size() && hash.count(desc[i]) > 0) {
+            arr->set(std::to_string(arrLen++), hash[desc[i]]);
+        } else arr->set(std::to_string(arrLen++), args[i]);
         ip.set(i < desc.size() ? desc[i] : ("argv" + std::to_string(i - desc.size())), args[i]);
     }
     for (auto iter = hash.begin(); iter != hash.end(); iter++) {
         ip.set(iter->first, iter->second);
     }
+    ip.set("args", arr);
     ip.upscope = "\033[34mfunction " + funname + "\033[0m";
     auto exports = ip.run();
     if (exports->get(PASS_ERROR)) THROW;
     if (exports->get(PASS_ENDFUN)) return exports->get(PASS_ENDFUN);
+    delete arrE;
     return exports->get(PASS_RETURN);
 }
 BM::Object * BM::NativeFunction::run(vector<Object *> args, map<string, Object *> hash) {

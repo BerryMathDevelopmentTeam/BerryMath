@@ -298,6 +298,7 @@ namespace BM {
             if (val)
                 val->unbind();
             val = v;
+            val->bind();
         }
         ~Variable() {
             if (val) val->unbind();

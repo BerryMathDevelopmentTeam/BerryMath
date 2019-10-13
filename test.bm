@@ -1,12 +1,8 @@
 import sys;
 using sys.io;
 
-let arr = sys.range(0, 10);
-
-let i;
-for (i in arr) {
-    print(i + ":", arr[i]);
+def p(t) {
+    print(args)
 }
-print(1.00023 in arr);
-print(1 in arr);
-print("ctor" in arr);
+
+p(1, 2, 3, 4, 5, t = 10);
