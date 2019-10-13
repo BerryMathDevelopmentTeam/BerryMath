@@ -83,6 +83,14 @@ def sub(a = 4 + 2, b = 5) {
     return a + b;
 }
 ```
+Each function contains a variable args to get a list of arguments.
+```
+def p() {
+    return argv;
+}
+p(1, 2, 3, 4, 5);
+```
+
 ### Reference variable
 Use key word `refer` to declare a reference variable.  
 **#: Initialization is necessary or the consequences are at your own expense.** 
