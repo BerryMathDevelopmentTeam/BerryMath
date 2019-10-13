@@ -21,6 +21,7 @@ string BM::Interpreter::compile() {
 }
 
 BM::Object *BM::Interpreter::run() {
+#define FREE_AST if (!child && ast) { delete ast;ast = nullptr; }
     Object *exports = new Object;
 
     if (!child && !loaded && !(get(PASS_MODULE_NAME) && get(PASS_MODULE_NAME)->value()->type() == STRING && ((String*)get(PASS_MODULE_NAME)->value())->value() == DEFAULT_IMPORT_NAME)) {
@@ -40,7 +41,7 @@ BM::Object *BM::Interpreter::run() {
         if (rootValue == "PROGRAM-END") break;
         if (rootValue == "bad-tree") {
             std::clog << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
-            if (ast) { delete ast;ast = nullptr; }
+            FREE_AST;
             THROW;
         } else if (rootValue == "export") {
             auto name = ast->rValue()->get(0)->value();
@@ -428,7 +429,7 @@ BM::Object *BM::Interpreter::run() {
                             std::clog << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
                                       << ":" << upscope << ">:"
                                       << ast->line() << std::endl;
-                            if (ast) { delete ast;ast = nullptr; }
+                            FREE_AST;
                             THROW;
                         }
                         auto valueAst = node->get(1);
@@ -465,7 +466,7 @@ BM::Object *BM::Interpreter::run() {
                 if (!fun_) {
                     std::clog << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
-                    if (ast) { delete ast;ast = nullptr; }
+                    FREE_AST;
                     THROW;
                 }
                 if (fun_->type() == FUNCTION) {
@@ -485,7 +486,7 @@ BM::Object *BM::Interpreter::run() {
                     if (clean) up->unbind();
                     std::clog << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
-                    if (ast) { delete ast;ast = nullptr; }
+                    FREE_AST;
                     THROW;
                 }
 //                if (get("this")->value()->type() == OBJECT && fune->type() == UNDEFINED) {
@@ -526,7 +527,7 @@ BM::Object *BM::Interpreter::run() {
                                           << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
-                                if (ast) { delete ast;ast = nullptr; }
+                                FREE_AST;
                                 THROW;
                             }
                         }
@@ -716,7 +717,7 @@ BM::Object *BM::Interpreter::run() {
                     if ((leftNode->length() > 0 && name != "." && name != "get") || isNumber(name) || isString(name) || name == "o-value" || name == "a-value") {
                         std::clog << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
-                        if (ast) { delete ast;ast = nullptr; }
+                        FREE_AST;
                         THROW;
                     }
                     Object* up;
@@ -874,7 +875,7 @@ BM::Object *BM::Interpreter::run() {
                             else exports->set(PASS_RETURN, new Number(0));
                         } else {
                             std::clog << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
-                            if (ast) { delete ast;ast = nullptr; }
+                            FREE_AST;
                             THROW;
                         }
                     }
@@ -988,9 +989,7 @@ BM::Object *BM::Interpreter::run() {
         if (child) break;
     }
     if (!exports->get(PASS_RETURN)) exports->set(PASS_RETURN, new Undefined);
-    if (!child && ast) {
-        { delete ast;ast = nullptr; }
-    }
+    FREE_AST;
     return exports;
 }
 

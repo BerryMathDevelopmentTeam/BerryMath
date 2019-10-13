@@ -1,0 +1,5 @@
+import sys;
+using sys.io;
+
+print(0xff, 0o377, 0b11111111, end = " ", sp = "/");
+print("[finish]");

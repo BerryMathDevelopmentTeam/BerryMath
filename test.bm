@@ -1,5 +1,14 @@
 import sys;
 using sys.io;
 
-print(0xff, 0o377, 0b11111111, end = " ");
-print("[finish]");
+class A {
+    def ctor() {
+        this.name = "A";
+        this.age = 0;
+    }
+    // static count() {
+    //     return 0;
+    // }
+};
+
+print(A.count());

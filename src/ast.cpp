@@ -937,6 +937,7 @@ void BM::AST::parse() {
             break;
         }
         case Lexer::DEF_TOKEN:
+        case Lexer::STATIC_TOKEN:// static function
         {
             auto defLine = lexer.l + baseLine;
 
@@ -1079,7 +1080,8 @@ void BM::AST::parse() {
             funcScript.erase(funcScript.length() - 1, 1);
 
             auto dl = defLine;
-            root = new node("def", dl);
+            if (token.t == Lexer::DEF_TOKEN) root = new node("def", dl);
+            else root = new node("static", dl);
             root->insert(funcName, dl);
             root->insert("args", dl);
             for (auto i = 0; i < args.size(); i++) {
@@ -1383,6 +1385,8 @@ void BM::AST::parse() {
                         root->insert("SyntaxError: Unexpected token '" + token.s + "'", lexer.l + baseLine);
                     }
                     pflag = false;
+                } else if (token.t == Lexer::NOTE_TOKEN) {
+                    // 与pass一样，直接跳过
                 } else {
                     if (token.t == Lexer::DEF_TOKEN) {
                         string defScript("def ");
