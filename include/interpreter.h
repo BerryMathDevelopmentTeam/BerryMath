@@ -62,9 +62,10 @@ namespace BM {
 #define PASS_BREAK "__BREAK__"
 #define PASS_CONTINUE "__CONTINUE__"
 #define PASS_NEXTOP "__NEXTOPERATOR__"
+#define PROTO_PRIVATE_TAG "__private__"
 #define THROW { exports->set(PASS_ERROR, new Number(1)); return exports; }
 #define CHECKITER(e, ast) \
-    if (!e || e->get(PASS_ERROR)) { \
+    if (!e || e->get(PASS_ERROR) || e->empty()) { \
         std::clog << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
         THROW; \
     }

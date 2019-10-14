@@ -26,7 +26,7 @@ namespace BM {
     class Object {
     public:
         Object() : linked(0) {  }
-        bool has(Object*, Object*, bool = true);
+        bool has(Object*, Object* = nullptr, bool = true);
         bool delhas(Object*);
         void set(const string &key, Object *value);
         void insert(const string&, Object*);
@@ -42,6 +42,7 @@ namespace BM {
             if (linked == 0) clearObject(this);
             return --linked;
         }
+        inline bool empty() { return proto.empty(); }
         virtual string toString(bool = true, bool = true, string = "");
         virtual ValueType type() { return OBJECT; }
         virtual Object* copy() {

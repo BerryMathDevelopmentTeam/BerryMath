@@ -6,8 +6,9 @@ class A {
         this.name = "A";
         this.age = 0;
     }
+private:
     static count() {
-        return 0 + 1;
+        return 1 + 1;
     }
 };
 

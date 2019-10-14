@@ -8,13 +8,13 @@ using std::string;
 using std::map;
 using std::vector;
 
-bool BM::Object::has(Object *v, Object* root = nullptr, bool flag) {
+bool BM::Object::has(Object *v, Object* root, bool flag) {
     if (!root) root = this;
     if (this == v) return true;
     if (parents.count(root) > 0) return false;
     if (parents.count(root) == 0 && !flag) {
         for (auto iter = parents.begin(); iter != parents.end(); iter++) {
-            iter->first->has(v, root, flag);
+            if (iter->first->has(v, root, flag)) return true;
         }
     }
     if (proto.empty()) return false;

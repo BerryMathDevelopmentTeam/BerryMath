@@ -229,8 +229,9 @@ BM::Object *BM::Interpreter::run() {
                 auto rightIp = new Interpreter("", filename, this);
                 rightIp->ast->root = traverExprAst->get(1);
                 rightIp->child = true;
-                auto right = rightIp->run()->get(PASS_RETURN);
-                CHECKITER(right, rightIp->ast);
+                auto rightE = rightIp->run();
+                auto right = rightE->get(PASS_RETURN);
+                CHECKITER(rightE, rightIp->ast);
                 for (Object::Iterator iter(right); !iter.end(); iter.next()) {
                     if (op == "of") variable->value(iter.value());
                     else variable->value(new String(iter.key()));
@@ -385,6 +386,7 @@ BM::Object *BM::Interpreter::run() {
                 auto e = ip.run();
                 CHECKITER(e, prototypeNode->get(1));
                 CHECKPASSNEXTOP(e);
+                e->get(PASS_RETURN)->set(PROTO_PRIVATE_TAG, new Number(pflag));
                 if (isStatic) classV->set(name, e->get(PASS_RETURN));
                 else prototype->set(name, e->get(PASS_RETURN));
                 FREE(e);
@@ -526,6 +528,16 @@ BM::Object *BM::Interpreter::run() {
                         key = keyValue->toString(false, false);
                         up = value;
                         value = value->get(key);
+                        auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
+                        auto thisV = get("this");
+                        if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value())) {
+                            std::clog << "ReferenceError: Cannot get private property "
+                                      << e->get(PASS_RETURN)->toString(false, false) << "\n\tat <"
+                                      << filename << ":" << upscope << ">:"
+                                      << ast->line() << std::endl;
+                            FREE_AST;
+                            THROW;
+                        }
                         if (!value) {
                             if (i == ast->rValue()->length() - 1) {
                                 value = new Undefined;
@@ -565,6 +577,16 @@ BM::Object *BM::Interpreter::run() {
                         auto last = value;
                         up = value;
                         value = value->get(keys[i]);
+                        auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
+                        auto thisV = get("this");
+                        if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value())) {
+                            std::clog << "ReferenceError: Cannot get private property "
+                                      << keys[i] << "\n\tat <"
+                                      << filename << ":" << upscope << ">:"
+                                      << ast->line() << std::endl;
+                            FREE_AST;
+                            THROW;
+                        }
                         if (!value) {
                             if (i == keys.size() - 1) {
                                 last->set(keys[i], new Undefined);
@@ -699,10 +721,12 @@ BM::Object *BM::Interpreter::run() {
                 rightIp->ast->root = rightAst;
                 leftIp->child = true;
                 rightIp->child = true;
-                auto left = leftIp->run()->get(PASS_RETURN);
-                CHECKITER(left, leftIp->ast);
-                auto right = rightIp->run()->get(PASS_RETURN);
-                CHECKITER(right, rightIp->ast);
+                auto leftE = leftIp->run();
+                auto left = leftE->get(PASS_RETURN);
+                CHECKITER(leftE, leftIp->ast);
+                auto rightE = rightIp->run();
+                auto right = rightE->get(PASS_RETURN);
+                CHECKITER(rightE, rightIp->ast);
                 string op(rootValue);
                 delete leftIp;
                 delete rightIp;
