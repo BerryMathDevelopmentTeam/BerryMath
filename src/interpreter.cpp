@@ -360,9 +360,10 @@ BM::Object *BM::Interpreter::run() {
             exports->set(PASS_RETURN, fun);
         } else if (rootValue == "class") {
             string className(ast->rValue()->get(0)->value());
-            set(className, new Object);
+            auto classV = new Object;
+            set(className, classV);
             auto prototype = new Object;
-            get(className)->value()->set("prototype", prototype);
+            classV->set("prototype", prototype);
             auto prototypes = ast->rValue()->get(0);
             for (UL i = 0; i < prototypes->length(); i++) {
                 auto prototypeNode = prototypes->get(i);
@@ -373,12 +374,19 @@ BM::Object *BM::Interpreter::run() {
                     prototypeNode->get(1)->get(2)->value("let this = { };" + prototypeNode->get(1)->get(2)->value() + ";return this;");
                 }
                 Interpreter ip("", filename, this);
-                ip.ast->root = prototypeNode->get(1);
+                auto png = prototypeNode->get(1);
+                bool isStatic = false;
+                ip.ast->root = png;
                 ip.child = true;
+                if (png->value() == "static") {
+                    if (png->length() == 3 && png->get(1)->value() == "args") png->value("def");
+                    isStatic = true;
+                }
                 auto e = ip.run();
                 CHECKITER(e, prototypeNode->get(1));
                 CHECKPASSNEXTOP(e);
-                prototype->set(name, e->get(PASS_RETURN));
+                if (isStatic) classV->set(name, e->get(PASS_RETURN));
+                else prototype->set(name, e->get(PASS_RETURN));
                 FREE(e);
             }
         } else if (rootValue == "new") {

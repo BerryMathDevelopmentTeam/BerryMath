@@ -6,9 +6,9 @@ class A {
         this.name = "A";
         this.age = 0;
     }
-    // static count() {
-    //     return 0;
-    // }
+    static count() {
+        return 0 + 1;
+    }
 };
 
 print(A.count());

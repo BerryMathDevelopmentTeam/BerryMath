@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <tic.h>
 #include "ast.h"
 
 void BM::AST::parse() {
@@ -1388,8 +1389,10 @@ void BM::AST::parse() {
                 } else if (token.t == Lexer::NOTE_TOKEN) {
                     // 与pass一样，直接跳过
                 } else {
-                    if (token.t == Lexer::DEF_TOKEN) {
-                        string defScript("def ");
+                    if (token.t == Lexer::DEF_TOKEN || token.t == Lexer::STATIC_TOKEN) {
+                        string defScript;
+                        if (token.t == Lexer::DEF_TOKEN) defScript = "def ";
+                        else defScript = "static ";
                         GET;
                         defScript += " " + token.s;
                         GET;
@@ -1426,7 +1429,7 @@ void BM::AST::parse() {
                             root->get(0)->get(-1)->insert("public", lexer.l + baseLine);
                         }
                         root->get(0)->get(-1)->insert(ast->root);
-                    } else {
+                    } else if (token.t == Lexer::UNKNOWN_TOKEN) {
                         root->get(0)->insert(token.s, lexer.l + baseLine);
                         if (pflag) {
                             root->get(0)->get(-1)->insert("private", lexer.l + baseLine);
@@ -1458,6 +1461,11 @@ void BM::AST::parse() {
                         } else {
                             root->get(0)->get(-1)->insert("undefined", lexer.l + baseLine);
                         }
+                    } else if (token.t != Lexer::BIG_BRACKETS_RIGHT_TOKEN && token.t != Lexer::BIG_BRACKETS_LEFT_TOKEN) {
+                        delete root;
+                        root = new node("bad-tree", lexer.l + baseLine);
+                        root->insert("SyntaxError: Unexpected token '" + token.s + "'", lexer.l + baseLine);
+                        return;
                     }
                 }
             }
