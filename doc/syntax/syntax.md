@@ -10,7 +10,7 @@ number: `\d+\.?\d*`/`0[xob]\d+`, string: `".*""` or `'.+'`, null: `null`, undefi
 ##### Hexadecimal
 We use header `0x` to express hexadecimal number;
 ##### Octal
-We use header `0x` to express octal number;
+We use header `0o` to express octal number;
 ##### Binary
 We use header `0b` to express binary number;
 #### Operators
