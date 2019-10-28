@@ -940,6 +940,7 @@ void BM::AST::parse() {
         case Lexer::DEF_TOKEN:
         case Lexer::STATIC_TOKEN:// static function
         {
+            bool isStatic = token.t == Lexer::STATIC_TOKEN;
             auto defLine = lexer.l + baseLine;
 
             GET;
@@ -961,9 +962,14 @@ void BM::AST::parse() {
             };
 
             if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
-                root = new node("bad-tree", lexer.l + baseLine);
-                root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine);
-                return;
+                funcName += token.s;
+                GET;
+                if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                    GET;
+                    root = new node("bad-tree", lexer.l + baseLine);
+                    root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine);
+                    return;
+                }
             }
             string arg;
             vector<Arg> args;
@@ -1081,8 +1087,8 @@ void BM::AST::parse() {
             funcScript.erase(funcScript.length() - 1, 1);
 
             auto dl = defLine;
-            if (token.t == Lexer::DEF_TOKEN) root = new node("def", dl);
-            else root = new node("static", dl);
+            if (isStatic) root = new node("static", dl);
+            else root = new node("def", dl);
             root->insert(funcName, dl);
             root->insert("args", dl);
             for (auto i = 0; i < args.size(); i++) {
@@ -1389,12 +1395,14 @@ void BM::AST::parse() {
                 } else if (token.t == Lexer::NOTE_TOKEN) {
                     // 与pass一样，直接跳过
                 } else {
-                    if (token.t == Lexer::DEF_TOKEN || token.t == Lexer::STATIC_TOKEN) {
+                    if (token.t == Lexer::DEF_TOKEN || token.t == Lexer::STATIC_TOKEN || token.t == Lexer::OPERATOR_TOKEN) {
                         string defScript;
-                        if (token.t == Lexer::DEF_TOKEN) defScript = "def ";
+                        auto def_token_ref = token;
+                        if (token.t == Lexer::DEF_TOKEN || token.t == Lexer::OPERATOR_TOKEN) defScript = "def ";
                         else defScript = "static ";
                         GET;
-                        defScript += " " + token.s;
+                        if (def_token_ref.t == Lexer::OPERATOR_TOKEN) defScript += " " + OPERATOR_PROTO_NAME + token.s;
+                        else defScript += " " + token.s;
                         GET;
                         defScript += " " + token.s;
                         UL sbc(1);

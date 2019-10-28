@@ -6,10 +6,26 @@ class A {
         this.name = "A";
         this.age = 0;
     }
+    operator+(a, b) {
+        return a.age + b.age;
+    }
 private:
     static count() {
         return 1 + 1;
     }
+    def d() {
+        return this.age;
+    }
+public:
+    static pcount() {
+        return A.count();
+    }
 };
 
-print(A.count());
+// print(A.pcount());
+let a = new A();
+let b = new A();
+a.age = 100;
+b.age = 200;
+print(a + b);
+// print(n.d());

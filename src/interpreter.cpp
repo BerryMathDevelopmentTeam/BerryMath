@@ -528,15 +528,17 @@ BM::Object *BM::Interpreter::run() {
                         key = keyValue->toString(false, false);
                         up = value;
                         value = value->get(key);
-                        auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
-                        auto thisV = get("this");
-                        if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value())) {
-                            std::clog << "ReferenceError: Cannot get private property "
-                                      << e->get(PASS_RETURN)->toString(false, false) << "\n\tat <"
-                                      << filename << ":" << upscope << ">:"
-                                      << ast->line() << std::endl;
-                            FREE_AST;
-                            THROW;
+                        if (value) {
+                            auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
+                            auto thisV = get("this");
+                            if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value())) {
+                                std::clog << "ReferenceError: Cannot get private property "
+                                          << e->get(PASS_RETURN)->toString(false, false) << "\n\tat <"
+                                          << filename << ":" << upscope << ">:"
+                                          << ast->line() << std::endl;
+                                FREE_AST;
+                                THROW;
+                            }
                         }
                         if (!value) {
                             if (i == ast->rValue()->length() - 1) {
@@ -577,15 +579,17 @@ BM::Object *BM::Interpreter::run() {
                         auto last = value;
                         up = value;
                         value = value->get(keys[i]);
-                        auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
-                        auto thisV = get("this");
-                        if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value())) {
-                            std::clog << "ReferenceError: Cannot get private property "
-                                      << keys[i] << "\n\tat <"
-                                      << filename << ":" << upscope << ">:"
-                                      << ast->line() << std::endl;
-                            FREE_AST;
-                            THROW;
+                        if (value) {
+                            auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
+                            auto thisV = get("this");
+                            if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value(), nullptr, false)) {
+                                std::clog << "ReferenceError: Cannot get private property "
+                                          << keys[i] << "\n\tat <"
+                                          << filename << ":" << upscope << ">:"
+                                          << ast->line() << std::endl;
+                                FREE_AST;
+                                THROW;
+                            }
                         }
                         if (!value) {
                             if (i == keys.size() - 1) {
@@ -656,25 +660,62 @@ BM::Object *BM::Interpreter::run() {
                     CHECKPASSNEXTOP(e);
                     auto n = e->get(PASS_RETURN);
 //                std::cout << n->type() << std::endl;
+                    auto opfun = n->get(OPERATOR_PROTO_NAME + rootValue);
                     if (rootValue == "++") {
+                        if (opfun) {
+                            if (opfun->type() == FUNCTION) {
+                                exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ n }), std::map<string, Object*>()));
+                                break;
+                            } else if (opfun->type() == NATIVE_FUNCTION) {
+                                exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ n }), std::map<string, Object*>()));
+                                break;
+                            }
+                        }
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             exports->set(PASS_RETURN, v->copy());
                             v->value()++;
                         } WRONGEXPRTYPE(rootValue);
                     } else if (rootValue == "--") {
+                        if (opfun) {
+                            if (opfun->type() == FUNCTION) {
+                                exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ n }), std::map<string, Object*>()));
+                                break;
+                            } else if (opfun->type() == NATIVE_FUNCTION) {
+                                exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ n }), std::map<string, Object*>()));
+                                break;
+                            }
+                        }
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             exports->set(PASS_RETURN, v->copy());
                             v->value()--;
                         } WRONGEXPRTYPE(rootValue);
                     } else if (rootValue == "++-f") {
+                        if (opfun) {
+                            if (opfun->type() == FUNCTION) {
+                                exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ n, new Number(1) }), std::map<string, Object*>()));
+                                break;
+                            } else if (opfun->type() == NATIVE_FUNCTION) {
+                                exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ n, new Number(1) }), std::map<string, Object*>()));
+                                break;
+                            }
+                        }
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()++;
                             exports->set(PASS_RETURN, v->copy());
                         } WRONGEXPRTYPE(rootValue);
                     } else if (rootValue == "---f") {
+                        if (opfun) {
+                            if (opfun->type() == FUNCTION) {
+                                exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ n, new Number(1) }), std::map<string, Object*>()));
+                                break;
+                            } else if (opfun->type() == NATIVE_FUNCTION) {
+                                exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ n, new Number(1) }), std::map<string, Object*>()));
+                                break;
+                            }
+                        }
                         if (n->type() == NUMBER) {
                             Number *v = (Number *) n;
                             v->value()--;
@@ -693,6 +734,16 @@ BM::Object *BM::Interpreter::run() {
 
                     auto op = rootValue;
                     auto etype = e_->type();
+                    auto opfun = e_->get(OPERATOR_PROTO_NAME + op);
+                    if (opfun) {
+                        if (opfun->type() == FUNCTION) {
+                            exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ e_ }), std::map<string, Object*>()));
+                            break;
+                        } else if (opfun->type() == NATIVE_FUNCTION) {
+                            exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ e_ }), std::map<string, Object*>()));
+                            break;
+                        }
+                    }
                     if (etype == NUMBER) {
                         auto e = (Number *) e_;
                         double &s = e->value();
@@ -730,6 +781,16 @@ BM::Object *BM::Interpreter::run() {
                 string op(rootValue);
                 delete leftIp;
                 delete rightIp;
+                auto opfun = left->get(OPERATOR_PROTO_NAME + op);
+                if (opfun) {
+                    if (opfun->type() == FUNCTION) {
+                        exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ left, right }), std::map<string, Object*>()));
+                        break;
+                    } else if (opfun->type() == NATIVE_FUNCTION) {
+                        exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ left, right }), std::map<string, Object*>()));
+                        break;
+                    }
+                }
                 if (op == "+") {
                     if (left->type() == NUMBER && right->type() == NUMBER) {
                         auto leftV = ((Number *) (left))->value();
