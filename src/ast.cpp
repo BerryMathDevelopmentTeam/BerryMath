@@ -1361,11 +1361,22 @@ void BM::AST::parse() {
         }
         case Lexer::CLASS_TOKEN:
         {
-            root = new node("class", lexer.l + baseLine);
+            auto ClassDefLine = lexer.l + baseLine;
+            root = new node("class", ClassDefLine);
             GET;
             string className(token.s);
             root->insert(className, lexer.l + baseLine);
             GET;
+            vector<string> extends;
+            if (token.t == Lexer::EXTENDS_TOKEN) {
+                string extendClassName;
+                while (true) {
+                    GET;
+                    if (token.t == Lexer::COMMA_TOKEN) continue;
+                    if (token.t == Lexer::BIG_BRACKETS_RIGHT_TOKEN) break;
+                    extendClassName += token.s;
+                }
+            }
             bool pflag(false);// private flag
 
             LL bbc(1);
@@ -1476,6 +1487,11 @@ void BM::AST::parse() {
                         return;
                     }
                 }
+            }
+            root->insert("extends", ClassDefLine);
+            auto node = root->get(-1);
+            for (auto i = extends.begin(); i != extends.end(); i++) {
+                node->insert(*i, ClassDefLine);
             }
             break;
         }

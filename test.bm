@@ -20,12 +20,22 @@ public:
     static pcount() {
         return A.count();
     }
-};
+}
+// class B extends A {
+//     def ctor() {
+//         this.super.A();
+//     }
+//     operator+(a, b) {
+//         return (a.age + b.age) * 2;
+//     }
+// }
 
 // print(A.pcount());
 let a = new A();
-let b = new A();
+let b = new B();
 a.age = 100;
 b.age = 200;
 print(a + b);
-// print(n.d());
+print(b + a);
+print(a);
+print(b);

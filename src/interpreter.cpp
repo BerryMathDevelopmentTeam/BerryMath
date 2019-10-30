@@ -391,6 +391,10 @@ BM::Object *BM::Interpreter::run() {
                 else prototype->set(name, e->get(PASS_RETURN));
                 FREE(e);
             }
+//            Interpreter tmpArrIp("new Array()");
+//            auto tmpRet = tmpArrIp.run();
+//            auto super = tmpRet->get(PASS_RETURN);
+//            prototype->set("super", super);
         } else if (rootValue == "new") {
             auto line = ast->rValue()->get(0)->line();
             string name(ast->rValue()->get(0)->value());
@@ -617,13 +621,15 @@ BM::Object *BM::Interpreter::run() {
                 }
                 exports->set(PASS_RETURN, object);
             } else if (rootValue == "a-value") {
-                auto ret = new Object;
-                ret->set("ctor", new Function("ctor", "let this = {};return this;"));
-                auto pushFun = new Function("push", "this[this.__len] = n;this.__len++;");
-                pushFun->addDesc("n");
-                ret->set("push", pushFun);
+                Interpreter tmpIp("new Array()");
+                auto tmpRet = tmpIp.run();
+                auto ret = tmpRet->get(PASS_RETURN);
+//                ret->set("ctor", new Function("ctor", "let this = {};return this;"));
+//                auto pushFun = new Function("push", "this[this.__len] = n;this.__len++;");
+//                pushFun->addDesc("n");
+//                ret->set("push", pushFun);
                 L arrlen = 0;
-                ret->set("__SYSTEM_TYPE__", new String("Array"));
+//                ret->set("__SYSTEM_TYPE__", new String("Array"));
                 for (L i = 0; i < ast->rValue()->length(); i++) {
                     auto valueNode = ast->rValue()->get(i);
                     string valueStr(ast->rValue()->get(i)->value());

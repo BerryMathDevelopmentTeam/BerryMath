@@ -252,6 +252,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = PRIVATE_TOKEN;
     } else if (t.s == "operator") {
         t.t = OPERATOR_TOKEN;
+    } else if (t.s == "extends") {
+        t.t = EXTENDS_TOKEN;
     } else if (t.s == "new") {
         t.t = NEW_TOKEN;
     } else if (t.s == "static") {
