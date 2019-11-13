@@ -1,0 +1,13 @@
+class Array {
+public:
+    def ctor() { }
+    def push(n) {
+        this[this.__len] = n;
+        this.__len++;
+    }
+private:
+    __len = 0;
+    __SYSTEM_TYPE__ = "Array";
+}
+
+export Array;
