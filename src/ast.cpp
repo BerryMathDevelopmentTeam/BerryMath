@@ -179,7 +179,7 @@ void BM::AST::parse() {
                             auto pri = base;
                             if (pri < minOp.pri || minOp.op.empty()) {
                                 minOp.pri = pri;
-                                minOp.op = "call";
+                                minOp.op = ".call";
                                 minOp.index = tempTK;
                                 minOp.line = lexer.l + baseLine;
                                 rightLine = lexer.l + baseLine;
@@ -242,7 +242,7 @@ void BM::AST::parse() {
                 left += " " + token.s;
                 GET;
             }
-            if (minOp.op == "call") {
+            if (minOp.op == ".call") {
                 lexer.i = minOp.index;
                 auto tmpFunNameIndex = lexer.i;
                 string functionName("");
@@ -320,7 +320,7 @@ void BM::AST::parse() {
                     GET;
                 }
                 auto callLine = minOp.line;
-                root = new node("call", callLine);
+                root = new node(".call", callLine);
                 auto funNameAst = new AST(functionName, callLine);
                 funNameAst->parse();
                 CHECK(funNameAst);
@@ -1405,6 +1405,7 @@ void BM::AST::parse() {
                     pflag = false;
                 } else if (token.t == Lexer::NOTE_TOKEN) {
                     // 与pass一样，直接跳过
+                    root = new node("pass", lexer.l + baseLine);
                 } else {
                     if (token.t == Lexer::DEF_TOKEN || token.t == Lexer::STATIC_TOKEN || token.t == Lexer::OPERATOR_TOKEN) {
                         string defScript;
@@ -1518,6 +1519,11 @@ void BM::AST::parse() {
             ast->parse();
             root = ast->root;
             root->value("new");
+            break;
+        }
+        case Lexer::DEBUGGER_TOKEN:
+        {
+            root = new node("debugger", lexer.l + baseLine);
             break;
         }
     }

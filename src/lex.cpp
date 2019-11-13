@@ -264,6 +264,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = EXPORT_TOKEN;
     } else if (t.s == "as") {
         t.t = AS_TOKEN;
+    } else if (t.s == "debugger") {
+        t.t = DEBUGGER_TOKEN;
     } else if (t.s == "delete") {
         t.t = DELETE_TOKEN;
     } else if (t.s == "//") {
@@ -271,8 +273,18 @@ BM::Lexer::Token BM::Lexer::get() {
         while (true) {
             if (script[++i] == '\n') break;
         }
+    } else if (t.s == "/*") {
+        t.t = NOTE_TOKEN;
+        t.s = "/*";
+        while (true) {
+            if (script[i] == '*' && script[i + 1] == '/') break;
+            t.s += script[i];
+            i++;
+        }
+        i += 2;
     } else if (t.s == "pass") {
         t.t = PASS_TOKEN;
     }
+    if (t.t == NOTE_TOKEN) return get();
     return t;
 }

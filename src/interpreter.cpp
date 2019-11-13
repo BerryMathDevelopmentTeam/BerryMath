@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <string>
 #include <sstream>
 #include <cstdlib>
 #include "value.h"
@@ -18,6 +19,10 @@ string BM::Interpreter::compile() {
         res += ast->exportByString();
     }
     return res;
+}
+
+void printObject(BM::Object* o) {
+    std::cout << o->toString() << std::endl;
 }
 
 BM::Object *BM::Interpreter::run() {
@@ -365,6 +370,8 @@ BM::Object *BM::Interpreter::run() {
             set(className, classV);
             auto prototype = new Object;
             classV->set("prototype", prototype);
+            classV->set("name", new String(className));
+            prototype->set("__type__", new String(className));
             auto prototypes = ast->rValue()->get(0);
             for (UL i = 0; i < prototypes->length(); i++) {
                 auto prototypeNode = prototypes->get(i);
@@ -386,9 +393,13 @@ BM::Object *BM::Interpreter::run() {
                 auto e = ip.run();
                 CHECKITER(e, prototypeNode->get(1));
                 CHECKPASSNEXTOP(e);
-                e->get(PASS_RETURN)->set(PROTO_PRIVATE_TAG, new Number(pflag));
-                if (isStatic) classV->set(name, e->get(PASS_RETURN));
-                else prototype->set(name, e->get(PASS_RETURN));
+                auto eRet = e->get(PASS_RETURN);
+                eRet->set(PROTO_PRIVATE_TAG, new Number(pflag));
+                if (eRet->type() == FUNCTION) {
+                    ((Function*)eRet)->functionName(className + "." + name);
+                }
+                if (isStatic) classV->set(name, eRet);
+                else prototype->set(name, eRet);
                 FREE(e);
             }
 //            Interpreter tmpArrIp("new Array()");
@@ -403,7 +414,7 @@ BM::Object *BM::Interpreter::run() {
             ast->rValue()->get(0)->insert(".", line);
             ast->rValue()->get(0)->get(1)->insert("prototype", line);
             ast->rValue()->get(0)->get(1)->insert("ctor", line);
-            ast->rValue()->value("call");
+            ast->rValue()->value(".call");
             Interpreter ip("", filename, this);
             ip.ast->root = ast->rValue();
             ip.child = true;
@@ -419,10 +430,12 @@ BM::Object *BM::Interpreter::run() {
             }
             exports->set(PASS_RETURN, ret);
             FREE(e);
+        } else if (rootValue == "debugger") {
+            debug();
         }
         else { //为表达式
             auto len = ast->rValue()->length();
-            if (rootValue == "call") {
+            if (rootValue == ".call") {
                 auto r = ast->rValue();
                 auto argsNode = r->get(1);
                 vector<Object *> args;
@@ -486,16 +499,19 @@ BM::Object *BM::Interpreter::run() {
                 if (fun_->type() == FUNCTION) {
                     auto fun = (Function *) fun_;
                     fun->setParent(this);
-                    fun->getParent()->set("this", up);
+                    fun->getParent()->set(".this", up);
                     auto fune = fun->run(args, hashArg);
                     exports->set(PASS_RETURN, fune);
                     FREE(fune);
                 } else if (fun_->type() == NATIVE_FUNCTION) {
                     auto fun = (NativeFunction *) fun_;
                     fun->setParent(this);
-                    fun->getParent()->set("this", up);
+                    fun->getParent()->set(".this", up);
+//                    std::cout << up->toString(true, true) << std::endl;
                     auto fune = fun->run(args, hashArg);
                     exports->set(PASS_RETURN, fune);
+//                    std::cout << up->toString(true, true) << std::endl;
+//                    std::cout << "-----" << std::endl;
                 } else {
                     if (clean) up->unbind();
                     std::clog << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
@@ -507,7 +523,7 @@ BM::Object *BM::Interpreter::run() {
 //                    exports->set(PASS_RETURN, get("this")->value());
 //                }
                 if (clean) up->unbind();
-                del("this");
+                del(".this");
             } else if (rootValue == "get") {
                 if (ast->rValue()->length() < 1) {
                     auto name = rootValue;
@@ -1196,5 +1212,47 @@ void BM::Interpreter::Using(Object* exports, AST::node* objAst) {
     Object::Iterator iter(obj);
     for (; !iter.end(); iter.next()) {
         set(iter.key(), iter.value());
+    }
+}
+void BM::Interpreter::stack(unsigned layer) {
+    if (parent) parent->stack(child ? layer : layer + 1);
+    if (child) return;
+    std::cout << "[\033[36m#" << layer << "\033[0m:INFO] at \033[35m<" << filename
+              << ":" << upscope << ">\033[0m:\033[36m"
+              << ast->line() << "\033[0m" << std::endl;
+    if (scope) scope->stack();
+}
+void BM::Interpreter::debug() {
+    stack();
+    string value;
+    auto watcherBinder = this;
+    while (true) {
+        std::cout << "[Press return to continue/Enter a value to view/Enter #<layer-id> to switch to another layer]" << std::endl;
+        getline(std::cin, value);
+        if (value.empty()) break;
+        if (value[0] == '#') {
+            unsigned swtichLayer = 0;
+            unsigned base = 1;
+            for (size_t i = value.length() - 1; i > 0; i--) {
+                swtichLayer += (value[i] - '0') * base;
+                base *= 10;
+            }
+            watcherBinder = this;
+            bool ex = false;
+            for (unsigned i = 0; i < swtichLayer; i++) {
+                watcherBinder = watcherBinder->parent;
+                if (!watcherBinder) {
+                    std::cerr << "There is no such layer " << value << std::endl;
+                    ex = true;
+                    break;
+                }
+            }
+            std::cout << "Now you selected \033[36m" << value << "\033[0m" << std::endl;
+            watcherBinder->stack();
+            if (ex) continue;
+        }
+        Interpreter watcher(value, "debugger.watcher", watcherBinder);
+        auto e = watcher.run();
+        if (e->get(PASS_RETURN)) std::cout << "<\033[33m" << e->get(PASS_RETURN) << "\033[0m>: " << e->get(PASS_RETURN)->toString(true, true) << std::endl;
     }
 }

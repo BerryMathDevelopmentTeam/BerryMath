@@ -1,41 +1,14 @@
 import sys;
 using sys.io;
 
-class A {
-    def ctor() {
-        this.name = "A";
-        this.age = 0;
-    }
-    operator+(a, b) {
-        return a.age + b.age;
-    }
-private:
-    static count() {
-        return 1 + 1;
-    }
-    def d() {
-        return this.age;
-    }
-public:
-    static pcount() {
-        return A.count();
-    }
+def T() {
+    let this = {};
+    this.array = [1, 2, 3];
+    // print(this);
+    this.array.push(4);
+    // print(this);
+    return this;
 }
-// class B extends A {
-//     def ctor() {
-//         this.super.A();
-//     }
-//     operator+(a, b) {
-//         return (a.age + b.age) * 2;
-//     }
-// }
 
-// print(A.pcount());
-let a = new A();
-let b = new B();
-a.age = 100;
-b.age = 200;
-print(a + b);
-print(b + a);
+let a = T();
 print(a);
-print(b);

@@ -43,6 +43,8 @@ namespace BM {
         string upscope;
         void import(Object*, const string&, const string&);
         void Using(Object*, AST::node*);
+        void stack(unsigned = 0);
+        void debug();
         void clear() { delete scope;scope = new Scope(parent ? parent->scope : nullptr); }
     private:
         bool child = false;

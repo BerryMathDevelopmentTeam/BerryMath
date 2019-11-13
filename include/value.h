@@ -266,6 +266,9 @@ namespace BM {
         string functionName() {
             return funname;
         }
+        void functionName(const string& n) {
+            funname = n;
+        }
         ~Function() {
             for (auto iter = proto.begin(); iter != proto.end(); iter++) {
                 Object* v = iter->second;
@@ -290,7 +293,7 @@ namespace BM {
     };
     class Variable {
     public:
-        Variable(string t, Object* v = new Undefined) : n(t), val(v) { val->bind(); }
+        Variable(const string& t, Object* v = new Undefined) : n(t), val(v) { val->bind(); }
         Object* value() { return val; }
         string name() {
             return n;
@@ -321,6 +324,16 @@ namespace BM {
         void clear() { variables.clear(); }
         void setParent(Scope* p) { parent = p; }
         void load(Scope*);
+        void stack() {
+            if (variables.empty()) return;
+            std::cout << "[SCOPE] {" << std::endl;
+            for (auto iter = variables.begin(); iter != variables.end(); iter++) {
+                if (iter->second && iter->second->value()->links()) {
+                    std::cout << "\t\033[32m" << iter->first << "\033[0m<variable at \033[33m" << ((void*)(iter->second)) << "\033[0m, value at \033[33m" << ((void*)(iter->second->value())) << "\033[0m>: " << iter->second->value()->toString(true, true, "\t") << std::endl;
+                }
+            }
+            std::cout << "}" << std::endl;
+        }
         Scope* getParent() { return parent; }
         ~Scope() {
             auto __scope = get(SCOPE_D_NAME);
@@ -390,7 +403,7 @@ namespace BM {
         ValueType type() { return NATIVE_VALUE; }
         nativeValueType& value() { return nv; }
         string toString(bool = true, bool hl = true, string tab = "") {
-            string o("");
+            string o;
             if (hl) o += "\033[36m";
             o += "NativeValue...";
             if (hl) o += "\033[0m";
@@ -406,6 +419,30 @@ namespace BM {
         }
     private:
         nativeValueType nv;
+    };
+//    BM::Object*(*)(Scope*, vector<Object*>)
+    class NativeClass : public Object {
+    public:
+        NativeClass(const string& name) : Object() {
+            auto proto = new Object;
+            set("prototype", proto);
+            set("name", new String(name));
+            proto->set("__type__", new String(name));
+        }
+        void addStatic(const string& name, Object* v) {
+            set(name, v);
+        }
+        void addProto(const string& name, Object* v) {
+            get("prototype")->set(name, v);
+        }
+        ValueType type() { return OBJECT; }
+        string toString(bool = true, bool hl = true, string tab = "") {
+            string o;
+            if (hl) o += "\033[36m";
+            o += "[Native Clase] class { [native]... }";
+            if (hl) o += "\033[0m";
+            return o;
+        }
     };
     string toString(Object*);
     bool isTrue(Object*);
