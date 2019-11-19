@@ -46,14 +46,13 @@ _^: The first bit means the version type. a: Official version, b: Advanced versi
 | 18 | jmp  | address         | Jump to an address. | jmp |
 | 19 | jmpt | address         | If the top element is true, jump to an address. | jmpt |
 | 1a | jmpf | address         | If the top element is false, jump to an address. | jmpt |
-| 1b | call | address         | Call function. | call af0876ae |
-| 1c | call | module, address | Call function. | call 3, 020876ae |
-| 1d | ret  | /               | Finish function processing. | ret |
-| 1e | mov  | address, address| Move the value in the second address to the first address. | mov [bp+10], [sp - 1] |
-| 1f | load | address         | Push the value in the address onto the stack. | load [bp+10] |
-| 20 | imp  | /               | Import modules based on the value of the top element of the stack. | imp |
-| 21 | line | source-line     | Identification is the line of source code. | line |
-| 22 | adp  | address, address| Add attributes to the top element of the stack, named the value pointed to by the first address and the value pointed to by the second address. | adp [bp+2], [bp+1] |
+| 1b | call | offset          | Call the function on the address(top - offset). | call 0 |
+| 1c | ret  | /               | Finish function processing. | ret |
+| 1d | mov  | address, address| Move the value in the second address to the first address. | mov [bp+10], [sp - 1] |
+| 1e | load | address         | Push the value in the address onto the stack. | load [bp+10] |
+| 2f | imp  | /               | Import modules based on the value of the top element of the stack. | imp |
+| 20 | line | source-line     | Identification is the line of source code. | line |
+| 21 | adp  |                 | Add attributes to the top-2 element of the stack, named the value pointed to top-1 and the value pointed to top. | adp |
 | ff | .JLAB|                 | Pseudo instructions for setting labels (used only when the compiler generates code). | / |
 
 ## Types
