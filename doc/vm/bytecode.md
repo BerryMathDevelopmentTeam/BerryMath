@@ -48,8 +48,8 @@ _^: The first bit means the version type. a: Official version, b: Advanced versi
 | 1a | jmpf | address         | If the top element is false, jump to an address. | jmpt |
 | 1b | call | offset          | Call the function on the address(top - offset). | call 0 |
 | 1c | ret  | /               | Finish function processing. | ret |
-| 1d | mov  | address, address| Move the value in the second address to the first address. | mov [bp+10], [sp - 1] |
-| 1e | load | address         | Push the value in the address onto the stack. | load [bp+10] |
+| 1d | mov  | offset          | Move the top value to the top-offset. | mov 2 |
+| 1e | load | offset         | Push the value in top-offset onto the stack. | load 3 |
 | 2f | imp  | /               | Import modules based on the value of the top element of the stack. | imp |
 | 20 | line | source-line     | Identification is the line of source code. | line |
 | 21 | adp  |                 | Add attributes to the top-2 element of the stack, named the value pointed to top-1 and the value pointed to top. | adp |
