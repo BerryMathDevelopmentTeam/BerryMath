@@ -64,9 +64,6 @@ _^: The first bit means the version type. a: Official version, b: Advanced versi
 | 03 | NUL | Null |
 | 04 | UND | Undefined |
 
-## Explanation of Address
-bp register points to address 0x00000002 in initial state, sp points to address 0x00000002
-
 ## Notes
 - When push null type, object type and undefined type are used, the value after push null is 0 of 1 byte.
 - Push OBJ, 0 is to push an empty object into the stack。
