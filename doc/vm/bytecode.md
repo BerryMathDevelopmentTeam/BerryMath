@@ -11,8 +11,6 @@ BMVM(BerryMath Virtual Machine) bytecode describe.
 |---_built time_---|  
 **a0 01**  
 |*compiler version***^**|  
-**00 07 d5 75 8a 9f 0a 5d**  
-|----_entry address_----|  
 ___Notes___  
 _^: The first bit means the version type. a: Official version, b: Advanced version, c: Test version_    
 
@@ -45,7 +43,7 @@ _^: The first bit means the version type. a: Official version, b: Advanced versi
 | 17 | min  | /               | Inversion of the element symbol at the top of the stack. | min |
 | 18 | jmp  | address         | Jump to an address. | jmp |
 | 19 | jmpt | address         | If the top element is true, jump to an address. | jmpt |
-| 1a | jmpf | address         | If the top element is false, jump to an address. | jmpt |
+| 1a | jmpf | address         | If the top element is false, jump to an address. | jmpf |
 | 1b | call | offset          | Call the function on the address(top - offset). | call 0 |
 | 1c | ret  | /               | Finish function processing. | ret |
 | 1d | mov  | offset          | Move the top value to the top-offset. | mov 2 |

@@ -37,7 +37,7 @@ namespace BM {
         AND,  OR,   XOR,   NOP,   SHL, SHR,  EQ,
         NEQ,  LT,   GT,    LE,    GE,  LAN,
         LOR,  NOT,  LNT,   MIN,   JMP,
-        JMPT, JMPF, CALLA, CALLAA,
+        JMPT, JMPF, CALL,
         RET,  MOV,  LOAD,
     };
     enum Optypes {

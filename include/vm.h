@@ -3,8 +3,8 @@
 
 #include <string>
 #include <vector>
+#include "value.h"
 #include "types.h"
-#include "register.h"
 using std::string;
 using std::vector;
 
@@ -15,10 +15,9 @@ namespace BM {
     class VM {
     public:
         VM(const string& bc = "") : bytecode(bc) {  }
-        void run();
+        Object* run();
         void open(const string& bc) { bytecode = bc; }
         string bc() { return bytecode; }
-        Register regs[24];
         static void initops(vector<VMOP>&);
     private:
         string bytecode;

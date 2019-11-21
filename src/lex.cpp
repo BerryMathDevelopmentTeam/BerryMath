@@ -2,6 +2,7 @@
 #include "lex.h"
 
 BM::Lexer::Token BM::Lexer::get() {
+    auto preIndex = i;
     sIndex = i;
     if (updateLine) {
         l++;
@@ -284,6 +285,16 @@ BM::Lexer::Token BM::Lexer::get() {
         i += 2;
     } else if (t.s == "pass") {
         t.t = PASS_TOKEN;
+    } else {
+        if (t.t == UNKNOWN_OP_TOKEN) {
+            auto tmp = i;
+            auto nowP = t.s.length();
+            for (; tmp >= preIndex && script[tmp] != '='; tmp--, nowP--) ;
+            if (script[tmp] == '=') {
+                i = tmp + 1;
+                t.s.erase(nowP);
+            }
+        }
     }
     if (t.t == NOTE_TOKEN) return get();
     return t;
