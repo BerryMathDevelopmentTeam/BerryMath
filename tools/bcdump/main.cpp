@@ -132,17 +132,6 @@ int main(int argc, char* argv[]) {
         }
         std::cout << version << std::endl;
     }
-    unsigned long long entryAddress = 0;
-    for (byte t = 7; t >= 0; t--) {
-        GET;
-        if (header) {
-            printf("%02x ", bt);
-        }
-        entryAddress += bt << t * 8;
-    }
-    if (header) {
-        std::cout << "\tentry address: " << entryAddress << std::endl;
-    }
     if (!index) return 0;
     while (true) {
         if (i >= bytecode.length()) break;
@@ -340,23 +329,10 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case 28: {
-                unsigned long long maddress = 0, address = 0;
-                for (byte t = 7; t >= 0; t--) {
-                    GETP;
-                    maddress += bt << t * 8;
-                }
-                for (byte t = 7; t >= 0; t--) {
-                    GETP;
-                    address += bt << t * 8;
-                }
-                printf("\tcall %08llx %08llx\n", address, maddress);
-                break;
-            }
-            case 29: {
                 std::cout << "\tret" << std::endl;
                 break;
             }
-            case 30: {
+            case 29: {
                 unsigned long long aaddress = 0, baddress = 0;
                 for (byte t = 7; t >= 0; t--) {
                     GETP;
@@ -369,7 +345,7 @@ int main(int argc, char* argv[]) {
                 printf("\tmov %08llx %08llx\n", aaddress, baddress);
                 break;
             }
-            case 31: {
+            case 30: {
                 unsigned long long address = 0;
                 for (byte t = 7; t >= 0; t--) {
                     GETP;
@@ -378,11 +354,11 @@ int main(int argc, char* argv[]) {
                 printf("\tload %08llx\n", address);
                 break;
             }
-            case 32: {
+            case 31: {
                 std::cout << "\timp" << std::endl;
                 break;
             }
-            case 33: {
+            case 32: {
                 unsigned long long line = 0;
                 for (byte t = 7; t >= 0; t--) {
                     GETP;
@@ -391,7 +367,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "\t.LINE: " << line << std::endl;
                 break;
             }
-            case 34: {
+            case 33: {
                 unsigned long long aaddress = 0, baddress = 0;
                 for (byte t = 7; t >= 0; t--) {
                     GETP;
