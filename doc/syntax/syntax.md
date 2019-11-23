@@ -24,6 +24,16 @@ Format: n~~m
 Returns all integers in an interval [n, m)  
 _note_: If n, m is a floating point number, then the system automatically integrates the value of n, m downwards.
 
+#### Monomial Express
+Format: <number><variable>  
+Can convert <number> <variable> to <number> * <variable> to calculate.  
+Example:
+```
+import sys;
+let a = 2;
+sys.io.print(2a);// 4
+```
+
 #### Calling Functions
 Syntax: `<function-name>(arg1, arg2, arg3...)`
 Demo: 
