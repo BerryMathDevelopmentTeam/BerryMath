@@ -75,6 +75,7 @@ namespace BM {
         UL line() { return l; }
     private:
         bool updateLine = false;
+        bool haveVirtualMul = false;
         UL i;
         UL l;
         UL sIndex = 0;

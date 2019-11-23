@@ -1,14 +1,5 @@
 import sys;
 using sys.io;
 
-def T() {
-    let this = {};
-    this.array = [1, 2, 3];
-    // print(this);
-    this.array.push(4);
-    // print(this);
-    return this;
-}
-
-let a = T();
-print(a);
+let a = 2;
+print(2a);

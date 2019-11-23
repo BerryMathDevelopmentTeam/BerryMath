@@ -8,6 +8,12 @@ BM::Lexer::Token BM::Lexer::get() {
         l++;
         updateLine = false;
     }
+    if (haveVirtualMul) {
+        t.s = "*";
+        t.t = MUL_TOKEN;
+        haveVirtualMul = false;
+        return t;
+    }
     if (i >= script.length()) {
         t.s = "";
         t.t = PROGRAM_END;
@@ -83,6 +89,10 @@ BM::Lexer::Token BM::Lexer::get() {
                     )
                 break;// 如果是符号token的话, 遇到非符号就说明该token结束了
             if (IS_NUM(script[i]) && t.t != UNKNOWN_TOKEN) t.t = NUMBER_TOKEN;
+            else if (t.t == NUMBER_TOKEN) {
+                haveVirtualMul = true;
+                break;
+            }
             else t.t = UNKNOWN_TOKEN;
         }
         t.s += script[i];
