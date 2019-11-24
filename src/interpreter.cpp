@@ -95,6 +95,7 @@ BM::Object *BM::Interpreter::run() {
             }
         } else if (rootValue == "if") {
             auto conAst = ast->rValue()->get(0);
+            CHECK_AND_THROW_IF_CANNOT_GET(conAst);
             Interpreter conIp("", filename, this);
             conIp.child = true;
             conIp.ast->root = conAst;
@@ -119,12 +120,15 @@ BM::Object *BM::Interpreter::run() {
                 FREE(e);
             } else {
                 auto els = ast->rValue()->get(2);
+                CHECK_AND_THROW_IF_CANNOT_GET(els);
                 for (UL i = 0; i < els->length(); i++) {
                     auto elconAst = els->get(i);
+                    CHECK_AND_THROW_IF_CANNOT_GET(elconAst);
                     if (elconAst->value() == "elif") {
                         Interpreter elconIp("", filename, this);
                         elconIp.child = true;
                         elconIp.ast->root = elconAst->get(0);
+                        CHECK_AND_THROW_IF_CANNOT_GET(elconIp.ast->root);
                         auto elconE = elconIp.run();
                         CHECKITER(elconE, elconIp.ast);
                         Object* elcon;
@@ -171,6 +175,7 @@ BM::Object *BM::Interpreter::run() {
             // 初始化
             if (ast->rValue()->length() > 2) {
                 auto initAst = ast->rValue()->get(0);
+                CHECK_AND_THROW_IF_CANNOT_GET(initAst);
                 Interpreter initIp("", filename, this);
                 initIp.ast->root = initAst;
                 initIp.child = true;
@@ -181,7 +186,9 @@ BM::Object *BM::Interpreter::run() {
 
                 // 获取条件
                 auto conAst = ast->rValue()->get(1);
+                CHECK_AND_THROW_IF_CANNOT_GET(conAst);
                 auto nxtAst = ast->rValue()->get(2);
+                CHECK_AND_THROW_IF_CANNOT_GET(nxtAst);
                 string forscript(ast->rValue()->get(3)->value());// 获取for循环代码块
                 while (true) {
                     // 条件判断
@@ -225,7 +232,9 @@ BM::Object *BM::Interpreter::run() {
                 }
             } else {
                 auto traverExprAst = ast->rValue()->get(0);
+                CHECK_AND_THROW_IF_CANNOT_GET(traverExprAst);
                 auto teNode = traverExprAst->get(0);
+                CHECK_AND_THROW_IF_CANNOT_GET(teNode);
                 if (teNode->length() > 0) {
                     std::cerr << "TraversalsError: Traversals object with a non-singular expression" << std::endl;
                     break;
@@ -237,6 +246,7 @@ BM::Object *BM::Interpreter::run() {
                 string op(ast->value());
                 auto rightIp = new Interpreter("", filename, this);
                 rightIp->ast->root = traverExprAst->get(1);
+                CHECK_AND_THROW_IF_CANNOT_GET(rightIp->ast->root);
                 rightIp->child = true;
                 auto rightE = rightIp->run();
                 auto right = rightE->get(PASS_RETURN);
@@ -267,6 +277,7 @@ BM::Object *BM::Interpreter::run() {
             }
         } else if (rootValue == "while") {
             auto conAst = ast->rValue()->get(0);
+            CHECK_AND_THROW_IF_CANNOT_GET(conAst);
             auto whscript = ast->rValue()->get(1)->value();
             while (true) {
                 Interpreter conIp("", filename, this);
@@ -300,6 +311,7 @@ BM::Object *BM::Interpreter::run() {
         } else if (rootValue == "do") {
             auto doscript = ast->rValue()->get(0)->value();
             auto conAst = ast->rValue()->get(1);
+            CHECK_AND_THROW_IF_CANNOT_GET(conAst);
             while (true) {
                 Interpreter ip(doscript, filename, this);
                 auto e = ip.run();
@@ -345,6 +357,7 @@ BM::Object *BM::Interpreter::run() {
             break;
         } else if (rootValue == "using") {
             auto objAst = ast->rValue()->get(0);
+            CHECK_AND_THROW_IF_CANNOT_GET(objAst);
             Using(exports, objAst);
             ast->rValue()->clear();
         } else if (rootValue == "def") {
@@ -352,8 +365,10 @@ BM::Object *BM::Interpreter::run() {
             string funscript(ast->rValue()->get(2)->value());
             auto fun = new Function(funname, funscript);
             auto args = ast->rValue()->get(1);
+            CHECK_AND_THROW_IF_CANNOT_GET(args);
             for (UL i = 0; i < args->length(); i++) {
                 auto arg = args->get(i);
+                CHECK_AND_THROW_IF_CANNOT_GET(arg);
                 string argname(arg->value());
                 string defaultValue = arg->get(1)->value();
                 if (defaultValue == "pass") defaultValue = "undefined";
@@ -377,8 +392,10 @@ BM::Object *BM::Interpreter::run() {
             classV->set("name", new String(className));
             prototype->set("__type__", new String(className));
             auto prototypes = ast->rValue()->get(0);
+            CHECK_AND_THROW_IF_CANNOT_GET(prototypes);
             for (UL i = 0; i < prototypes->length(); i++) {
                 auto prototypeNode = prototypes->get(i);
+                CHECK_AND_THROW_IF_CANNOT_GET(prototypeNode);
                 string name(prototypeNode->value());
                 bool pflag(true);// private flag
                 if (prototypeNode->get(0)->value() == "public") pflag = false;
@@ -442,11 +459,13 @@ BM::Object *BM::Interpreter::run() {
             if (rootValue == ".call") {
                 auto r = ast->rValue();
                 auto argsNode = r->get(1);
+                CHECK_AND_THROW_IF_CANNOT_GET(argsNode);
                 vector<Object *> args;
                 map<string, Object *> hashArg;
                 Interpreter getIp("", filename, this);
                 getIp.child = true;
                 getIp.ast->root = r->get(0);
+                CHECK_AND_THROW_IF_CANNOT_GET(getIp.ast->root);
                 auto e = getIp.run();
                 if (e->get(PASS_ERROR)) return exports;
                 CHECKITER(e, r);
@@ -544,6 +563,7 @@ BM::Object *BM::Interpreter::run() {
                     for (UL i = 1; i < ast->rValue()->length(); i++) {// 下标为0的是v的名字
                         Interpreter ip("", filename, this);
                         ip.ast->root = ast->rValue()->get(i);
+                        CHECK_AND_THROW_IF_CANNOT_GET(ip.ast->root);
                         ip.child = true;
                         auto e = ip.run();
                         CHECKITER(e, ast);
@@ -629,6 +649,7 @@ BM::Object *BM::Interpreter::run() {
                 for (L i = 0; i < ast->rValue()->length(); i++) {
                     string key(ast->rValue()->get(i)->value());
                     auto valueNode = ast->rValue()->get(i)->get(0);
+                    CHECK_AND_THROW_IF_CANNOT_GET(valueNode);
                     string valueStr(valueNode->value());
                     Interpreter ip(valueStr, filename, this);
                     auto e = ip.run();
@@ -650,7 +671,8 @@ BM::Object *BM::Interpreter::run() {
 //                ret->set("__SYSTEM_TYPE__", new String("Array"));
                 for (L i = 0; i < ast->rValue()->length(); i++) {
                     auto valueNode = ast->rValue()->get(i);
-                    string valueStr(ast->rValue()->get(i)->value());
+                    CHECK_AND_THROW_IF_CANNOT_GET(valueNode);
+                    string valueStr(valueNode->value());
                     Interpreter ip(valueStr, filename, this);
                     auto e = ip.run();
                     CHECKITER(e, valueNode);
@@ -678,6 +700,7 @@ BM::Object *BM::Interpreter::run() {
                 if (rootValue == "++" || rootValue == "--" || rootValue == "++-f" || rootValue == "---f") {
                     Interpreter ip("", filename, this);
                     ip.ast->root = ast->rValue()->get(0);
+                    CHECK_AND_THROW_IF_CANNOT_GET(ip.ast->root);
                     ip.child = true;
                     auto e = ip.run();
                     CHECKITER(e, ast);
@@ -749,6 +772,7 @@ BM::Object *BM::Interpreter::run() {
                     FREE(e);
                 } else {
                     auto valueAst = ast->rValue()->get(0);
+                    CHECK_AND_THROW_IF_CANNOT_GET(valueAst);
                     auto valueIp = new Interpreter("", filename, this);
                     valueIp->ast->root = valueAst;
                     valueIp->child = true;
@@ -789,7 +813,9 @@ BM::Object *BM::Interpreter::run() {
                 }
             } else if (len == 2) {
                 auto leftAst = ast->rValue()->get(0);
+                CHECK_AND_THROW_IF_CANNOT_GET(leftAst);
                 auto rightAst = ast->rValue()->get(1);
+                CHECK_AND_THROW_IF_CANNOT_GET(rightAst);
                 auto leftIp = new Interpreter("", filename, this);
                 auto rightIp = new Interpreter("", filename, this);
                 leftIp->ast->root = leftAst;
@@ -830,6 +856,7 @@ BM::Object *BM::Interpreter::run() {
                         op == "<<=" || op == ">>=" || op == "|=" || op == "&=" || op == "^="
                         ) {
                     auto leftNode = ast->rValue()->get(0);
+                    CHECK_AND_THROW_IF_CANNOT_GET(leftNode);
                     string name(leftNode->value());
                     if ((leftNode->length() > 0 && name != "." && name != "get") || isNumber(name) || isString(name) || name == "o-value" || name == "a-value") {
                         std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"

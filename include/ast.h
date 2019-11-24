@@ -107,7 +107,7 @@ namespace BM {
     };
 
 #define OPERATOR_PROTO_NAME string("__operator")
-#define CHANGELINES(ast) lexer.l = ast->lexer.l + ast->baseLine;
+#define CHANGELINES(ast, line) if (ast->baseLine + ast->lexer.l > line) lexer.l = ast->lexer.l + ast->baseLine;
 }
 
 

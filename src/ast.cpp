@@ -69,7 +69,7 @@ void BM::AST::parse() {
                     ast->importByString(childrenContent);
                     ast->parse();
                     CHECK(ast);
-                    CHANGELINES(ast);
+                    CHANGELINES(ast, astLexer.l + baseLine);
                     root->insert(ast->root);
                     delete ast;
                     childrenContent = "";
@@ -133,9 +133,13 @@ void BM::AST::parse() {
             auto ast = new AST(expression, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
-            CHANGELINES(ast);
+            CHANGELINES(ast, lexer.l + baseLine);
             root->insert(ast->root);
             delete ast;
+            break;
+        }
+        case Lexer::END_TOKEN:
+        {
             break;
         }
         case Lexer::NUMBER_TOKEN:
@@ -324,14 +328,14 @@ void BM::AST::parse() {
                 auto funNameAst = new AST(functionName, callLine);
                 funNameAst->parse();
                 CHECK(funNameAst);
-                CHANGELINES(funNameAst);
+                CHANGELINES(funNameAst, callLine);
                 root->insert(funNameAst->root);
                 root->insert("arg", funLine);
                 for (auto i = 0; i < args.size(); i++) {
                     auto ast = new AST(args[i], callLine);
                     ast->parse();
                     CHECK(ast);
-                    CHANGELINES(ast);
+                    CHANGELINES(ast, callLine);
                     root->get(1)->insert(ast->root);
                     delete ast;
                 }
@@ -369,7 +373,7 @@ void BM::AST::parse() {
                     auto ast = new AST(expr, lexer.l + baseLine);
                     ast->parse();
                     CHECK(ast);
-                    CHANGELINES(ast);
+                    CHANGELINES(ast, lexer.l + baseLine);
                     root->insert(ast->root);
                     expr = "";
                     delete ast;
@@ -414,10 +418,10 @@ void BM::AST::parse() {
                 auto rightAst = new AST(right, rightLine);
                 leftAst->parse();
                 CHECK(leftAst);
-                if (leftAst->baseLine + leftAst->lexer.l > leftLine) CHANGELINES(leftAst);
+                CHANGELINES(leftAst, leftLine);
                 rightAst->parse();
                 CHECK(rightAst);
-                if (rightAst->baseLine + rightAst->lexer.l > rightLine) CHANGELINES(rightAst);
+                CHANGELINES(rightAst, rightLine);
                 root = new node(minOp.op, minOp.line);
                 if ((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--" || minOp.op == "+" || minOp.op == "-")) {
                     if (minOp.op == "++" || minOp.op == "--")
@@ -473,6 +477,11 @@ void BM::AST::parse() {
             string op(token.s);
             root = new node(op, lexer.l + baseLine);
             GET;
+            if (token.t != Lexer::UNKNOWN_TOKEN && token.t != Lexer::NUMBER_TOKEN) {
+                root = new node("bad-tree", astLexer.l + baseLine);
+                root->insert("UnexpectedError: Unexpected token '" + token.s + "'", astLexer.l + baseLine);
+                return;
+            }
             root->insert("0", lexer.l + baseLine);
             root->insert(token.s, lexer.l + baseLine);
             break;
@@ -536,7 +545,7 @@ void BM::AST::parse() {
             auto ifExprAst = new AST(ifExpression, exprLine);
             ifExprAst->parse();
             CHECK(ifExprAst);
-            CHANGELINES(ifExprAst);
+            CHANGELINES(ifExprAst, exprLine);
             root = new node("if", ifLine);
             root->insert(ifExprAst->root);
             root->insert(ifScript, ifScriptLine);
@@ -595,7 +604,7 @@ void BM::AST::parse() {
                     auto elIfAst = new AST(elifExpression, elExprLine);
                     elIfAst->parse();
                     CHECK(elIfAst);
-                    CHANGELINES(elIfAst);
+                    CHANGELINES(elIfAst, elExprLine);
                     root->get(2)->insert(new node("elif", elifScriptLine));
                     root->get(2)->get(-1)->insert(elIfAst->root);
                     root->get(2)->get(-1)->insert(elifScript, elifScriptLine);
@@ -710,7 +719,7 @@ void BM::AST::parse() {
                     auto ast = new AST(caseExpr, caseLine);
                     ast->parse();
                     CHECK(ast);
-                    CHANGELINES(ast);
+                    CHANGELINES(ast, caseLine);
                     root->get(-1)->insert(ast->root);
                     root->get(-1)->insert(script, lexer.l + baseLine);
                     delete ast;
@@ -797,7 +806,7 @@ void BM::AST::parse() {
             auto exprAst = new AST(whileExpression, exprLine);
             exprAst->parse();
             CHECK(exprAst);
-            CHANGELINES(exprAst);
+            CHANGELINES(exprAst, exprLine);
             root->insert(exprAst->root);
             root->insert(whileScript, whileScriptLine);
 
@@ -862,7 +871,7 @@ void BM::AST::parse() {
             auto exprAst = new AST(whileExpression, exprLine);
             exprAst->parse();
             CHECK(exprAst);
-            CHANGELINES(exprAst);
+            CHANGELINES(exprAst, exprLine);
             root->insert(whileScript, whileScriptLine);
             root->insert(exprAst->root);
             break;
@@ -920,16 +929,16 @@ void BM::AST::parse() {
             auto ast = new AST(forExprScript, forLine);
             ast->parse();
             CHECK(ast);
-            CHANGELINES(ast);
+            CHANGELINES(ast, forLine);
             root->insert(ast->root);
             if (ast->root->value() != "in" && ast->root->value() != "of") {
                 ast->parse();
                 CHECK(ast);
-                CHANGELINES(ast);
+                CHANGELINES(ast, forLine);
                 root->insert(ast->root);
                 ast->parse();
                 CHECK(ast);
-                CHANGELINES(ast);
+                CHANGELINES(ast, forLine);
                 root->insert(ast->root);
             }
             root->insert(forScript, forScriptLine);
@@ -1099,7 +1108,7 @@ void BM::AST::parse() {
                 auto ast = new AST(a.defaultValue, dl);
                 ast->parse();
                 CHECK(ast);
-                CHANGELINES(ast);
+                CHANGELINES(ast, dl);
                 root->get(1)->get(-1)->insert(ast->root);
                 delete ast;
             }
@@ -1141,7 +1150,7 @@ void BM::AST::parse() {
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
-            CHANGELINES(ast);
+            CHANGELINES(ast, lexer.l + baseLine);
             root->insert(ast->root);
             delete ast;
             break;
@@ -1159,7 +1168,7 @@ void BM::AST::parse() {
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
-            CHANGELINES(ast);
+            CHANGELINES(ast, lexer.l + baseLine);
             if (ast->root->value() != "undefined") root->insert(ast->root);
             else {
                 root->insert(new node("1", lexer.l + baseLine));
@@ -1201,7 +1210,7 @@ void BM::AST::parse() {
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
-            CHANGELINES(ast);
+            CHANGELINES(ast, lexer.l + baseLine);
             root->insert(ast->root);
             root->insert("as", lexer.l + baseLine);
             root->get(-1)->insert(asName, lexer.l + baseLine);
@@ -1227,7 +1236,7 @@ void BM::AST::parse() {
             auto ast = new AST(expr, lexer.l + baseLine);
             ast->parse();
             CHECK(ast);
-            CHANGELINES(ast);
+            CHANGELINES(ast, lexer.l + baseLine);
             root->insert(ast->root);
             delete ast;
             break;
@@ -1393,6 +1402,7 @@ void BM::AST::parse() {
                         delete root;
                         root = new node("bad-tree", lexer.l + baseLine);
                         root->insert("SyntaxError: Unexpected token '" + token.s + "'", lexer.l + baseLine);
+                        return;
                     }
                     pflag = true;
                 } else if (token.t == Lexer::PUBLIC_TOKEN) {
@@ -1401,6 +1411,7 @@ void BM::AST::parse() {
                         delete root;
                         root = new node("bad-tree", lexer.l + baseLine);
                         root->insert("SyntaxError: Unexpected token '" + token.s + "'", lexer.l + baseLine);
+                        return;
                     }
                     pflag = false;
                 } else if (token.t == Lexer::NOTE_TOKEN) {
@@ -1525,6 +1536,12 @@ void BM::AST::parse() {
         {
             root = new node("debugger", lexer.l + baseLine);
             break;
+        }
+        default:
+        {
+            root = new node("bad-tree", astLexer.l + baseLine);
+            root->insert("UnexpectedError: Unexpected token '" + token.s + "'", astLexer.l + baseLine);
+            return;
         }
     }
     if (!root) root = new node("pass", lexer.l + baseLine);
