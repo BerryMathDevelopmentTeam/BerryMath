@@ -101,7 +101,7 @@ namespace BM {
     public:
         node* rValue() { return root; }
         UL line() {
-            if (root) return root->line() + 1;
+            if (root) return root->line() + 1 + baseLine;
             return 0;
         }
     };

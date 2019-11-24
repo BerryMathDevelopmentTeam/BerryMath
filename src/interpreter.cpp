@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <list>
 #include <string>
 #include <sstream>
 #include <cstdlib>
@@ -10,6 +11,7 @@
 #include "types.h"
 #include "types.cpp"
 #include "interpreter.h"
+using std::list;
 
 string BM::Interpreter::compile() {
     string res;
@@ -39,13 +41,15 @@ BM::Object *BM::Interpreter::run() {
         delete objAst;
     }
     if (!ast) ast = new AST(script);
+//    auto count = 0;
     while (true) {
+//        if (!child) std::cout << "<" << (count++) << ">" << std::endl;
         if (!child) ast->parse();
         string rootValue = ast->value();
 //        if (!ast->rValue()) continue;
         if (rootValue == "PROGRAM-END") break;
         if (rootValue == "bad-tree") {
-            std::clog << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+            std::cerr << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
             FREE_AST;
             THROW;
         } else if (rootValue == "export") {
@@ -223,7 +227,7 @@ BM::Object *BM::Interpreter::run() {
                 auto traverExprAst = ast->rValue()->get(0);
                 auto teNode = traverExprAst->get(0);
                 if (teNode->length() > 0) {
-                    std::clog << "TraversalsError: Traversals object with a non-singular expression" << std::endl;
+                    std::cerr << "TraversalsError: Traversals object with a non-singular expression" << std::endl;
                     break;
                 }
                 string varName(teNode->value());
@@ -410,10 +414,10 @@ BM::Object *BM::Interpreter::run() {
             auto line = ast->rValue()->get(0)->line();
             string name(ast->rValue()->get(0)->value());
             ast->rValue()->get(0)->value(".");
-            ast->rValue()->get(0)->insert(name, line);
             ast->rValue()->get(0)->insert(".", line);
-            ast->rValue()->get(0)->get(1)->insert("prototype", line);
-            ast->rValue()->get(0)->get(1)->insert("ctor", line);
+            ast->rValue()->get(0)->get(0)->insert(name, line);
+            ast->rValue()->get(0)->get(0)->insert("prototype", line);
+            ast->rValue()->get(0)->insert("ctor", line);
             ast->rValue()->value(".call");
             Interpreter ip("", filename, this);
             ip.ast->root = ast->rValue();
@@ -453,7 +457,7 @@ BM::Object *BM::Interpreter::run() {
                     if (node->value() == "=") {
                         auto argName = node->get(0)->value();
                         if (node->get(0)->length() > 0) {
-                            std::clog << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
+                            std::cerr << "ReferenceError: Invalid setting with " << argName << "\n\tat <" << filename
                                       << ":" << upscope << ">:"
                                       << ast->line() << std::endl;
                             FREE_AST;
@@ -491,7 +495,7 @@ BM::Object *BM::Interpreter::run() {
                     clean = true;
                 }
                 if (!fun_) {
-                    std::clog << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
+                    std::cerr << "TypeError: The value for getting is not defined\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     FREE_AST;
                     THROW;
@@ -514,7 +518,7 @@ BM::Object *BM::Interpreter::run() {
 //                    std::cout << "-----" << std::endl;
                 } else {
                     if (clean) up->unbind();
-                    std::clog << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
+                    std::cerr << "TypeError: The value for getting is not a function\n\tat <" << filename << ":" << upscope << ">:"
                               << ast->line() << std::endl;
                     FREE_AST;
                     THROW;
@@ -552,7 +556,7 @@ BM::Object *BM::Interpreter::run() {
                             auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
                             auto thisV = get("this");
                             if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value())) {
-                                std::clog << "ReferenceError: Cannot get private property "
+                                std::cerr << "ReferenceError: Cannot get private property "
                                           << e->get(PASS_RETURN)->toString(false, false) << "\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
@@ -565,7 +569,7 @@ BM::Object *BM::Interpreter::run() {
                                 value = new Undefined;
                                 up->set(key, value);
                             } else {
-                                std::clog << "ReferenceError: Cannot get property "
+                                std::cerr << "ReferenceError: Cannot get property "
                                           << e->get(PASS_RETURN)->toString(false, false) << ", it is not defined\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
@@ -579,32 +583,28 @@ BM::Object *BM::Interpreter::run() {
                     exports->set(PASS_LASTKEY, new String(key));
                 }
             } else if (rootValue == ".") {
-                string startV(ast->rValue()->get(0)->value());
-                vector<string> keys;
-                auto node = ast->rValue()->get(1);
-                while (true) {
-                    if (node->length() < 1) {
-                        keys.push_back(node->value());
-                        break;
-                    } else {
-                        keys.push_back(node->get(0)->value());
-                    }
-                    node = node->get(1);
+                list<string> keys;
+                auto root = ast->rValue();
+                auto node = root;
+                while (node->length() == 2) {
+                    keys.insert(keys.begin(), node->RIGHT_NODE->value());
+                    node = node->LEFT_NODE;
                 }
+                string startV(node->value());
                 auto var = scope->get(startV);
                 if (var) {
                     Object* up = nullptr;
                     auto value = var->value();
-                    for (UL i = 0; i < keys.size(); i++) {
+                    for (auto i = keys.begin(); i != keys.end(); i++) {
                         auto last = value;
                         up = value;
-                        value = value->get(keys[i]);
+                        value = value->get(*i);
                         if (value) {
                             auto isVPrivateV = value->get(PROTO_PRIVATE_TAG);
                             auto thisV = get("this");
                             if (isVPrivateV && isVPrivateV->type() == NUMBER && ((Number*)isVPrivateV)->value() != 0 && thisV && !value->has(thisV->value(), nullptr, false)) {
-                                std::clog << "ReferenceError: Cannot get private property "
-                                          << keys[i] << "\n\tat <"
+                                std::cerr << "ReferenceError: Cannot get private property "
+                                          << *i << "\n\tat <"
                                           << filename << ":" << upscope << ">:"
                                           << ast->line() << std::endl;
                                 FREE_AST;
@@ -612,16 +612,18 @@ BM::Object *BM::Interpreter::run() {
                             }
                         }
                         if (!value) {
-                            if (i == keys.size() - 1) {
-                                last->set(keys[i], new Undefined);
-                                value = last->get(keys[i]);
-                            } WRONG("ReferenceError", keys[i] + " is not defined in " + startV + " or its properties");
+                            if (i == --keys.end()) {
+                                last->set(*i, new Undefined);
+                                value = last->get(*i);
+                            }
+                            WRONG("ReferenceError", *i + " is not defined in " + startV + " or its properties");
                         }
                     }
                     exports->set(PASS_RETURN, value);
                     exports->set(PASS_UPVALUE, up);
-                    exports->set(PASS_LASTKEY, new String(keys[keys.size() - 1]));
-                } WRONG("ReferenceError", startV + " is not defined");
+                    exports->set(PASS_LASTKEY, new String(*(--keys.end())));
+                }
+                WRONG("ReferenceError", startV + " is not defined");
             } else if (rootValue == "o-value") {
                 auto object = new Object;
                 for (L i = 0; i < ast->rValue()->length(); i++) {
@@ -830,7 +832,7 @@ BM::Object *BM::Interpreter::run() {
                     auto leftNode = ast->rValue()->get(0);
                     string name(leftNode->value());
                     if ((leftNode->length() > 0 && name != "." && name != "get") || isNumber(name) || isString(name) || name == "o-value" || name == "a-value") {
-                        std::clog << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
+                        std::cerr << "ReferenceError: Invalid left-hand side in assignment\n\tat <" << filename << ":" << upscope << ">:"
                                   << ast->line() << std::endl;
                         FREE_AST;
                         THROW;
@@ -989,7 +991,7 @@ BM::Object *BM::Interpreter::run() {
                             if (op == "!=") exports->set(PASS_RETURN, new Number(1));
                             else exports->set(PASS_RETURN, new Number(0));
                         } else {
-                            std::clog << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+                            std::cerr << "TypeError" << ": " << "Cannot compare values with two different types" << "\n\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
                             FREE_AST;
                             THROW;
                         }
@@ -1115,7 +1117,7 @@ BM::Object *BM::Interpreter::runCC() {
 
 void BM::Interpreter::import(Object* exports, const string& name, const string& asName) {
     if (scope->get(asName)) {
-        std::clog << "ImportError: '" << asName << "' is in usage \n\tat <" << filename << ">:" << ast->line() << std::endl;
+        std::cerr << "ImportError: '" << asName << "' is in usage \n\tat <" << filename << ">:" << ast->line() << std::endl;
         exports->set(PASS_ERROR, new Number(1));
         return;
     }
@@ -1137,7 +1139,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::clog << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
+                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
             }
             moduleExports->del(PASS_RETURN);
@@ -1157,7 +1159,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set(PASS_MODULE_NAME, new String(name));
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::clog << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
+                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
                 return;
             }
@@ -1181,7 +1183,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             ip.set("undefined", new Undefined);
             auto moduleExports = ip.run();
             if (moduleExports->get(PASS_ERROR)) {
-                std::clog << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
+                std::cerr << "ImportError: Module script wrong\n\tat <" << filename << ">:" << ast->line() << std::endl;
                 exports->set(PASS_ERROR, new Number(1));
                 return;
             }
@@ -1198,7 +1200,7 @@ void BM::Interpreter::import(Object* exports, const string& name, const string& 
             auto initModule = (initModuleFun) dylib.resolve("initModule");
             Object *moduleExports = initModule();
             scope->set(asName, moduleExports);
-        } else std::clog << "ImportError" << ": No module named " << name << "\n\tat <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
+        } else std::cerr << "ImportError" << ": No module named " << name << "\n\tat <" << filename <<  ":" << upscope << ">:" << ast->line() << std::endl;
         dylib.close();
     }
 }
@@ -1207,7 +1209,10 @@ void BM::Interpreter::Using(Object* exports, AST::node* objAst) {
     ip.ast->root = objAst;
     ip.child = true;
     auto e = ip.run();
-    if (!e || e->get(PASS_ERROR)) std::clog << "at <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+    if (!e || e->get(PASS_ERROR) || e->empty()) {
+        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl;
+        return;
+    }
     auto obj = e->get(PASS_RETURN);
     Object::Iterator iter(obj);
     for (; !iter.end(); iter.next()) {

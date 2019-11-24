@@ -177,7 +177,7 @@ void BM::AST::parse() {
                         base *= BRACKETS_PRI;
                         if (isUnknownTk) {
                             auto pri = base;
-                            if (pri < minOp.pri || minOp.op.empty()) {
+                            if (pri <= minOp.pri || minOp.op.empty()) {
                                 minOp.pri = pri;
                                 minOp.op = ".call";
                                 minOp.index = tempTK;
@@ -191,7 +191,7 @@ void BM::AST::parse() {
                             base /= BRACKETS_PRI;
                             base *= MBRACKETS_PRI;
                             auto pri = base;
-                            if (pri < minOp.pri || minOp.op.empty()) {
+                            if (pri <= minOp.pri || minOp.op.empty()) {
                                 minOp.pri = pri;
                                 minOp.op = "get";
                                 minOp.index = tempTK;
@@ -204,7 +204,7 @@ void BM::AST::parse() {
                     else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) base /= BRACKETS_PRI;
                     else {
                         auto pri = priority(token.s) * base;
-                        if (pri < minOp.pri || minOp.op.empty()) {
+                        if (pri <= minOp.pri || minOp.op.empty()) {
                             minOp.pri = pri;
                             minOp.op = token.s;
                             minOp.index = opIndex;
@@ -414,10 +414,10 @@ void BM::AST::parse() {
                 auto rightAst = new AST(right, rightLine);
                 leftAst->parse();
                 CHECK(leftAst);
-                CHANGELINES(leftAst);
+                if (leftAst->baseLine + leftAst->lexer.l > leftLine) CHANGELINES(leftAst);
                 rightAst->parse();
                 CHECK(rightAst);
-                CHANGELINES(rightAst);
+                if (rightAst->baseLine + rightAst->lexer.l > rightLine) CHANGELINES(rightAst);
                 root = new node(minOp.op, minOp.line);
                 if ((left == " " || left == " ()") && (minOp.op == "++" || minOp.op == "--" || minOp.op == "+" || minOp.op == "-")) {
                     if (minOp.op == "++" || minOp.op == "--")

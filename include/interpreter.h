@@ -1,14 +1,15 @@
 #ifndef BERRYMATH_INTERPRETER_H
 #define BERRYMATH_INTERPRETER_H
 
+#include <fstream>
 #include <string>
 #include "value.h"
 #include "ast.h"
 #include "types.h"
-
 using std::string;
 
 namespace BM {
+    inline std::ofstream tmpOut;
     class Interpreter {
     public:
         Interpreter(const string& s = "", const string& fn = "", Interpreter *p = nullptr) : script(s), filename(fn), ast(new AST(s)),
@@ -68,24 +69,24 @@ namespace BM {
 #define THROW { exports->set(PASS_ERROR, new Number(1)); return exports; }
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR) || e->empty()) { \
-        std::clog << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
+        std::cerr << "\tat <" << filename << ":" << upscope << ">:" << ast->line() << std::endl; \
         THROW; \
     }
 #define RIGHTEXPRTYPE(left, right) if (left->type() == NUMBER && right->type() == NUMBER)
-#define WRONGEXPRTYPE(op) else { std::clog << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
+#define WRONGEXPRTYPE(op) else { std::cerr << "TypeError: Cannot perform " << op << " operations\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
-#define WRONGSCRIPT(token) else { std::clog << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
+#define WRONGSCRIPT(token) else { std::cerr << "TypeError: Cannot " << token << "\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
-#define WRONG(name, s)  else { std::clog << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
+#define WRONG(name, s)  else { std::cerr << name << ": " << s << "\n\tat <" << filename <<  ":" << upscope << ">:" \
             << ast->line() << std::endl; \
             THROW; \
 }
 #define NOTDEFINED(v, name) if (!v) { \
-        std::clog << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
+        std::cerr << "ReferenceError: " << name << " is not defined\n\tat <" << filename << ":" << upscope << ">:" \
         << ast->line()  << std::endl; \
         THROW; \
     }
@@ -97,7 +98,7 @@ namespace BM {
             con = ret->copy(); \
             CHECKPASSNEXTOP(conE); \
         } }
-#define FREE(v) { if (v->unbind() == 0) delete v; }
+#define FREE(v) { if (v) v->unbind(); }
 #ifdef I_OS_WIN32
         // 拓展库path
 #define BMMPATH "C:\\BM\\libraries\\lib"
@@ -111,6 +112,8 @@ namespace BM {
 #endif
 #define DEFAULT_IMPORT_NAME "bmlang"
 #define PASS_MODULE_NAME "__THIS_MODULE_NAME__"
+#define LEFT_NODE get(0)
+#define RIGHT_NODE get(1)
 
         friend class NativeFunction;
 

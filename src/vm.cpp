@@ -17,10 +17,10 @@ BM::Object* BM::VM::run() {
 }
 
 void BM::Throw(const string& name, const string& txt) {
-    std::clog << name << "Error: " << txt << std::endl;
+    std::cerr << name << "Error: " << txt << std::endl;
 }
 void BM::ThrowExit(const string& name, const string& txt) {
-    std::clog << name << "Error: " << txt << std::endl;
+    std::cerr << name << "Error: " << txt << std::endl;
     exit(1);
 }
 

@@ -129,7 +129,7 @@ BM::Object* BM::Object::get(const string &key) {
 }
 void BM::Object::insert(const string& key, Object *value) {
     if (!value) {
-        std::clog << "SystemError: Insert en empty object(In method BM::Object::insert(const string&, Object*), SystemFile: 'src/value.cpp', line: " << __LINE__ << "), you can open an issue at https://github.com/BerryMathDevelopmentTeam/BerryMath/" << std::endl;
+        std::cerr << "SystemError: Insert en empty object(In method BM::Object::insert(const string&, Object*), SystemFile: 'src/value.cpp', line: " << __LINE__ << "), you can open an issue at https://github.com/BerryMathDevelopmentTeam/BerryMath/" << std::endl;
         proto.insert(std::pair<string, Object*>(key, new Undefined));
         return;
     }

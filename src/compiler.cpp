@@ -10,7 +10,7 @@ bool BM::Compiler::compile(string& bytecode) {
     while (true) {
         if (!child) ast->parse();
         if (ast->value() == "bad-tree") {
-            std::clog << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ">:" << ast->line() << std::endl;
+            std::cerr << ast->rValue()->get(0)->value() << "\n\tat <" << filename << ">:" << ast->line() << std::endl;
             FREEAST
             return false;
         }

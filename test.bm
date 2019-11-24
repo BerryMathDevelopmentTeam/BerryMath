@@ -1,5 +1,2 @@
-import sys;
-using sys.io;
-
-let a = 2;
-print(2a);
+let a = { b: { c: 0 } };
+a.b.c;

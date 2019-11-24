@@ -8,7 +8,6 @@ using std::endl;
 using std::cin;
 using std::fstream;
 using std::vector;
-const string emptyString;
 //void* operator new(size_t n) {
 //    auto o = malloc(n);
 //    std::cout << "n: " << o << std::endl;
@@ -113,14 +112,14 @@ int main(int argc, char* argv[]) {
         cout << "See https://github.com/BerryMathDevelopmentTeam/BerryMath" << endl;
     } else if (opt == "--bc" || opt == "-b") {// 运行字节码
         if (argc < 3) {
-            std::clog << "SystemError: Filename not found at <null:\033[33msystem\033[0m>:0" << endl;
+            std::cerr << "SystemError: Filename not found at <null:\033[33msystem\033[0m>:0" << endl;
             exit(1);
         }
         fstream file;
         string filename(argv[2]);
         file.open(filename);
         if (!file) {
-            std::clog << "SystemError: Cannot open bytecode file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
+            std::cerr << "SystemError: Cannot open bytecode file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
             file.close();
             exit(1);
         }
@@ -134,14 +133,14 @@ int main(int argc, char* argv[]) {
         file.close();
     } else if (opt == "--compile" || opt == "-c") {// 运行字节码
         if (argc < 3) {
-            std::clog << "SystemError: Filename not found at <null:\033[33msystem\033[0m>:0" << endl;
+            std::cerr << "SystemError: Filename not found at <null:\033[33msystem\033[0m>:0" << endl;
             exit(1);
         }
         fstream file;
         string filename(argv[2]);
         file.open(filename);
         if (!file) {
-            std::clog << "SystemError: Cannot open source file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
+            std::cerr << "SystemError: Cannot open source file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
             file.close();
             exit(1);
         }
@@ -154,7 +153,7 @@ int main(int argc, char* argv[]) {
         BM::Compiler compiler(source);
         string bytecode;
         if (!compiler.compile(bytecode)) {
-            std::clog << "[COMPILE FAILED]" << std::endl;
+            std::cerr << "[COMPILE FAILED]" << std::endl;
         }
         string outerName(filename);
         outerName.replace(outerName.find(".bm"), 3, ".bmc");
@@ -166,7 +165,7 @@ int main(int argc, char* argv[]) {
         string& filename = opt;
         file.open(filename);
         if (!file) {
-            std::clog << "SystemError: Cannot open src file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
+            std::cerr << "SystemError: Cannot open src file " << filename << " at <" << filename << ":\033[33msystem\033[0m>:0" << endl;
             file.close();
             exit(1);
         }

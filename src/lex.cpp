@@ -30,7 +30,7 @@ BM::Lexer::Token BM::Lexer::get() {
                     updateLine = true;
                 break;
             }
-            if (script[i - 1] == '\n'/* && lastI < (i - 1)*/)
+            if (script[i] == '\n'/* && lastI < (i - 1)*/)
                 l++;
             // 尚未有分割出来的token, 所以不做处理
             continue;
