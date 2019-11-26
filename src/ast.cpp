@@ -247,9 +247,11 @@ void BM::AST::parse() {
                 GET;
             }
             if (minOp.op == ".call") {
+                auto nowLine = lexer.l;
                 lexer.i = minOp.index;
                 auto tmpFunNameIndex = lexer.i;
-                string functionName("");
+                auto preToken = token;
+                string functionName;
                 GET;
                 UL bcCount = 0;
                 UL mbcCount = 0;
@@ -264,6 +266,8 @@ void BM::AST::parse() {
                     functionName += token.s;
                     GET;
                 }
+                if (functionName.empty()) functionName = token.s;
+                lexer.l = nowLine;
                 UL funLine = lexer.l + baseLine;
 //                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
 //                    lexer.i = tmpFunNameIndex;

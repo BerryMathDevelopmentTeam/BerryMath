@@ -55,6 +55,8 @@ namespace BM {
         struct Token {
             TOKENS t;
             string s;
+            Token() = default;
+            Token(TOKENS a, const string& b) : t(a), s(b) { }
         };
         Lexer() : script(""), i(0), l(0) {
             script += ";pass";
@@ -76,18 +78,24 @@ namespace BM {
     private:
         bool updateLine = false;
         bool haveVirtualMul = false;
+        bool preUnknown = false;
+        bool addRBracket = false;
+        bool noSplit = false;
         UL i;
         UL l;
+        UL preUnknownIndex;
+        UL preUnknownLine;
         UL sIndex = 0;
         Token t;
         string script;
+        UL lastI = 0;
         friend class AST;
 #define IS_SPACE(c) (c == '\t' || c == ' ' || c == '\n')
 #define IS_OP(c) \
     (!(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && c != '_' && c != '$')
     };
-
 #define IS_NUM(c) (c >= '0' && c <= '9')
+#define IS_LETTER(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 }
 
 #endif //BERRYMATH_LEX_H

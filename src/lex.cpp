@@ -88,7 +88,7 @@ BM::Lexer::Token BM::Lexer::get() {
                     t.t > NOTE_TOKEN && t.t < END_TOKEN
                     )
                 break;// 如果是符号token的话, 遇到非符号就说明该token结束了
-            if (IS_NUM(script[i]) && t.t != UNKNOWN_TOKEN) t.t = NUMBER_TOKEN;
+            if (t.t != UNKNOWN_TOKEN && (IS_NUM(script[i]) || (!t.s.empty() && t.s[0] == '0' && IS_LETTER(script[i])))) t.t = NUMBER_TOKEN;
             else if (t.t == NUMBER_TOKEN) {
                 haveVirtualMul = true;
                 break;
@@ -195,7 +195,7 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = RANGE_TOKEN;
     }
     // 特判
-    else if (t.s[0] == '0' && t.t != NUMBER_TOKEN && t.s.length() > 2) {
+    else if (t.s[0] == '0' && t.s.length() > 2) {
         t.t = NUMBER_TOKEN;
         string s(t.s);
         char* endp;
@@ -307,5 +307,22 @@ BM::Lexer::Token BM::Lexer::get() {
         }
     }
     if (t.t == NOTE_TOKEN) return get();
+    if (i > lastI) lastI = i;
+    if (noSplit && t.t != BRACKETS_LEFT_TOKEN) {
+        noSplit = false;
+        script.insert(i, ")");
+    }
+    if (preUnknown && i == lastI) {
+        if (t.t == UNKNOWN_TOKEN || t.t == NUMBER_TOKEN || t.t == STRING_TOKEN || t.t == NULL_TOKEN || t.t == UNDEFINED_TOKEN) {
+            noSplit = true;
+            preUnknown = false;
+            script.insert(preUnknownIndex, "(");
+            i = preUnknownIndex + 1;
+            l = preUnknownLine;
+            return Token(BRACKETS_LEFT_TOKEN, "(");
+        }
+    }
+    if (t.t == UNKNOWN_TOKEN) { preUnknownIndex = i; preUnknownLine = l; preUnknown = true; }
+    else preUnknown = false;
     return t;
 }

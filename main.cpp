@@ -3,6 +3,7 @@
 #include <BerryMath.h>
 #include <vector>
 #include <fstream>
+#define DEBUG 0
 using std::cout;
 using std::endl;
 using std::cin;
@@ -17,6 +18,17 @@ using std::vector;
 //    std::cout << "d: " << o << std::endl;
 //    free(o);
 //}
+
+#if DEBUG
+void debug() {
+    BM::Lexer lexer("print 1;");
+    auto token = lexer.get();
+    while (token.t != BM::Lexer::END_TOKEN) {
+        std::cout << token.s << std::endl;
+        token = lexer.get();
+    }
+}
+#endif
 
 void terminal() {
     cout << "BerryMath Terminal" << endl;
@@ -104,6 +116,7 @@ void terminal() {
 }
 
 int main(int argc, char* argv[]) {
+#if !DEBUG
     if (argc == 1) terminal();
     string opt(argv[1]);
     if (opt == "--version" || opt == "-v") {// 版本
@@ -179,5 +192,8 @@ int main(int argc, char* argv[]) {
         delete ip.run();
     }
     BM::Dylib::clear();
+#else
+    debug();
+#endif
     return 0;
 }
