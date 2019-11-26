@@ -35,16 +35,25 @@ sys.io.print(2a);// 4
 ```
 
 #### Calling Functions
-Syntax: `<function-name>(arg1, arg2, arg3...)`
+Syntax: `<function-name/function-getting-expression>(arg1, arg2, arg3...)`
 Demo: 
 ```
+// #1
 hello("BerryMath");
+```
+```
+// #2
+Hello.hello("BerryMath");
 ```
 And you can use operator= to specify setting arguments  
 Demo: 
 ```
 hello("BerryMath", id = 1234);
 ```
+##### The Writing Method of Omitting Bracket
+Condition: It is a single argument and the argument is a single face quantity or identifier (that is, there is no sign, nor can attributes such as A.B)  
+Syntax: `<function-name/function-getting-expression> <single-face-quantity/identifier>`
+
 #### Get properties in an object
 Use operator. to get properties in an object  
 Demo: 
