@@ -76,7 +76,7 @@ string BM::Object::toString(bool indent, bool hl, string tab) {
         {
             for (; iter != end; iter++) {
                 const string& key = iter->first;
-                if (key[0] == '_' && key[1] == '_') continue;// 双下划线开头的属性不显示
+//                if (key[0] == '_' && key[1] == '_') continue;// 双下划线开头的属性不显示
                 o += tab;
                 if (hl) {
                     o += "\033[32m\"" + key + "\"\033[0m";
@@ -85,7 +85,8 @@ string BM::Object::toString(bool indent, bool hl, string tab) {
                 }
                 o += ": ";
                 auto value = iter->second;
-                string valueStr(value->toString(indent, hl, tab));
+                bool isString = value->type() == STRING;
+                string valueStr((isString ? "\"" : "") + value->toString(indent, hl, tab) + (isString ? "\"" : ""));
 //                if (value->type() == STRING && !hl) {
 //                    valueStr.insert(0, "\"");
 //                    valueStr += "\"";
@@ -202,7 +203,10 @@ BM::Object* BM::Function::run(vector<Object*> args, map<string, Object*> hash) {
     auto arrE = arrIp.run();
     auto arr = arrE->get(PASS_RETURN);
     auto arrLen = 0;
-    ip.set("this", parent->get(".this")->value());
+    if (parent) {
+        auto self = parent->get(".this");
+        if (self) ip.set("this", self->value());
+    }
 
     // 优先级顺序: 指定 > 传参 > 默认
     for (auto iter = defaultValues.begin(); iter != defaultValues.end(); iter++) {
@@ -273,7 +277,4 @@ BM::Object* BM::NativeFunction::copy() {
         fun->defaultValue(iter->first, iter->second);
     }
     return fun;
-}
-inline void BM::clearObject(Object* obj) {
-    delete obj;
 }

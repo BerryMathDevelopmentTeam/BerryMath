@@ -21,7 +21,6 @@ namespace BM {
         NONE, ARRAY
     };
     class Object;
-    inline void clearObject(Object* obj);
     using forEachCB = void(*)(const string&, Object*);
     class Object {
     public:
@@ -31,6 +30,11 @@ namespace BM {
         void set(const string &key, Object *value);
         void insert(const string&, Object*);
         Object* get(const string &key);
+        Object* getThenDelete(const string &key) {
+            auto obj = get(key);
+            delete this;
+            return obj;
+        }
         void del(const string &key);
         Object& operator[](const string &key) { return *get(key); }
         inline LL links() { return linked; }
@@ -39,7 +43,7 @@ namespace BM {
             return linked;
         }
         inline LL unbind() {
-            if (linked == 0) clearObject(this);
+            if (linked == 0) delete this;
             return --linked;
         }
         inline bool empty() { return proto.empty(); }
@@ -130,8 +134,8 @@ namespace BM {
         String(const string& t) : Object(), v(t) { }
         string toString(bool = true, bool hl = true, string tab = "") {
             string o("");
-            if (hl) o += "\033[32m\"" + v + "\"";
-            else o += v;
+            if (hl) o += "\033[32m";
+            o += v;
             if (hl) o += "\033[0m";
             return o;
         }

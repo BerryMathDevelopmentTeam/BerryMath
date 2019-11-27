@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <sstream>
+#include <map>
 #include <cstdlib>
 #include "value.h"
 #include "dylib.h"
@@ -387,6 +388,7 @@ BM::Object *BM::Interpreter::run() {
             string className(ast->rValue()->get(0)->value());
             auto classV = new Object;
             set(className, classV);
+            if (className != "Array") classV->set("__objects", Array());
             auto prototype = new Object;
             classV->set("prototype", prototype);
             classV->set("name", new String(className));
@@ -438,7 +440,13 @@ BM::Object *BM::Interpreter::run() {
             CHECKITER(e, ast->rValue());
             CHECKPASSNEXTOP(e);
             auto classValue = get(name);
+            auto objects = classValue->value()->get("__objects");
             auto ret = e->get(PASS_RETURN);
+            if (name != "Array") {
+                std::map<string, Object*> tmphash;
+                tmphash["this"] = objects;
+                ((BM::Function*)objects->get("push"))->run(std::vector<Object*>({ ret }), tmphash);
+            }
             auto keys = classValue->value()->get("prototype")->memberNames();
             for (auto iter = keys.begin(); iter != keys.end(); iter++) {
                 auto proto = classValue->value()->get("prototype")->get(*iter)->copy();

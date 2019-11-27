@@ -1,0 +1,4 @@
+import sys;
+using sys.io;
+
+print "\t\tHello world!\n\"hahahah\\\"";

@@ -9,6 +9,16 @@
 using std::string;
 
 namespace BM {
+#define PASS_ERROR "__ERROR__"
+#define PASS_RETURN "__RETURN__"
+#define PASS_ENDFUN "__RETURNFUN__"
+#define PASS_THIS "__THIS__"
+#define PASS_UPVALUE "__UPVALUE__"
+#define PASS_LASTKEY "__LASTKEY__"
+#define PASS_BREAK "__BREAK__"
+#define PASS_CONTINUE "__CONTINUE__"
+#define PASS_NEXTOP "__NEXTOPERATOR__"
+#define PROTO_PRIVATE_TAG "__private__"
     inline std::ofstream tmpOut;
     class Interpreter {
     public:
@@ -47,6 +57,9 @@ namespace BM {
         void stack(unsigned = 0);
         void debug();
         void clear() { delete scope;scope = new Scope(parent ? parent->scope : nullptr); }
+        static Object* Array() {
+            return Interpreter("[]").run()->getThenDelete(PASS_RETURN);
+        }
     private:
         bool child = false;
         bool loaded = false;
@@ -56,16 +69,6 @@ namespace BM {
         string script;
         string filename;
 
-#define PASS_ERROR "__ERROR__"
-#define PASS_RETURN "__RETURN__"
-#define PASS_ENDFUN "__RETURNFUN__"
-#define PASS_THIS "__THIS__"
-#define PASS_UPVALUE "__UPVALUE__"
-#define PASS_LASTKEY "__LASTKEY__"
-#define PASS_BREAK "__BREAK__"
-#define PASS_CONTINUE "__CONTINUE__"
-#define PASS_NEXTOP "__NEXTOPERATOR__"
-#define PROTO_PRIVATE_TAG "__private__"
 #define THROW { exports->set(PASS_ERROR, new Number(1)); return exports; }
 #define CHECKITER(e, ast) \
     if (!e || e->get(PASS_ERROR) || e->empty()) { \
