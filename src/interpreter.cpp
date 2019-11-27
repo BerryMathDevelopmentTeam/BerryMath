@@ -427,16 +427,11 @@ BM::Object *BM::Interpreter::run() {
 //            auto tmpRet = tmpArrIp.run();
 //            auto super = tmpRet->get(PASS_RETURN);
 //            prototype->set("super", super);
-        } else if (rootValue == "new") {
+        } else if (rootValue == ".new") {
             auto line = ast->rValue()->get(0)->line();
-            string name(ast->rValue()->get(0)->value());
-            ast->rValue()->get(0)->value(".");
-            ast->rValue()->get(0)->insert(".", line);
-            ast->rValue()->get(0)->get(0)->insert(name, line);
-            ast->rValue()->get(0)->get(0)->insert("prototype", line);
-            ast->rValue()->get(0)->insert("ctor", line);
-            ast->rValue()->value(".call");
+            string name(ast->rValue()->LEFT_NODE->LEFT_NODE->LEFT_NODE->value());
             Interpreter ip("", filename, this);
+            ast->rValue()->value(".call");
             ip.ast->root = ast->rValue();
             ip.child = true;
             auto e = ip.run();
@@ -447,7 +442,7 @@ BM::Object *BM::Interpreter::run() {
             auto keys = classValue->value()->get("prototype")->memberNames();
             for (auto iter = keys.begin(); iter != keys.end(); iter++) {
                 auto proto = classValue->value()->get("prototype")->get(*iter)->copy();
-                ret->set(*iter, proto);
+                if (!ret->get(*iter)) ret->set(*iter, proto);
             }
             exports->set(PASS_RETURN, ret);
             FREE(e);
@@ -833,15 +828,18 @@ BM::Object *BM::Interpreter::run() {
                 delete rightIp;
                 auto opfun = left->get(OPERATOR_PROTO_NAME + op);
                 if (opfun) {
+                    set(".this", left);
                     if (opfun->type() == FUNCTION) {
-                        exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ left, right }), std::map<string, Object*>()));
+                        ((Function*)opfun)->setParent(this);
+                        exports->set(PASS_RETURN, ((Function*)opfun)->run(std::vector<Object*>({ right }), std::map<string, Object*>()));
                         break;
                     } else if (opfun->type() == NATIVE_FUNCTION) {
-                        exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ left, right }), std::map<string, Object*>()));
+                        ((NativeFunction*)opfun)->setParent(this);
+                        exports->set(PASS_RETURN, ((NativeFunction*)opfun)->run(std::vector<Object*>({ right }), std::map<string, Object*>()));
                         break;
                     }
-                }
-                if (op == "+") {
+                    del(".this");
+                } else if (op == "+") {
                     if (left->type() == NUMBER && right->type() == NUMBER) {
                         auto leftV = ((Number *) (left))->value();
                         auto rightV = ((Number *) (right))->value();

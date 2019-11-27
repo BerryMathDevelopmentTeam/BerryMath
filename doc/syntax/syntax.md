@@ -354,3 +354,53 @@ import "sys" as sys;
 using sys.io;
 print("Hello world!");
 ```
+
+## Class
+Used to define a class  
+Syntax: `class <class-name> { /* definitions */ }`  
+Definitions in class(_Defining the prototype of a class_):  
+- Defining function: Just like defining functions directly, write directly in this class: `def <method-name>(<args>) { /* scripts */ }`
+- Defining static function: Just like defining methods, write directly in this class: `static <method-name>(<args>) { /* scripts */ }`
+- Overload operators: Just like defining methods, write directly in this class: `operator<operator>(<args>) { /* scripts */ }`
+- Defining property: Write the name of this property directly followed by a semicolon: `<property-name>;`
+- Defining static property: Add `<class-name>.<property-name> = <value>` after class definition
+Type Declarations(_Set how prototypes are displayed (public or private)_):  
+- Defining public prototypes: Add `public:`
+- Defining private prototypes: Add `private:`
+### A constructor is a member function named `ctor`
+### Access object uses identifier `this`
+Demo:
+```
+import sys;
+using sys.io;
+
+class Vector3 {
+public:
+    def ctor(x = 0, y = 0, z = 0) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    operator+(b) {
+        return new Vector3(this.x + b.x, this.y + b.y, this.x + b.z);
+    }
+    operator-(b) {
+        return new Vector3(this.x - b.x, this.y - b.y, this.x - b.z);
+    }
+    static Zero() {
+        return new Vector3();
+    }
+private:
+    x; y; z;
+};
+Vector3.version = "v-1.0.0";
+
+let a = new Vector3(1, 2);
+let b = Vector3.Zero();
+print Vector3;
+print a;
+print b;
+print(a + b);
+print(a - b);
+print(Vector3.version);
+```

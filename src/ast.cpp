@@ -1418,9 +1418,6 @@ void BM::AST::parse() {
                         return;
                     }
                     pflag = false;
-                } else if (token.t == Lexer::NOTE_TOKEN) {
-                    // 与pass一样，直接跳过
-                    root = new node("pass", lexer.l + baseLine);
                 } else {
                     if (token.t == Lexer::DEF_TOKEN || token.t == Lexer::STATIC_TOKEN || token.t == Lexer::OPERATOR_TOKEN) {
                         string defScript;
@@ -1518,10 +1515,14 @@ void BM::AST::parse() {
             UL sbc(0);
             UL mbc(0);
             UL bbc(0);
+            otherInfo = token.s;
             do {
                 GET;
                 if (token.t == Lexer::PROGRAM_END) break;
-                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) sbc++;
+                if (token.t == Lexer::BRACKETS_LEFT_TOKEN) {
+                    sbc++;
+                    if (sbc == 1) expression += ".prototype.ctor";
+                }
                 else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) sbc--;
                 else if (token.t == Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) mbc++;
                 else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) mbc--;
@@ -1533,7 +1534,7 @@ void BM::AST::parse() {
             auto ast = new AST(expression, lexer.l + baseLine);
             ast->parse();
             root = ast->root;
-            root->value("new");
+            root->value(".new");
             break;
         }
         case Lexer::DEBUGGER_TOKEN:
@@ -1617,6 +1618,6 @@ inline UL BM::AST::priority(const string& op) {
             || op == "in" || op == "of"
             )
         return 2;
-    if (op == ",") return 1;
+//    if (op == ",") return 1;
     return 15;
 }

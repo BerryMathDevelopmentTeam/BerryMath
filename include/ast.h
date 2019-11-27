@@ -37,6 +37,7 @@ namespace BM {
         void importByString(string);
         string value() { if (root) return root->value(); return ""; }
         ~AST();
+        const string& moreInfo() { return otherInfo; }
     private:
         static inline void trim(string& s) {
             s.erase(0, 1);
@@ -65,6 +66,11 @@ namespace BM {
                 if (children.empty()) return nullptr;
                 return children[index % children.size()];
             }
+            inline void set(long index, node* n) {
+                if (index < 0) index += children.size();
+                if (children.empty()) return;
+                children[index % children.size()] = n;
+            }
             inline UL length() { return children.size(); }
             node& operator[](long index) { return *get(index); }
             void insert(node* n) { if (n) children.push_back(n); }
@@ -90,6 +96,8 @@ namespace BM {
         string script;
         Lexer lexer;
         Lexer astLexer;
+        string otherInfo;
+        friend class Interpreter;
         static inline UL priority(const string&);
 #define CHECK(astName) \
     if (astName->root && astName->root->value() == "bad-tree") { \
