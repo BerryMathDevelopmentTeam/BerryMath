@@ -1,0 +1,32 @@
+import sys;
+using sys.io;
+
+class Vector3 {
+public:
+    def ctor(x = 0, y = 0, z = 0) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    operator+(b) {
+        return new Vector3(this.x + b.x, this.y + b.y, this.x + b.z);
+    }
+    operator-(b) {
+        return new Vector3(this.x - b.x, this.y - b.y, this.x - b.z);
+    }
+    static Zero() {
+        return new Vector3();
+    }
+private:
+    x; y; z;
+};
+Vector3.version = "v-1.0.0";
+
+let a = new Vector3(1, 2);
+let b = Vector3.Zero();
+print Vector3;
+print a;
+print b;
+print(a + b);
+print(a - b);
+print(Vector3.version);

@@ -13,7 +13,7 @@ using std::map;
 using std::vector;
 
 namespace BM {
-    extern class Interpreter;
+    class Interpreter;
     enum ValueType {
         OBJECT, NUMBER, STRING, NULL_, UNDEFINED, FUNCTION, NATIVE_FUNCTION, NATIVE_VALUE
     };
