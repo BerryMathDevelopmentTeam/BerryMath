@@ -116,6 +116,16 @@ def p() {
 }
 p(1, 2, 3, 4, 5);
 ```
+#### If you want to define a lambda function, change the parentheses of the parameter definition to brackets
+Demo:
+```
+def did(fun) {
+    return fun(2);
+}
+did(def l[a] {
+    return a ** 10;
+});// 1024
+```
 
 ### Reference variable
 Use key word `refer` to declare a reference variable.  

@@ -1,0 +1,9 @@
+import sys;
+using sys.io;
+
+def did(fun) {
+    return fun(2);
+}
+print(did(def l[a] {
+    return a ** 10;
+}));

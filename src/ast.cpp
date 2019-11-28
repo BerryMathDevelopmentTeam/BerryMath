@@ -312,7 +312,7 @@ void BM::AST::parse() {
                             }
                             arg = "";
                         }
-                        if (token.t == Lexer::PROGRAM_END || token.t == Lexer::END_TOKEN) {
+                        if (token.t == Lexer::PROGRAM_END) {
                             root = new node("bad-tree", lexer.l + baseLine);
                             root->insert("SyntaxError: Lack of parentheses", lexer.l + baseLine);
                             return;
@@ -977,10 +977,10 @@ void BM::AST::parse() {
                 Arg(ArgType t, string a, string dv = "") : type(t), arg(a), defaultValue(dv) { }
             };
 
-            if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+            if (token.t != Lexer::BRACKETS_LEFT_TOKEN && token.t != Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) {
                 funcName += token.s;
                 GET;
-                if (token.t != Lexer::BRACKETS_LEFT_TOKEN) {
+                if (token.t != Lexer::BRACKETS_LEFT_TOKEN && token.t != Lexer::MIDDLE_BRACKETS_LEFT_TOKEN) {
                     GET;
                     root = new node("bad-tree", lexer.l + baseLine);
                     root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine);
@@ -1040,6 +1040,8 @@ void BM::AST::parse() {
                     bcCount++;
                 } else if (token.t == Lexer::BRACKETS_RIGHT_TOKEN) {
                     if (--bcCount < 1) break;
+                } else if (token.t == Lexer::MIDDLE_BRACKETS_RIGHT_TOKEN) {
+                    if (bcCount == 1) { bcCount--; break; }
                 }
                 arg += " " + token.s;
             }
