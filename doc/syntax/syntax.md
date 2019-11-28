@@ -127,6 +127,14 @@ let a = 0;
 refer b = a;
 b++;// a == 1
 ```
+And you can also use operator `->` to declare a reference variable.  
+Demo:
+```
+let a = 0;
+let b -> a;
+b++;// a == 1
+```
+
 ### Reference arguments
 You can define a reference parameter by adding the keyword `refer` before the parameter name. 
 Demo:

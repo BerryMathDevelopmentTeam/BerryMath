@@ -24,9 +24,13 @@ Vector3.version = "v-1.0.0";
 
 let a = new Vector3(1, 2);
 let b = Vector3.Zero();
+let c -> a;
 print Vector3;
 print a;
 print b;
 print(a + b);
 print(a - b);
 print(Vector3.version);
+print c;
+c.x = 100;
+print a;

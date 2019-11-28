@@ -105,7 +105,10 @@ void BM::AST::parse() {
             }
             root->insert(token.s, lexer.l + baseLine);
             GET;
-            if (token.t != Lexer::SET_TOKEN && token.t != Lexer::END_TOKEN) {
+            if (token.t == Lexer::REFER_TO_TOKEN) {
+                root->value("refer");
+            }
+            if (token.t != Lexer::SET_TOKEN && token.t != Lexer::REFER_TO_TOKEN && token.t != Lexer::END_TOKEN) {
                 root->value("bad-tree");
                 root->insert("SyntaxError: Unexpected token " + token.s, lexer.l + baseLine);
                 return;

@@ -193,6 +193,8 @@ BM::Lexer::Token BM::Lexer::get() {
         t.t = DSUB_TOKEN;
     } else if (t.s == "~~") {
         t.t = RANGE_TOKEN;
+    } else if (t.s == "->") {
+        t.t = REFER_TO_TOKEN;
     }
     // 特判
     else if (t.s[0] == '0' && t.s.length() > 2) {

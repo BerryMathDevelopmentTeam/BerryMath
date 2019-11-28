@@ -49,6 +49,7 @@ namespace BM {
             DADD_TOKEN, DSUB_TOKEN,// double add & double sub
             IN_TOKEN, OF_TOKEN,
             RANGE_TOKEN, 
+            REFER_TO_TOKEN,
             END_TOKEN,// 语句结束
             PROGRAM_END
         };
